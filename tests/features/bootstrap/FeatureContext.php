@@ -10,6 +10,7 @@ if(file_exists(__DIR__ . '/../../vendor/jarednova/mesh/')){
 
 use AgreableCatfishImporterPlugin\Services\Sitemap;
 use AgreableCatfishImporterPlugin\Services\Article;
+use AgreableCatfishImporterPlugin\Services\Widget;
 use Behat\Behat\Context\BehatContext,
   Behat\Behat\Exception\PendingException;
 use Behat\Gherkin\Node\PyStringNode,
@@ -67,7 +68,7 @@ class FeatureContext extends BehatContext {
    * @Then /^I should have an object of the article$/
    */
   public function iShouldHaveAnObjectOfTheArticle() {
-    Assert::assertInstanceOf('WP_Post', self::$article);
+    Assert::assertInstanceOf('TimberPost', self::$article);
 
   }
 
@@ -76,6 +77,43 @@ class FeatureContext extends BehatContext {
    */
   public function theArticleHasTheHeadline($headline) {
     Assert::assertEquals($headline, self::$article->post_title);
+  }
+
+  /**
+   * @Given /^the article has the property "([^"]*)" of "([^"]*)"$/
+   */
+  public function theArticleHasThePropertyOf($key, $value) {
+    Assert::assertEquals($value, self::$article->get_field($key));
+  }
+
+  /**
+   * @Given /^the category slug "([^"]*)"$/
+   */
+  public function theCategorySlug($categorySlug) {
+    $category = Article::getCategory(self::$article);
+    Assert::assertEquals($categorySlug, $category->slug);
+  }
+
+  /**
+   * @Given /^the widgets "([^"]*)"$/
+   */
+  public function theWidgets($expectedWidgetsString) {
+    $widgets = Widget::getPostWidgets(self::$article);
+    $widgetNames = [];
+    foreach($widgets as $widget) {
+      $widgetNames[] = $widget['acf_fc_layout'];
+    }
+    Assert::assertEquals($expectedWidgetsString, implode(',', $widgetNames));
+  }
+
+  /**
+   * @Given /^the first paragraph widget:$/
+   */
+  public function theFirstParagraphWidget(PyStringNode $string) {
+    var_dump((string)$string);
+    $widget = Widget::getPostWidgetsFiltered(self::$article, 'paragraph', 0);
+    Assert::assertNotNull($widget);
+    Assert::assertEquals((string)$string, $widget['paragraph']);
   }
 
   /**
