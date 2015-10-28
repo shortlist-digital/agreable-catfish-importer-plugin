@@ -7,7 +7,9 @@
     "getherbert/framework": "~0.9",
     "facebook/webdriver": "~1.0",
     "jarednova/mesh": "*",
-    "behat/behat": "~2.5"
+    "behat/behat": "~2.5",
+    "phpunit/phpunit": "5.0.*",
+    "sunra/php-simple-html-dom-parser" : "~1.5"
   },
   "config": {
     "preferred-install": "dist"

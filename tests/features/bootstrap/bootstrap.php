@@ -1,5 +1,5 @@
 <?php
-$rootDir =  dirname( __FILE__ ) . '/../../../../../..';
+$rootDir =  dirname( __FILE__ ) . '/../../../../../../..';
 
 $_SERVER["SERVER_PROTOCOL"] = 'HTTP/1.1';
 
