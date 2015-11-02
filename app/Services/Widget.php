@@ -18,8 +18,26 @@ class Widget {
 
   public static function setPostWidgets(TimberPost $post, array $widgets) {
     $meta_article_widgets = [];
-    foreach ($widgets as $widget) {
+    foreach ($widgets as $key => $widget) {
       $meta_article_widgets[] = $widget->acf_fc_layout;
+
+      $metaLabel = 'article_widgets_' . $key;
+
+      switch ($widget->acf_fc_layout) {
+        case 'paragraph':
+          self::setPostMetaProperty($post, $metaLabel . '_paragraph', 'widget_paragraph_html', $widget->paragraph);
+          break;
+        case 'image':
+          $image = new \Mesh\Image($widget->image->src);
+
+          self::setPostMetaProperty($post, $metaLabel . '_image', 'widget_image_image', $image->id);
+          self::setPostMetaProperty($post, $metaLabel . '_border', 'widget_image_border', 0);
+          self::setPostMetaProperty($post, $metaLabel . '_width', 'widget_image_width', $widget->image->width);
+          self::setPostMetaProperty($post, $metaLabel . '_position', 'widget_image_position', $widget->image->position);
+          self::setPostMetaProperty($post, $metaLabel . '_crop', 'widget_image_crop', 'original');
+          break;
+      }
+
     }
 
     update_post_meta($post->id, '_article_widgets', 'article_widgets');
@@ -33,15 +51,21 @@ class Widget {
   public static function getPostWidgetsFiltered(TimberPost $post, $name = null, $index = null) {
     $widgets = self::getPostWidgets($post);
     if ($name) {
+      $filteredWidgets = [];
       foreach($widgets as $key => $widget) {
-        if ($widget['acf_fc_layout'] !== $name) {
-          unset($widgets[$key]);
+        if ($widget['acf_fc_layout'] === $name) {
+          $filteredWidgets[] = $widget;
         }
       }
+      $widgets = $filteredWidgets;
     }
 
     if ($index !== null) {
-      return $widgets[$index];
+      if (isset($widgets[$index])) {
+        return $widgets[$index];
+      }
+
+      return null;
     }
     return $widgets;
   }
@@ -115,6 +139,11 @@ class Widget {
     }
 
     return $widgets;
+  }
+
+  protected static function setPostMetaProperty(TimberPost $post, $acfKey, $widgetProperty, $value) {
+    update_post_meta($post->id, $acfKey, $value);
+    update_post_meta($post->id, '_' . $acfKey, $widgetProperty);
   }
 
 }

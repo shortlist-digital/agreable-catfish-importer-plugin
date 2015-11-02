@@ -107,13 +107,32 @@ class FeatureContext extends BehatContext {
   }
 
   /**
-   * @Given /^the first paragraph widget:$/
+   * @Given /^the paragraph widget at index (\d+):$/
    */
-  public function theFirstParagraphWidget(PyStringNode $string) {
-    var_dump((string)$string);
-    $widget = Widget::getPostWidgetsFiltered(self::$article, 'paragraph', 0);
+  public function theParagraphWidgetAtIndex($index, PyStringNode $string) {
+    $widget = Widget::getPostWidgetsFiltered(self::$article, 'paragraph', $index);
     Assert::assertNotNull($widget);
     Assert::assertEquals((string)$string, $widget['paragraph']);
+  }
+
+  /**
+   * @Given /^the image filename is "([^"]*)" at index (\d+)$/
+   */
+  public function theImageFilenameIsAtIndex($filename, $index) {
+    $widget = Widget::getPostWidgetsFiltered(self::$article, 'image', $index);
+
+    Assert::assertNotNull($widget);
+    var_dump($widget);
+    // $widget->image->filename
+  }
+
+  /**
+   * @Given /^the image "([^"]*)" is "([^"]*)" at index (\d+)$/
+   */
+  public function theImagePropertyIsAtIndex($property, $value, $index) {
+    $widget = Widget::getPostWidgetsFiltered(self::$article, 'image', $index);
+    Assert::assertNotNull($widget);
+    throw new PendingException();
   }
 
   /**
