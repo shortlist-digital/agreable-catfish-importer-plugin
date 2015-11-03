@@ -16,6 +16,9 @@ class Widget {
     $widgets[] = $widget;
   }
 
+  /**
+   * Attach widgets to the $post via WP metadata
+   */
   public static function setPostWidgets(TimberPost $post, array $widgets) {
     $meta_article_widgets = [];
     foreach ($widgets as $key => $widget) {
@@ -48,6 +51,10 @@ class Widget {
     return $post->get_field('article_widgets');
   }
 
+  /**
+   * Get widgets from a post. If provided a widget name, only these are returned
+   * If an index is provided only return the widget at that index
+   */
   public static function getPostWidgetsFiltered(TimberPost $post, $name = null, $index = null) {
     $widgets = self::getPostWidgets($post);
     if ($name) {
@@ -70,6 +77,10 @@ class Widget {
     return $widgets;
   }
 
+  /**
+   * Given a URL to an article, identify the widgets within HTML
+   * and then build up an array of widget objects
+   */
   public static function getWidgetsFromUrl($articleUrl) {
     $articleHtml =  HtmlDomParser::file_get_html($articleUrl);
     if (!$articleHtml) {
@@ -141,6 +152,9 @@ class Widget {
     return $widgets;
   }
 
+  /**
+   * A small helper for setting post metadata
+   */
   protected static function setPostMetaProperty(TimberPost $post, $acfKey, $widgetProperty, $value) {
     update_post_meta($post->id, $acfKey, $value);
     update_post_meta($post->id, '_' . $acfKey, $widgetProperty);
