@@ -7,3 +7,5 @@
 /** @var  \Herbert\Framework\Panel $panel */
 /** @var  \Herbert\Framework\Shortcode $shortcode */
 /** @var  \Herbert\Framework\Widget $widget */
+
+flush_rewrite_rules();

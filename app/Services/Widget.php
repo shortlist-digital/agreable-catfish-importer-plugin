@@ -20,9 +20,9 @@ class Widget {
    * Attach widgets to the $post via WP metadata
    */
   public static function setPostWidgets(TimberPost $post, array $widgets) {
-    $meta_article_widgets = [];
+    $widgetNames = [];
     foreach ($widgets as $key => $widget) {
-      $meta_article_widgets[] = $widget->acf_fc_layout;
+      $widgetNames[] = $widget->acf_fc_layout;
 
       $metaLabel = 'article_widgets_' . $key;
 
@@ -43,8 +43,8 @@ class Widget {
 
     }
 
-    update_post_meta($post->id, '_article_widgets', 'article_widgets');
-    update_post_meta($post->id, 'article_widgets', serialize($meta_article_widgets));
+    // This is an array of widget names for ACF
+    self::setPostMetaProperty($post, 'article_widgets', 'article_widgets', serialize($widgetNames));
   }
 
   public static function getPostWidgets(TimberPost $post) {
