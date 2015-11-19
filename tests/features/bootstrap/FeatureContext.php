@@ -122,8 +122,10 @@ class FeatureContext extends BehatContext {
     $widget = Widget::getPostWidgetsFiltered(self::$article, 'image', $index);
 
     Assert::assertNotNull($widget);
-    var_dump($widget);
-    // $widget->image->filename
+
+    // Assert::markTestIncomplete('TODO: Mesh/Image.php assigns filename as MD5.');
+
+    // Assert::assertEquals($widget['image']['filename'], $filename);
   }
 
   /**
@@ -132,12 +134,14 @@ class FeatureContext extends BehatContext {
   public function theImagePropertyIsAtIndex($property, $value, $index) {
     $widget = Widget::getPostWidgetsFiltered(self::$article, 'image', $index);
     Assert::assertNotNull($widget);
-    throw new PendingException();
+    Assert::assertTrue(isset($widget[$property]));
+    Assert::assertEquals($value, $widget[$property]);
   }
 
   /**
    * @AfterSuite
    */
   public static function after(SuiteEvent $scope) {
+    // wp_delete_post(self::$article->id);
   }
 }
