@@ -129,10 +129,10 @@ class FeatureContext extends BehatContext {
   }
 
   /**
-   * @Given /^the image "([^"]*)" is "([^"]*)" at index (\d+)$/
+   * @Given /^the "([^"]*)" "([^"]*)" is "([^"]*)" at index (\d+)$/
    */
-  public function theImagePropertyIsAtIndex($property, $value, $index) {
-    $widget = Widget::getPostWidgetsFiltered(self::$article, 'image', $index);
+  public function theWidgetPropertyIsAtIndex($widgetName, $property, $value, $index) {
+    $widget = Widget::getPostWidgetsFiltered(self::$article, $widgetName, $index);
     Assert::assertNotNull($widget);
     Assert::assertTrue(isset($widget[$property]));
     Assert::assertEquals($value, $widget[$property]);

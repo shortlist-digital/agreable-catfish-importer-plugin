@@ -4,6 +4,9 @@ namespace AgreableCatfishImporterPlugin\Services;
 use \TimberPost;
 use \stdClass;
 use Sunra\PhpSimple\HtmlDomParser;
+use AgreableCatfishImporterPlugin\Services\Widgets\InlineImage;
+use AgreableCatfishImporterPlugin\Services\Widgets\Video;
+use AgreableCatfishImporterPlugin\Services\Widgets\Html;
 
 class Widget {
   public static function makeWidget($widgetName, stdClass $data) {
@@ -21,14 +24,15 @@ class Widget {
    */
   public static function setPostWidgets(TimberPost $post, array $widgets) {
     $widgetNames = [];
+
     foreach ($widgets as $key => $widget) {
-      $widgetNames[] = $widget->acf_fc_layout;
 
       $metaLabel = 'article_widgets_' . $key;
 
       switch ($widget->acf_fc_layout) {
         case 'paragraph':
           self::setPostMetaProperty($post, $metaLabel . '_paragraph', 'widget_paragraph_html', $widget->paragraph);
+          $widgetNames[] = $widget->acf_fc_layout;
           break;
         case 'image':
           $image = new \Mesh\Image($widget->image->src);
@@ -38,13 +42,21 @@ class Widget {
           self::setPostMetaProperty($post, $metaLabel . '_width', 'widget_image_width', $widget->image->width);
           self::setPostMetaProperty($post, $metaLabel . '_position', 'widget_image_position', $widget->image->position);
           self::setPostMetaProperty($post, $metaLabel . '_crop', 'widget_image_crop', 'original');
+          $widgetNames[] = $widget->acf_fc_layout;
+          break;
+        case 'video':
+          self::setPostMetaProperty($post, $metaLabel . '_url', 'widget_video_url', $widget->video->url);
+          self::setPostMetaProperty($post, $metaLabel . '_width', 'widget_video_width', $widget->video->width);
+          self::setPostMetaProperty($post, $metaLabel . '_position', 'widget_video_position', $widget->video->position);
+          $widgetNames[] = $widget->acf_fc_layout;
           break;
       }
 
     }
 
     // This is an array of widget names for ACF
-    self::setPostMetaProperty($post, 'article_widgets', 'article_widgets', serialize($widgetNames));
+    update_post_meta($post->id, 'article_widgets', serialize($widgetNames));
+    update_post_meta($post->id, '_article_widgets', 'article_widgets');
   }
 
   public static function getPostWidgets(TimberPost $post) {
@@ -91,62 +103,32 @@ class Widget {
 
     foreach($articleHtml->find('.article__content .widget') as $widget) {
 
-      $widgetData = new stdClass();
-
       // Get class name
       $matches = [];
       preg_match('/widget--([a-z-0-9]*)/', $widget->class, $matches);
       if (count($matches) !== 2) {
         throw new \Exception('Expected to retrieve widget name from class name');
       }
-      $widgetData->type = $matches[1];
 
-      switch ($widgetData->type) {
+      $widgetData = null;
+      $widgetName = $matches[1];
+
+      switch ($widgetName) {
         case 'html':
-          $widgetData->type = 'paragraph';
-          $widgetData->paragraph = $widget->innertext;
+          $widgetData = Html::getFromWidgetDom($widget);
           break;
         case 'inline-image':
-          $widgetData->type = 'image';
-          $widgetData->image = new stdClass();
-          $image = $widget->find('img');
-          $widgetData->image->src = $image[0]->src;
-          $widgetData->image->filename = substr($widgetData->image->src, strrpos($widgetData->image->src, '/') + 1);
-          $widgetData->image->name = substr($widgetData->image->filename, 0, strrpos($widgetData->image->filename, '.'));
-          $widgetData->image->extension = substr($widgetData->image->filename, strrpos($widgetData->image->filename, '.') + 1);
-
-          $imageCaptionElements = $widget->find('.inline-image__caption');
-          if (count($imageCaptionElements) > 0) {
-            $widgetData->image->caption = $imageCaptionElements[0]->innertext;
-          }
-
-          $inlineImageElements = $widget->find('.inline-image');
-          if (count($inlineImageElements) > 0) {
-            $classes = $inlineImageElements[0]->class;
-
-            if (strpos($classes, 'inline-image--full') !== false) {
-              $widgetData->image->width = 'full';
-            } else if (strpos($classes, 'inline-image--medium') !== false) {
-              $widgetData->image->width = 'medium';
-            } else {
-              $widgetData->image->width = 'small';
-            }
-
-            if (strpos($classes, 'inline-image--center') !== false) {
-              $widgetData->image->position = 'center';
-            } else if (strpos($classes, 'inline-image--left') !== false) {
-              $widgetData->image->position = 'left';
-            } else {
-              $widgetData->image->position = 'right';
-            }
-
-          }
-
+          $widgetData = InlineImage::getFromWidgetDom($widget);
+          break;
+        case 'video':
+          $widgetData = Video::getFromWidgetDom($widget);
           break;
       }
 
+      if ($widgetData) {
+        $widgets[] = self::makeWidget($widgetData->type, $widgetData);
+      }
 
-      $widgets[] = self::makeWidget($widgetData->type, $widgetData);
     }
 
     return $widgets;
@@ -159,5 +141,4 @@ class Widget {
     update_post_meta($post->id, $acfKey, $value);
     update_post_meta($post->id, '_' . $acfKey, $widgetProperty);
   }
-
 }

@@ -15,7 +15,7 @@ Feature: agreable-catfish-importer-plugin
     And the article has the headline "All widgets test"
     And the article has the property "short_headline" of "All widgets test (short headline)"
     And the category slug "test-tech"
-    And the widgets "paragraph,image,image,image,video"
+    And the widgets "paragraph,image,image,image,video,video"
     And the image filename is "wedding-furs.jpg" at index 0
     And the paragraph widget at index 0:
       """
@@ -25,5 +25,10 @@ Feature: agreable-catfish-importer-plugin
 <p>This is a <a href="http://google.com/" target="_blank">link</a>.</p>
 
       """
-    And the image "width" is "full" at index 0
-    And the image "position" is "center" at index 0
+    And the "image" "width" is "full" at index 0
+    And the "image" "position" is "center" at index 0
+    And the "video" "width" is "full" at index 0
+    And the "video" "position" is "center" at index 0
+    And the "video" "url" is "//player.vimeo.com/video/142546902" at index 1
+    And the "video" "width" is "medium" at index 1
+    And the "video" "position" is "left" at index 1
