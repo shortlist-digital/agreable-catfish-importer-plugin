@@ -3,7 +3,6 @@ namespace AgreableCatfishImporterPlugin\Services;
 
 use \TimberPost;
 use \stdClass;
-use Sunra\PhpSimple\HtmlDomParser;
 use AgreableCatfishImporterPlugin\Services\Widgets\InlineImage;
 use AgreableCatfishImporterPlugin\Services\Widgets\Video;
 use AgreableCatfishImporterPlugin\Services\Widgets\Html;
@@ -93,15 +92,15 @@ class Widget {
    * Given a URL to an article, identify the widgets within HTML
    * and then build up an array of widget objects
    */
-  public static function getWidgetsFromUrl($articleUrl) {
-    $articleHtml =  HtmlDomParser::file_get_html($articleUrl);
-    if (!$articleHtml) {
+  public static function getWidgetsFromDom($articleDom) {
+
+    if (!$articleDom) {
       throw new \Exception('Could not retrieve widgets from ' . $articleUrl);
     }
 
     $widgets = array();
 
-    foreach($articleHtml->find('.article__content .widget') as $widget) {
+    foreach($articleDom->find('.article__content .widget') as $widget) {
 
       // Get class name
       $matches = [];

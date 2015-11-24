@@ -138,6 +138,14 @@ class FeatureContext extends BehatContext {
     Assert::assertEquals($value, $widget[$property]);
   }
 
+    /**
+     * @Given /^there are (\d+) hero images$/
+     */
+    public function thereAreHeroImages($expectedHeroImageNumber) {
+      Assert::assertNotNull(self::$article->get_field('hero_images'));
+      Assert::assertEquals($expectedHeroImageNumber, count(self::$article->get_field('hero_images')));
+    }
+
   /**
    * @AfterSuite
    */

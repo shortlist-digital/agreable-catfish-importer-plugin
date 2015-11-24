@@ -32,3 +32,4 @@ Feature: agreable-catfish-importer-plugin
     And the "video" "url" is "//player.vimeo.com/video/142546902" at index 1
     And the "video" "width" is "medium" at index 1
     And the "video" "position" is "left" at index 1
+    And there are 2 hero images
