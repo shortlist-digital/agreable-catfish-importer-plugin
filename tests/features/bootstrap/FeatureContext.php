@@ -138,13 +138,21 @@ class FeatureContext extends BehatContext {
     Assert::assertEquals($value, $widget[$property]);
   }
 
-    /**
-     * @Given /^there are (\d+) hero images$/
-     */
-    public function thereAreHeroImages($expectedHeroImageNumber) {
-      Assert::assertNotNull(self::$article->get_field('hero_images'));
-      Assert::assertEquals($expectedHeroImageNumber, count(self::$article->get_field('hero_images')));
-    }
+  /**
+   * @Given /^there are (\d+) hero images$/
+   */
+  public function thereAreHeroImages($expectedHeroImageNumber) {
+    Assert::assertNotNull(self::$article->get_field('hero_images'));
+    Assert::assertEquals($expectedHeroImageNumber, count(self::$article->get_field('hero_images')));
+  }
+
+  /**
+   * @Given /^the article has import metadata$/
+   */
+  public function theArticleHasImportMetadata() {
+    Assert::assertEquals(true, self::$article->get_field('catfish-importer_imported'));
+    Assert::assertNotNull(self::$article->get_field('catfish-importer_date-updated'));
+  }
 
   /**
    * @AfterSuite

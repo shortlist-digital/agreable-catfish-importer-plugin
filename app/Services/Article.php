@@ -27,7 +27,10 @@ class Article {
     $meshCategory = new \Mesh\Term($articleObject->section->slug, 'category');
     wp_set_post_categories($meshArticle->id, $meshCategory->id['term_id']);
 
-    $meshArticle->set('short_headline', $articleObject->shortHeadline);
+    $meshArticle->set('short_headline', $articleObject->shortHeadline, true);
+    $meshArticle->set('sell', $articleObject->sell, true);
+    $meshArticle->set('catfish-importer_imported', true, true);
+    $meshArticle->set('catfish-importer_date-updated', time(), true);
 
 
     if (!$post = new TimberPost($meshArticle->id)) {

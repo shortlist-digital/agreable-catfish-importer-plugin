@@ -14,6 +14,7 @@ Feature: agreable-catfish-importer-plugin
     Then I should have an object of the article
     And the article has the headline "All widgets test"
     And the article has the property "short_headline" of "All widgets test (short headline)"
+    And the article has the property "sell" of "This is the sell"
     And the category slug "test-tech"
     And the widgets "paragraph,image,image,image,video,video"
     And the image filename is "wedding-furs.jpg" at index 0
@@ -33,3 +34,4 @@ Feature: agreable-catfish-importer-plugin
     And the "video" "width" is "medium" at index 1
     And the "video" "position" is "left" at index 1
     And there are 2 hero images
+    And the article has import metadata

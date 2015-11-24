@@ -12,7 +12,7 @@ return [
      * Auto-load all required files.
      */
     'requires' => [
-        __DIR__ . '/app/customPostTypes.php'
+        __DIR__ . '/app/custom-fields/acf.php'
     ],
 
     /**
@@ -32,30 +32,22 @@ return [
     /**
      * Activate
      */
-    'deactivators' => [
-        __DIR__ . '/app/deactivate.php'
-    ],
+    'deactivators' => [],
 
     /**
      * The shortcodes to auto-load.
      */
-    'shortcodes' => [
-        __DIR__ . '/app/shortcodes.php'
-    ],
+    'shortcodes' => [],
 
     /**
      * The widgets to auto-load.
      */
-    'widgets' => [
-        __DIR__ . '/app/widgets.php'
-    ],
+    'widgets' => [],
 
     /**
      * The widgets to auto-load.
      */
-    'enqueue' => [
-        __DIR__ . '/app/enqueue.php'
-    ],
+    'enqueue' => [],
 
     /**
      * The routes to auto-load.
