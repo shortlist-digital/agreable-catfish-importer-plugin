@@ -1,4 +1,4 @@
-<h1>Welcome to the Catfish Importer</h1>
+<h1>Catfish Importer</h1>
 
 <h2>Recent imports</h2>
 
@@ -7,7 +7,7 @@
     <th>Title</th>
     <th>Category</th>
     <th>Date Created</th>
-    <th>Date Imported</th>
+    <th>Date Last Imported</th>
     <th>Author</th>
   </tr>
   {% for post in posts %}
@@ -15,7 +15,7 @@
       <td><a href="/wp/wp-admin/post.php?post={{ post.id }}&action=edit">{{ post.post_title }}</a></td>
       <td>{{ post.terms('category')[0] }}</td>
       <td>{{ post.post_date }}</td>
-      <td>?</td>
+      <td>{{ post.get_field('catfish-importer_date-updated') | date }}</td>
       <td><a href="{{post.get_author.get_link}}">{{ post.get_author.name }}</a></td>
     </tr>
   {% endfor %}

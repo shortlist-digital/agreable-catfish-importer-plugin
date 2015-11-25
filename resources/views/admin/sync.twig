@@ -1,0 +1,44 @@
+<h1>Catfish Importer</h1>
+
+<h2>Manually sync from Catfish to WordPress</h2>
+
+<form>
+  <select name='category'>
+    <option value=''>Loading</option>
+  </select>
+  <input type='submit' name='sync' value='Sync'>
+
+</form>
+
+<script>
+jQuery(function() {
+  var $ = jQuery;
+  console.log('Ready');
+
+  $('input[name=sync]').click(onSyncClick);
+
+  listSections()
+
+  function listSections() {
+    var $categorySelect = $('select[name=category]')
+    console.log($categorySelect)
+    $.getJSON('{{ ajax_url }}?action=catfishimporter_list_sections', function onListSections(response) {
+      $categorySelect.html('');
+      response.forEach(function(category) {
+        $categorySelect.append($('<option>').html(category))
+      })
+    });
+  }
+
+  function onSyncClick(event) {
+    event.preventDefault();
+    console.log('sync click');
+    $.getJSON('{{ ajax_url }}?action=catfishimporter_start_sync', onSyncResponse);
+  }
+
+  function onSyncResponse() {
+    console.log('sync response');
+  }
+
+})
+</script>

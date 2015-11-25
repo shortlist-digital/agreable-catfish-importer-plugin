@@ -11,9 +11,12 @@ class AdminController {
   public function index() {
     $query = array(
       'post_type' => 'post',
-      // 'meta_key'  => 'article_catfish-importer_is-imported',
+      // 'meta_key'  => 'catfish-importer_imported',
+      'meta_key'  => 'catfish-importer_date-updated',
       // 'meta_value'  => true,
       'posts_per_page' => 50,
+      'orderby' => 'meta_value_num',
+      'order' => 'DESC',
     );
 
     $query = new WP_Query($query);
@@ -24,5 +27,9 @@ class AdminController {
     }
 
     return view('@AgreableCatfishImporterPlugin/admin/index.twig', ['posts' => $timberPosts]);
+  }
+
+  public function sync() {
+    return view('@AgreableCatfishImporterPlugin/admin/sync.twig', ['ajax_url' => admin_url('admin-ajax.php')]);
   }
 }

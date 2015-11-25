@@ -1,15 +1,13 @@
-<?php namespace MyPlugin;
+<?php namespace AgreableCatfishImporterPlugin;
 
-/** @var \Herbert\Framework\API $api */
+use AgreableCatfishImporterPlugin\Services\Sync;
 
-/**
- * Gives you access to the Helper class from Twig
- * {{ MyPlugin.helper('assetUrl', 'icon.png') }}
- */
-$api->add('helper', function ()
-{
-    $args = func_get_args();
-    $method = array_shift($args);
+add_action('wp_ajax_catfishimporter_start_sync', function() {
 
-    return forward_static_call_array(__NAMESPACE__ . '\\Helper::' . $method, $args);
+});
+
+add_action('wp_ajax_catfishimporter_list_sections', function() {
+  $sections = Sync::getCategories();
+  header('Content-type: Application/json');
+  echo json_encode($sections); exit;
 });
