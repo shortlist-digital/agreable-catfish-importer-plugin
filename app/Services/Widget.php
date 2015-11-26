@@ -89,18 +89,18 @@ class Widget {
   }
 
   /**
-   * Given a URL to an article, identify the widgets within HTML
+   * Given a URL to an post, identify the widgets within HTML
    * and then build up an array of widget objects
    */
-  public static function getWidgetsFromDom($articleDom) {
+  public static function getWidgetsFromDom($postDom) {
 
-    if (!$articleDom) {
-      throw new \Exception('Could not retrieve widgets from ' . $articleUrl);
+    if (!$postDom) {
+      throw new \Exception('Could not retrieve widgets from ' . $postUrl);
     }
 
     $widgets = array();
 
-    foreach($articleDom->find('.article__content .widget') as $widget) {
+    foreach($postDom->find('.article__content .widget') as $widget) {
 
       // Get class name
       $matches = [];

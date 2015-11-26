@@ -1,6 +1,6 @@
 <?php
 use AgreableCatfishImporterPlugin\Services\Sitemap;
-use AgreableCatfishImporterPlugin\Services\Article;
+use AgreableCatfishImporterPlugin\Services\Post;
 use AgreableCatfishImporterPlugin\Services\Widget;
 use Behat\Behat\Context\BehatContext,
   Behat\Behat\Exception\PendingException;
@@ -10,9 +10,9 @@ use Behat\Behat\Event\SuiteEvent;
 use \PHPUnit_Framework_Assert as Assert;
 
 class SitemapContext extends BehatContext {
-  private static $sections;
-  private static $sectionArticles;
-  private static $article;
+  private static $categorys;
+  private static $categoryPosts;
+  private static $post;
 
   /**
    * @BeforeSuite
@@ -24,28 +24,28 @@ class SitemapContext extends BehatContext {
    * @Given /^the sitemap index "([^"]*)"$/
    */
   public function theSitemapIndex($sitemapIndex) {
-    self::$sections = Sitemap::getSectionsFromIndex($sitemapIndex);
+    self::$categorys = Sitemap::getCategoriesFromIndex($sitemapIndex);
   }
 
   /**
-   * @Then /^I should have a list of sections$/
+   * @Then /^I should have a list of categories$/
    */
-  public function iShouldHaveAListOfSections() {
-    Assert::assertGreaterThan(0, count(self::$sections));
+  public function iShouldHaveAListOfCategories() {
+    Assert::assertGreaterThan(0, count(self::$categorys));
   }
 
   /**
-   * @Given /^the section sitemap "([^"]*)"$/
+   * @Given /^the category sitemap "([^"]*)"$/
    */
-  public function theSectionSitemap($sectionSitemap) {
-    self::$sectionArticles = Sitemap::getArticlesFromSection($sectionSitemap);
+  public function theCategorySitemap($categorySitemap) {
+    self::$categoryPosts = Sitemap::getPostsFromCategory($categorySitemap);
   }
 
   /**
-   * @Then /^I should have a list of articles$/
+   * @Then /^I should have a list of posts$/
    */
-  public function iShouldHaveAListOfArticles() {
-    Assert::assertGreaterThan(0, count(self::$sectionArticles));
+  public function iShouldHaveAListOfPosts() {
+    Assert::assertGreaterThan(0, count(self::$categoryPosts));
   }
 
   /**

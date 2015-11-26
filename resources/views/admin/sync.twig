@@ -22,7 +22,7 @@ jQuery(function() {
   function listSections() {
     var $categorySelect = $('select[name=category]')
     console.log($categorySelect)
-    $.getJSON('{{ ajax_url }}?action=catfishimporter_list_sections', function onListSections(response) {
+    $.getJSON('{{ ajax_url }}?action=catfishimporter_list_categories', function onListSections(response) {
       $categorySelect.html('');
       response.forEach(function(category) {
         $categorySelect.append($('<option>').html(category))

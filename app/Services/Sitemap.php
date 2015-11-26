@@ -3,12 +3,12 @@ namespace AgreableCatfishImporterPlugin\Services;
 use Sunra\PhpSimple\HtmlDomParser;
 
 class Sitemap {
-  public static function getSectionsFromIndex($sitemapIndex) {
+  public static function getCategoriesFromIndex($sitemapIndex) {
     return self::getUrlsFromSitemap($sitemapIndex);
   }
 
-  public static function getArticlesFromSection($sectionSitemap) {
-    return self::getUrlsFromSitemap($sectionSitemap);
+  public static function getPostsFromCategory($categorySitemap) {
+    return self::getUrlsFromSitemap($categorySitemap);
   }
 
   protected static function getUrlsFromSitemap($sitemapLocation) {

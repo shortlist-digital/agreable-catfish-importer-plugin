@@ -6,8 +6,8 @@ add_action('wp_ajax_catfishimporter_start_sync', function() {
 
 });
 
-add_action('wp_ajax_catfishimporter_list_sections', function() {
-  $sections = Sync::getCategories();
+add_action('wp_ajax_catfishimporter_list_categories', function() {
+  $categorys = Sync::getCategories();
   header('Content-type: Application/json');
-  echo json_encode($sections); exit;
+  echo json_encode($categorys); exit;
 });

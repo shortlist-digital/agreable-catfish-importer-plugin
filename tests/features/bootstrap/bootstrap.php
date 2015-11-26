@@ -18,5 +18,3 @@ if(file_exists(__DIR__ . '/../../vendor/jarednova/mesh/')){
 }
 
 $_SERVER["HTTP_HOST"] = str_replace('http://', '', $_SERVER['WP_HOME']);
-
-echo 'bootstrap done' . PHP_EOL;

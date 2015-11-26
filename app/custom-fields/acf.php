@@ -11,7 +11,7 @@ $field['type'] = 'true_false';
 $field['default_value'] = 0;
 $field['layout'] = 'vertical';
 
-$field['instructions'] = 'Is this article imported from Catfish?';
+$field['instructions'] = 'Is this post imported from Catfish?';
 $field['message'] = '';
 
 acf_add_local_field_group(array (
@@ -23,7 +23,7 @@ acf_add_local_field_group(array (
       'label' => 'Imported',
       'name' => 'catfish-importer_imported',
       'type' => 'true_false',
-      'instructions' => 'Is this article imported from Catfish?',
+      'instructions' => 'Is this post imported from Catfish?',
       'required' => 0,
       'conditional_logic' => 0,
       'wrapper' => array (

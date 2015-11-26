@@ -1,10 +1,10 @@
-Feature: agreable-catfish-importer-plugin
+Feature: Sitemap
   Test the Catfish Importer plugin
 
-  Scenario: Fetch list of sections
+  Scenario: Fetch list of categorys
     Given the sitemap index "http://www.stylist.co.uk/sitemap-index.xml"
-    Then I should have a list of sections
+    Then I should have a list of categories
 
-  Scenario: Fetch articles from a section sitemap
-    Given the section sitemap "http://www.stylist.co.uk/sitemap/books.xml"
-    Then I should have a list of articles
+  Scenario: Fetch posts from a category sitemap
+    Given the category sitemap "http://www.stylist.co.uk/sitemap/books.xml"
+    Then I should have a list of posts

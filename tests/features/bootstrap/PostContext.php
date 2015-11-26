@@ -2,7 +2,7 @@
 include __DIR__ . '/bootstrap.php';
 
 use AgreableCatfishImporterPlugin\Services\Sitemap;
-use AgreableCatfishImporterPlugin\Services\Article;
+use AgreableCatfishImporterPlugin\Services\Post;
 use AgreableCatfishImporterPlugin\Services\Widget;
 use Behat\Behat\Context\BehatContext,
   Behat\Behat\Exception\PendingException;
@@ -11,8 +11,8 @@ use Behat\Gherkin\Node\PyStringNode,
 use Behat\Behat\Event\SuiteEvent;
 use \PHPUnit_Framework_Assert as Assert;
 
-class ArticleContext extends BehatContext {
-  private static $article;
+class PostContext extends BehatContext {
+  private static $post;
 
   /**
    * @BeforeSuite
@@ -21,39 +21,39 @@ class ArticleContext extends BehatContext {
   }
 
   /**
-   * @Given /^the article "([^"]*)"$/
+   * @Given /^the post "([^"]*)"$/
    */
-  public function theArticle($url) {
-    self::$article = Article::getArticleFromUrl($url);
+  public function thePost($url) {
+    self::$post = Post::getPostFromUrl($url);
   }
 
   /**
-   * @Then /^I should have an object of the article$/
+   * @Then /^I should have an object of the post$/
    */
-  public function iShouldHaveAnObjectOfTheArticle() {
-    Assert::assertInstanceOf('TimberPost', self::$article);
+  public function iShouldHaveAnObjectOfThePost() {
+    Assert::assertInstanceOf('TimberPost', self::$post);
 
   }
 
   /**
-   * @Given /^the article has the headline "([^"]*)"$/
+   * @Given /^the post has the headline "([^"]*)"$/
    */
-  public function theArticleHasTheHeadline($headline) {
-    Assert::assertEquals($headline, self::$article->post_title);
+  public function thePostHasTheHeadline($headline) {
+    Assert::assertEquals($headline, self::$post->post_title);
   }
 
   /**
-   * @Given /^the article has the property "([^"]*)" of "([^"]*)"$/
+   * @Given /^the post has the property "([^"]*)" of "([^"]*)"$/
    */
-  public function theArticleHasThePropertyOf($key, $value) {
-    Assert::assertEquals($value, self::$article->get_field($key));
+  public function thePostHasThePropertyOf($key, $value) {
+    Assert::assertEquals($value, self::$post->get_field($key));
   }
 
   /**
    * @Given /^the category slug "([^"]*)"$/
    */
   public function theCategorySlug($categorySlug) {
-    $category = Article::getCategory(self::$article);
+    $category = Post::getCategory(self::$post);
     Assert::assertEquals($categorySlug, $category->slug);
   }
 
@@ -61,7 +61,7 @@ class ArticleContext extends BehatContext {
    * @Given /^the widgets "([^"]*)"$/
    */
   public function theWidgets($expectedWidgetsString) {
-    $widgets = Widget::getPostWidgets(self::$article);
+    $widgets = Widget::getPostWidgets(self::$post);
     $widgetNames = [];
     foreach($widgets as $widget) {
       $widgetNames[] = $widget['acf_fc_layout'];
@@ -73,7 +73,7 @@ class ArticleContext extends BehatContext {
    * @Given /^the paragraph widget at index (\d+):$/
    */
   public function theParagraphWidgetAtIndex($index, PyStringNode $string) {
-    $widget = Widget::getPostWidgetsFiltered(self::$article, 'paragraph', $index);
+    $widget = Widget::getPostWidgetsFiltered(self::$post, 'paragraph', $index);
     Assert::assertNotNull($widget);
     Assert::assertEquals((string)$string, $widget['paragraph']);
   }
@@ -82,7 +82,7 @@ class ArticleContext extends BehatContext {
    * @Given /^the image filename is "([^"]*)" at index (\d+)$/
    */
   public function theImageFilenameIsAtIndex($filename, $index) {
-    $widget = Widget::getPostWidgetsFiltered(self::$article, 'image', $index);
+    $widget = Widget::getPostWidgetsFiltered(self::$post, 'image', $index);
 
     Assert::assertNotNull($widget);
 
@@ -95,7 +95,7 @@ class ArticleContext extends BehatContext {
    * @Given /^the "([^"]*)" "([^"]*)" is "([^"]*)" at index (\d+)$/
    */
   public function theWidgetPropertyIsAtIndex($widgetName, $property, $value, $index) {
-    $widget = Widget::getPostWidgetsFiltered(self::$article, $widgetName, $index);
+    $widget = Widget::getPostWidgetsFiltered(self::$post, $widgetName, $index);
     Assert::assertNotNull($widget);
     Assert::assertTrue(isset($widget[$property]));
     Assert::assertEquals($value, $widget[$property]);
@@ -105,22 +105,22 @@ class ArticleContext extends BehatContext {
    * @Given /^there are (\d+) hero images$/
    */
   public function thereAreHeroImages($expectedHeroImageNumber) {
-    Assert::assertNotNull(self::$article->get_field('hero_images'));
-    Assert::assertEquals($expectedHeroImageNumber, count(self::$article->get_field('hero_images')));
+    Assert::assertNotNull(self::$post->get_field('hero_images'));
+    Assert::assertEquals($expectedHeroImageNumber, count(self::$post->get_field('hero_images')));
   }
 
   /**
-   * @Given /^the article has import metadata$/
+   * @Given /^the post has import metadata$/
    */
-  public function theArticleHasImportMetadata() {
-    Assert::assertEquals(true, self::$article->get_field('catfish-importer_imported'));
-    Assert::assertNotNull(self::$article->get_field('catfish-importer_date-updated'));
+  public function thePostHasImportMetadata() {
+    Assert::assertEquals(true, self::$post->get_field('catfish-importer_imported'));
+    Assert::assertNotNull(self::$post->get_field('catfish-importer_date-updated'));
   }
 
   /**
    * @AfterSuite
    */
   public static function after(SuiteEvent $scope) {
-    // wp_delete_post(self::$article->id);
+    // wp_delete_post(self::$post->id);
   }
 }
