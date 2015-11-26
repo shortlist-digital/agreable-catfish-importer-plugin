@@ -1,6 +1,6 @@
 Feature: Sync
   Test the Catfish Importer sync
 
-  Scenario: Sync just the last 10 posts of a single category
-    Given I sync 10 most recent posts from the category "life"
-    Then I should have 10 imported "life" posts
+  Scenario: Sync just the last 2 posts of a single category
+    Given I sync 2 most recent posts from the category sitemap "http://www.stylist.co.uk/sitemap/books.xml"
+    Then I should have 2 imported "books" posts

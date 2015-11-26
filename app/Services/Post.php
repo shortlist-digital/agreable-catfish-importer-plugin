@@ -30,6 +30,13 @@ class Post {
     $meshPost->set('short_headline', $postObject->shortHeadline, true);
     $meshPost->set('sell', $postObject->sell, true);
     $meshPost->set('catfish-importer_imported', true, true);
+
+    // If automated testing, set some metadata
+    if (isset($_SERVER['is-automated-testing'])) {
+      $meshPost->set('automated_testing', true, true);
+    }
+
+    $meshPost->set('catfish-importer_imported', true, true);
     $meshPost->set('catfish-importer_date-updated', time(), true);
 
 
