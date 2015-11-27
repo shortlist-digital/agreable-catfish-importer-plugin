@@ -1,6 +1,8 @@
 <?php
 namespace AgreableCatfishImporterPlugin\Services;
 
+use \stdClass;
+
 class Sync {
   public static function getCategories() {
     return Sitemap::getCategoriesFromIndex('http://www.stylist.co.uk/sitemap-index.xml');
@@ -8,6 +10,8 @@ class Sync {
 
   public static function importCategory($categorySitemap, $limit = 10, $mostRecent = true) {
     $postUrls = Sitemap::getPostsFromCategory($categorySitemap);
+    $response = new stdClass();
+    $response->posts = [];
     if ($mostRecent) {
       $postUrls = array_reverse($postUrls);
     }
@@ -16,7 +20,14 @@ class Sync {
     }
 
     foreach($postUrls as $postUrl) {
-      $post = Post::getPostFromUrl($postUrl);
+      if ($post = Post::getPostFromUrl($postUrl)) {
+        $postResponse = new stdClass();
+        $postResponse->id = $post->ID;
+        $postResponse->url = $postUrl;
+        $response->posts[] = $postResponse;
+      }
     }
+
+    return $response;
   }
 }

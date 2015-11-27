@@ -3,11 +3,19 @@
 use AgreableCatfishImporterPlugin\Services\Sync;
 
 add_action('wp_ajax_catfishimporter_start_sync', function() {
+  $reponse = Sync::importCategory(
+    $_POST['catfishimporter_category_sitemap'],
+    $_POST['catfishimporter_limit']);
 
+  catfishimporter_api_response($response);
 });
 
 add_action('wp_ajax_catfishimporter_list_categories', function() {
-  $categorys = Sync::getCategories();
-  header('Content-type: Application/json');
-  echo json_encode($categorys); exit;
+  $response = Sync::getCategories();
+  catfishimporter_api_response($response);
 });
+
+function catfishimporter_api_response($response) {
+  header('Content-type: Application/json');
+  echo json_encode($response); exit;
+}

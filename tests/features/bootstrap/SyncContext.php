@@ -10,9 +10,6 @@ use Behat\Behat\Event\SuiteEvent;
 use \PHPUnit_Framework_Assert as Assert;
 
 class SyncContext extends BehatContext {
-  private static $categorys;
-  private static $categoryPosts;
-  private static $post;
 
   /**
    * @BeforeSuite
@@ -25,7 +22,10 @@ class SyncContext extends BehatContext {
    * @Given /^I sync (\d+) most recent posts from the category sitemap "([^"]*)"$/
    */
   public function iSyncMostRecentPostsFromTheCategory($numberOfPosts, $categorySitemap) {
-    Sync::importCategory($categorySitemap, $numberOfPosts);
+    $importResponse = Sync::importCategory($categorySitemap, $numberOfPosts);
+    Assert::assertNotNull($importResponse);
+    Assert::assertEquals($numberOfPosts, count($importResponse->posts));
+    Assert::assertTrue(isset($importResponse->posts[0]->id));
   }
 
   /**
