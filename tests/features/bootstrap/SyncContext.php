@@ -36,13 +36,13 @@ class SyncContext extends BehatContext {
       'post_type' => 'post',
       'meta_query' => array(
         array(
-        'key' => 'catfish-importer_imported',
-        'value' => true
+          'key' => 'catfish-importer_imported',
+          'value' => true
         ),
         array(
-        'key' => 'automated_testing',
-        'value' => true
-        ),
+          'key' => 'automated_testing',
+          'value' => true
+        )
       )
     );
 
@@ -59,15 +59,15 @@ class SyncContext extends BehatContext {
    * @AfterSuite
    */
   public static function after(SuiteEvent $scope) {
-    self::deleteAllTestArticles();
+    // self::deleteAllTestArticles();
   }
 
   protected static function deleteAllTestArticles() {
-    $query = array(
+    $query = [
       'post_type' => 'post',
       'meta_key'  => 'automated_testing',
       'meta_value'  => true,
-    );
+    ];
 
     $query = new WP_Query($query);
     $posts = $query->get_posts();
