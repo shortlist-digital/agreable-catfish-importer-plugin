@@ -26,5 +26,5 @@ if(file_exists(__DIR__ . '/../../../../vendor/getherbert/framework/bootstrap/aut
 if(file_exists(__DIR__ . '/vendor/jarednova/mesh/')){
   require_once __DIR__ . '/vendor/jarednova/mesh/mesh.php';
 } else {
-  require_once __DIR__ . '/../../../../../vendor/jarednova/mesh/mesh.php';
+  require_once __DIR__ . '/../../../../vendor/jarednova/mesh/mesh.php';
 }
