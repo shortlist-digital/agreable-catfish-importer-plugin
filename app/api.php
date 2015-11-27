@@ -2,6 +2,8 @@
 
 use AgreableCatfishImporterPlugin\Services\Sync;
 
+set_time_limit(0);
+
 add_action('wp_ajax_catfishimporter_start_sync', function() {
   $response = Sync::importCategory(
     $_POST['catfishimporter_category_sitemap'],
