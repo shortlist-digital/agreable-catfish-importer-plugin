@@ -18,8 +18,9 @@ class Post {
     if (!isset($object->article)) {
       throw new \Exception('"Article" property does not exist in JSON');
     }
+
     $postObject = $object->article;
-    $postDom = HtmlDomParser::file_get_html($postUrl);
+    $postDom = HtmlDomParser::str_get_html($object->content);
 
     $postReformatted = new stdClass();
 

@@ -25,5 +25,13 @@ Feature: Post
     And the "video" "url" is "//player.vimeo.com/video/142546902" at index 1
     And the "video" "width" is "medium" at index 1
     And the "video" "position" is "left" at index 1
-    And there are 2 hero images
+    And the number of hero widgets is 2
     And the post has import metadata
+
+  Scenario: Fetch a gallery-type article
+    Given the post "http://www.stylist.co.uk/books/the-best-new-books-novels-of-november-jean-lucey-pratt-number-11-public-library"
+    Then I should have an object of the post
+    And the post has the headline "The best new books of November to cosy up to"
+    And the number of hero widgets is 1
+    And the widgets "paragraph,gallery"
+    And there are 10 gallery images

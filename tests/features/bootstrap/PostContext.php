@@ -102,11 +102,23 @@ class PostContext extends BehatContext {
   }
 
   /**
-   * @Given /^there are (\d+) hero images$/
+   * @Given /^the number of hero widgets is (\d+)$/
    */
-  public function thereAreHeroImages($expectedHeroImageNumber) {
+  public function theNumberOfHeroWidgetsIs($expectedHeroImageNumber) {
     Assert::assertNotNull(self::$post->get_field('hero_images'));
     Assert::assertEquals($expectedHeroImageNumber, count(self::$post->get_field('hero_images')));
+  }
+
+  /**
+   * @Given /^there are (\d+) gallery images$/
+   */
+  public function thereAreGalleryImages($expectedNumberOfGalleryImages) {
+    $widgets = self::$post->get_field('article_widgets');
+    var_dump($widgets); exit;
+    foreach($widgets as $widget) {
+      var_dump($widget);
+    }
+    Assert::assertEquals($expectedNumberOfGalleryImages, count($galleryWidget));
   }
 
   /**
