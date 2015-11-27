@@ -48,7 +48,7 @@ class Post {
     self::setHeroImages($post, $postDom);
 
     $widgets = Widget::getWidgetsFromDom($postDom);
-    Widget::setPostWidgets($post, $widgets);
+    Widget::setPostWidgets($post, $widgets, $postObject);
 
     return $post;
   }

@@ -3,6 +3,7 @@ namespace AgreableCatfishImporterPlugin\Services;
 
 use \TimberPost;
 use \stdClass;
+use \Exception;
 use AgreableCatfishImporterPlugin\Services\Widgets\InlineImage;
 use AgreableCatfishImporterPlugin\Services\Widgets\Video;
 use AgreableCatfishImporterPlugin\Services\Widgets\Html;
@@ -21,7 +22,7 @@ class Widget {
   /**
    * Attach widgets to the $post via WP metadata
    */
-  public static function setPostWidgets(TimberPost $post, array $widgets) {
+  public static function setPostWidgets(TimberPost $post, array $widgets, stdClass $catfishPostObject) {
     $widgetNames = [];
 
     foreach ($widgets as $key => $widget) {
@@ -53,9 +54,44 @@ class Widget {
 
     }
 
+    if ($catfishPostObject->type === 'gallery') {
+      self::setGalleryWidget($post, $catfishPostObject, $widgetNames);
+      $widgetNames[] = 'gallery';
+    }
+
     // This is an array of widget names for ACF
     update_post_meta($post->id, 'article_widgets', serialize($widgetNames));
     update_post_meta($post->id, '_article_widgets', 'article_widgets');
+  }
+
+  protected static function setGalleryWidget($post, stdClass $postObject, $widgetNames) {
+    $galleryApi = str_replace($postObject->__fullUrlPath, '/api/gallery-data' . $postObject->__fullUrlPath, $postObject->absoluteUrl);
+    if (!$galleryApiResponse = file_get_contents($galleryApi)) {
+      throw new Exception('Unable to fetch gallery data from: ' . $galleryApi);
+    }
+
+    if (!$galleryData = json_decode($galleryApiResponse)) {
+      throw new Exception('Unable to deserialise gallery API response');
+    }
+
+    if (!isset($galleryData->images) || !is_array($galleryData->images)) {
+      throw new Exception('Was expecting an array of images in gallery data');
+    }
+
+    $imageIds = [];
+    foreach($galleryData->images as $image) {
+      $imageUrl = array_pop($image->__mainImageUrls);
+
+      $meshImage = new \Mesh\Image($imageUrl);
+      $imagePost = get_post($meshImage->id);
+      $imagePost->post_title = $image->title;
+      $imagePost->post_excerpt = $image->description;
+      wp_update_post($imagePost);
+
+      $imageIds[] = $meshImage->id;
+    }
+
+    self::setPostMetaProperty($post, 'article_widgets_' . count($widgetNames) . '_gallery_items', 'widget_gallery_galleryitems', serialize($imageIds));
   }
 
   public static function getPostWidgets(TimberPost $post) {
