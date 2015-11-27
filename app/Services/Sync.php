@@ -2,6 +2,7 @@
 namespace AgreableCatfishImporterPlugin\Services;
 
 use \stdClass;
+use AgreableCatfishImporterPlugin\Services\Post;
 
 class Sync {
   public static function getCategories() {

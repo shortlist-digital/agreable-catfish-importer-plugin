@@ -3,27 +3,47 @@
 <h2>Manually sync from Catfish to WordPress</h2>
 
 <form>
-  <select name='category'>
+  <label for="category">Category:</label>
+  <select name='category' id='category'>
     <option value=''>Loading</option>
   </select>
+
+  <label for="limit">Limit:</label>
+  <select name='limit' id='limit'>
+    <option>1</option>
+    <option>2</option>
+    <option>5</option>
+    <option>10</option>
+    <option>25</option>
+    <option>50</option>
+    <option>100</option>
+    <option>250</option>
+    <option>500</option>
+    <option value="-1">Bajillion</option>
+  </select>
+
   <input type='submit' name='sync' value='Sync'>
 
 </form>
 
+<h2>Status</h2>
+<pre class='import-status' style='display: nsone;'>Not running</pre>
+
 <script>
 jQuery(function() {
-  var $ = jQuery;
-  console.log('Ready');
+  var $ = jQuery
+  var $categorySelect = $('select[name=category]')
+  var $limitSelect = $('select[name=limit]')
+  var $syncButton = $('input[name=sync]')
+  var $status = $('.import-status')
 
-  $('input[name=sync]').click(onSyncClick);
+  $syncButton.click(onSyncClick)
 
   listSections()
 
   function listSections() {
-    var $categorySelect = $('select[name=category]')
-    console.log($categorySelect)
     $.getJSON('{{ ajax_url }}?action=catfishimporter_list_categories', function onListSections(response) {
-      $categorySelect.html('');
+      $categorySelect.html('')
       response.forEach(function(category) {
         $categorySelect.append($('<option>').html(category))
       })
@@ -31,14 +51,29 @@ jQuery(function() {
   }
 
   function onSyncClick(event) {
-    event.preventDefault();
-    console.log('sync click');
-    $.getJSON('{{ ajax_url }}?action=catfishimporter_start_sync', onSyncResponse);
-  }
+    event.preventDefault()
+    $status.html('Syncing content\r\n')
+    $syncButton.attr('disabled', 'disabled')
+    $.post(
+      '{{ ajax_url }}?action=catfishimporter_start_sync',
+      {
+        catfishimporter_category_sitemap: $categorySelect.val(),
+        catfishimporter_limit: $limitSelect.val(),
 
-  function onSyncResponse() {
-    console.log('sync response');
+      },
+      function onSyncResponse(response) {
+        $status.html($status.html() + 'Sync complete, imported: ' + response.posts.length + '\r\n')
+        response.posts.forEach(function onPost(post) {
+          $status.html($status.html() + 'ID: ' + post.id + ', ' + post.url + '\r\n')
+        })
+        $syncButton.removeAttr('disabled')
+        console.log(response);
+      }
+    ).fail(function onSyncError(error) {
+      $status.html($status.html() + 'Sync failed, see error in developer console')
+      $syncButton.removeAttr('disabled')
+      console.log(error)
+    })
   }
-
 })
 </script>

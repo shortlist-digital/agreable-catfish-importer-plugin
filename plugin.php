@@ -21,3 +21,10 @@ if(file_exists(__DIR__ . '/../../../../vendor/getherbert/framework/bootstrap/aut
 } else {
   require_once __DIR__ . '/vendor/getherbert/framework/bootstrap/autoload.php';
 }
+
+// Load Mesh (non-autoloadable)
+if(file_exists(__DIR__ . '/vendor/jarednova/mesh/')){
+  require_once __DIR__ . '/vendor/jarednova/mesh/mesh.php';
+} else {
+  require_once __DIR__ . '/../../../../../vendor/jarednova/mesh/mesh.php';
+}

@@ -3,9 +3,10 @@
 use AgreableCatfishImporterPlugin\Services\Sync;
 
 add_action('wp_ajax_catfishimporter_start_sync', function() {
-  $reponse = Sync::importCategory(
+  $response = Sync::importCategory(
     $_POST['catfishimporter_category_sitemap'],
-    $_POST['catfishimporter_limit']);
+    $_POST['catfishimporter_limit']
+  );
 
   catfishimporter_api_response($response);
 });
