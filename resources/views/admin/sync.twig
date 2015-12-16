@@ -1,7 +1,6 @@
 <h1>Catfish Importer</h1>
-
-<h2>Manually sync from Catfish to WordPress</h2>
-
+<div class="ajax-url">{{ ajax_url }}</div>
+<h2>Sync a Category</h2>
 <form>
   <label for="category">Category:</label>
   <select name='category' id='category'>
@@ -22,58 +21,17 @@
     <option value="-1">Bajillion</option>
   </select>
 
-  <input type='submit' name='sync' value='Sync'>
+  <input type='submit' name='sync-category' value='Sync category'>
 
 </form>
 
+<h2>Sync a URL</h2>
+<form>
+  <label for="url">URL:</label>
+  <input id='url' name='url' placeholder='http://www.stylist.co.uk/life/the-top-15-most-retweeted-posts-by-women-of-2015'/>
+
+  <input type='submit' name='sync-url' value='Sync URL'>
+</form>
+
 <h2>Status</h2>
-<pre class='import-status' style='display: nsone;'>Not running</pre>
-
-<script>
-jQuery(function() {
-  var $ = jQuery
-  var $categorySelect = $('select[name=category]')
-  var $limitSelect = $('select[name=limit]')
-  var $syncButton = $('input[name=sync]')
-  var $status = $('.import-status')
-
-  $syncButton.click(onSyncClick)
-
-  listSections()
-
-  function listSections() {
-    $.getJSON('{{ ajax_url }}?action=catfishimporter_list_categories', function onListSections(response) {
-      $categorySelect.html('')
-      response.forEach(function(category) {
-        $categorySelect.append($('<option>').html(category))
-      })
-    });
-  }
-
-  function onSyncClick(event) {
-    event.preventDefault()
-    $status.html('Syncing content\r\n')
-    $syncButton.attr('disabled', 'disabled')
-    $.post(
-      '{{ ajax_url }}?action=catfishimporter_start_sync',
-      {
-        catfishimporter_category_sitemap: $categorySelect.val(),
-        catfishimporter_limit: $limitSelect.val(),
-
-      },
-      function onSyncResponse(response) {
-        $status.html($status.html() + 'Sync complete, imported: ' + response.posts.length + '\r\n')
-        response.posts.forEach(function onPost(post) {
-          $status.html($status.html() + 'ID: ' + post.id + ', ' + post.url + '\r\n')
-        })
-        $syncButton.removeAttr('disabled')
-        console.log(response);
-      }
-    ).fail(function onSyncError(error) {
-      $status.html($status.html() + 'Sync failed, see error in developer console')
-      $syncButton.removeAttr('disabled')
-      console.log(error)
-    })
-  }
-})
-</script>
+<pre class='import-status'>Not running</pre>

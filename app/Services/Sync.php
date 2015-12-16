@@ -31,4 +31,18 @@ class Sync {
 
     return $response;
   }
+
+  public static function importUrl($url) {
+    $response = new stdClass();
+    $response->success = false;
+    if ($post = Post::getPostFromUrl($url)) {
+      $postResponse = new stdClass();
+      $postResponse->id = $post->ID;
+      $postResponse->url = $url;
+      $response->post = $postResponse;
+      $response->success = true;
+    }
+
+    return $response;
+  }
 }

@@ -42,7 +42,6 @@ class Post {
     $meshPost->set('catfish-importer_imported', true, true);
     $meshPost->set('catfish-importer_date-updated', time(), true);
 
-
     if (!$post = new TimberPost($meshPost->id)) {
       throw new \Exception('Unexpected exception where Mesh did not create/fetch a post');
     }

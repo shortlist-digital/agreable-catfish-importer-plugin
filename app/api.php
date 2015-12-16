@@ -4,12 +4,17 @@ use AgreableCatfishImporterPlugin\Services\Sync;
 
 set_time_limit(0);
 
-add_action('wp_ajax_catfishimporter_start_sync', function() {
+add_action('wp_ajax_catfishimporter_start_sync-category', function() {
   $response = Sync::importCategory(
     $_POST['catfishimporter_category_sitemap'],
     $_POST['catfishimporter_limit']
   );
 
+  catfishimporter_api_response($response);
+});
+
+add_action('wp_ajax_catfishimporter_start_sync-url', function() {
+  $response = Sync::importUrl($_POST['catfishimporter_url']);
   catfishimporter_api_response($response);
 });
 
