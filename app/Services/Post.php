@@ -30,6 +30,8 @@ class Post {
 
     $meshPost->set('short_headline', $postObject->shortHeadline, true);
     $meshPost->set('sell', $postObject->sell, true);
+    $meshPost->set('standard_post_header', 'Standard Header', true);
+
     $meshPost->set('catfish-importer_imported', true, true);
 
     // If automated testing, set some metadata
