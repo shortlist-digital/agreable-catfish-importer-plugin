@@ -7,6 +7,7 @@ use \Exception;
 use AgreableCatfishImporterPlugin\Services\Widgets\InlineImage;
 use AgreableCatfishImporterPlugin\Services\Widgets\Video;
 use AgreableCatfishImporterPlugin\Services\Widgets\Html;
+use AgreableCatfishImporterPlugin\Services\Widgets\HorizontalRule;
 
 class Widget {
   public static function makeWidget($widgetName, stdClass $data) {
@@ -48,6 +49,9 @@ class Widget {
           self::setPostMetaProperty($post, $metaLabel . '_url', 'widget_video_url', $widget->video->url);
           self::setPostMetaProperty($post, $metaLabel . '_width', 'widget_video_width', $widget->video->width);
           self::setPostMetaProperty($post, $metaLabel . '_position', 'widget_video_position', $widget->video->position);
+          $widgetNames[] = $widget->acf_fc_layout;
+          break;
+        case 'horizontal-rule':
           $widgetNames[] = $widget->acf_fc_layout;
           break;
       }
@@ -136,28 +140,37 @@ class Widget {
 
     $widgets = array();
 
-    foreach($postDom->find('.article__content .widget') as $widget) {
+    foreach($postDom->find('.article__content .widget__wrapper') as $widgetWrapper) {
 
-      // Get class name
-      $matches = [];
-      preg_match('/widget--([a-z-0-9]*)/', $widget->class, $matches);
-      if (count($matches) !== 2) {
-        throw new \Exception('Expected to retrieve widget name from class name');
-      }
+      if (isset($widgetWrapper->find('.widget')[0])) {
+        $widget = $widgetWrapper->find('.widget')[0];
 
-      $widgetData = null;
-      $widgetName = $matches[1];
+        // Get class name
+        $matches = [];
+        preg_match('/widget--([a-z-0-9]*)/', $widget->class, $matches);
+        if (count($matches) !== 2) {
+          throw new \Exception('Expected to retrieve widget name from class name');
+        }
 
-      switch ($widgetName) {
-        case 'html':
-          $widgetData = Html::getFromWidgetDom($widget);
-          break;
-        case 'inline-image':
-          $widgetData = InlineImage::getFromWidgetDom($widget);
-          break;
-        case 'video':
-          $widgetData = Video::getFromWidgetDom($widget);
-          break;
+        $widgetData = null;
+        $widgetName = $matches[1];
+
+        switch ($widgetName) {
+          case 'html':
+            $widgetData = Html::getFromWidgetDom($widget);
+            break;
+          case 'inline-image':
+            $widgetData = InlineImage::getFromWidgetDom($widget);
+            break;
+          case 'video':
+            $widgetData = Video::getFromWidgetDom($widget);
+            break;
+          default:
+            var_dump($widgetName);
+            break;
+        }
+      } else if (isset($widgetWrapper->find('hr')[0])) {
+        $widgetData = HorizontalRule::getFromWidgetDom($widget);
       }
 
       if ($widgetData) {

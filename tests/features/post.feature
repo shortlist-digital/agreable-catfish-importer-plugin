@@ -8,7 +8,7 @@ Feature: Post
     And the post has the property "short_headline" of "All widgets test (short headline)"
     And the post has the property "sell" of "This is the sell"
     And the category slug "test-tech"
-    And the widgets "paragraph,image,image,image,video,video,paragraph,paragraph"
+    And the widgets "paragraph,image,image,image,horizontal-rule,video,video,paragraph,paragraph"
     And the image filename is "wedding-furs.jpg" at index 0
     And the paragraph widget at index 0:
       """

@@ -65,6 +65,8 @@ class Post {
       $heroImage->extension = substr($heroImage->filename, strrpos($heroImage->filename, '.') + 1);
       $meshImage = new \Mesh\Image($heroImage->src);
       $heroImage->id = $meshImage->id;
+      var_dump('hero');
+      var_dump($heroImage);
       $heroImageIds[] = (string)$heroImage->id;
 
     }
