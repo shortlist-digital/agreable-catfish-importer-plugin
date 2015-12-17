@@ -30,7 +30,6 @@ class Post {
 
     $meshPost->set('short_headline', $postObject->shortHeadline, true);
     $meshPost->set('sell', $postObject->sell, true);
-    $meshPost->set('standard_post_header', 'Standard Header', true);
 
     $meshPost->set('catfish-importer_imported', true, true);
 
@@ -66,11 +65,11 @@ class Post {
       $heroImage->extension = substr($heroImage->filename, strrpos($heroImage->filename, '.') + 1);
       $meshImage = new \Mesh\Image($heroImage->src);
       $heroImage->id = $meshImage->id;
-      $heroImageIds[] = $heroImage->id;
+      $heroImageIds[] = (string)$heroImage->id;
 
     }
 
-    update_post_meta($post->id, 'hero_images', serialize($heroImageIds));
+    update_post_meta($post->id, 'hero_images', $heroImageIds);
     update_post_meta($post->id, '_hero_images', 'post_basic_hero_images');
   }
 
