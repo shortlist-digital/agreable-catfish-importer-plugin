@@ -71,6 +71,7 @@ class Post {
 
     update_post_meta($post->id, 'hero_images', $heroImageIds);
     update_post_meta($post->id, '_hero_images', 'article_basic_hero_images');
+    set_post_thumbnail($post->id, $heroImageIds[0]);
   }
 
   public static function getCategory(TimberPost $post) {
