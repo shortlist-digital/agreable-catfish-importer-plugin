@@ -8,7 +8,7 @@ Feature: Post
     And the post has the property "short_headline" of "All widgets test (short headline)"
     And the post has the property "sell" of "This is the sell"
     And the category slug "test-tech"
-    And the widgets "paragraph,image,image,image,video,video"
+    And the widgets "paragraph,image,image,image,video,video,paragraph,paragraph"
     And the image filename is "wedding-furs.jpg" at index 0
     And the paragraph widget at index 0:
       """
@@ -35,3 +35,16 @@ Feature: Post
     And the number of hero widgets is 1
     And the widgets "paragraph,gallery"
     And there are 10 gallery images
+
+  Scenario: Correctly encode the paragraph widget of an article
+    Given the post "http://www.stylist.co.uk/people/the-liz-jones-interview"
+    Then I should have an object of the post
+    And the post has the headline "The Liz Jones Interview"
+    And the widgets "paragraph,paragraph,paragraph,paragraph"
+    And the paragraph widget at index 0:
+      """
+<div class="legacy-custom-html">
+    <p>She’s been fired, divorced and reviled for her forthright and outlandish views which she charts in her weekly columns for the <em>Daily Mail</em>, but she never stays down for long. <em>Stylist</em>’s Alix Walker meets the UK’s most controversial writer</p>
+</div>
+
+      """
