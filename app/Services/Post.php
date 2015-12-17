@@ -70,7 +70,7 @@ class Post {
     }
 
     update_post_meta($post->id, 'hero_images', $heroImageIds);
-    update_post_meta($post->id, '_hero_images', 'post_basic_hero_images');
+    update_post_meta($post->id, '_hero_images', 'article_basic_hero_images');
   }
 
   public static function getCategory(TimberPost $post) {
