@@ -165,9 +165,6 @@ class Widget {
           case 'video':
             $widgetData = Video::getFromWidgetDom($widget);
             break;
-          default:
-            var_dump($widgetName);
-            break;
         }
       } else if (isset($widgetWrapper->find('hr')[0])) {
         $widgetData = HorizontalRule::getFromWidgetDom($widget);
