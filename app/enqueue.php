@@ -4,11 +4,11 @@ namespace AgreableCatfishImporterPlugin;
 /** @var \Herbert\Framework\Enqueue $enqueue */
 
 $enqueue->admin([
-  'as'  => 'adminCSS',
+  'as'  => 'catfishImporterAdminCSS',
   'src' => Helper::assetUrl('css/admin.css'),
 ], 'footer');
 
 $enqueue->admin([
-  'as' => 'adminJS',
+  'as' => 'catfishImporterAdminJS',
   'src' => Helper::assetUrl('javascripts/admin.js'),
 ], 'footer');

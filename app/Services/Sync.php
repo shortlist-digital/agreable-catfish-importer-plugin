@@ -13,9 +13,6 @@ class Sync {
     $postUrls = Sitemap::getPostsFromCategory($categorySitemap);
     $response = new stdClass();
     $response->posts = [];
-    if ($mostRecent) {
-      $postUrls = array_reverse($postUrls);
-    }
     if ($limit !== -1) {
       $postUrls = array_slice($postUrls, 0, $limit);
     }
