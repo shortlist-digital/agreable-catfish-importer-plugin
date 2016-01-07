@@ -1,4 +1,8 @@
 jQuery(function() {
+  if (jQuery('body.catfish-importer_page_sync').length === 0) {
+    return // If not on Catfish importer page, quit
+  }
+
   var $ = jQuery
   var $categorySelect = $('select[name=category]')
   var $urlSelect = $('select[name=url]')
