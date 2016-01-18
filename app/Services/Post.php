@@ -24,7 +24,9 @@ class Post {
 
     $postReformatted = new stdClass();
 
-    $meshPost = new \Mesh\Post($postObject->headline);
+    $meshPost = new \Mesh\Post($postObject->slug);
+    $meshPost->set('post_title', $postObject->headline);
+
     $meshCategory = new \Mesh\Term($postObject->section->slug, 'category');
     wp_set_post_categories($meshPost->id, $meshCategory->id['term_id']);
 

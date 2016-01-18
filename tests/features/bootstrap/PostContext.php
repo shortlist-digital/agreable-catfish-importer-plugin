@@ -43,6 +43,13 @@ class PostContext extends BehatContext {
   }
 
   /**
+   * @Given /^the post slug is "([^"]*)"$/
+   */
+  public function thePostSlugIs($slug) {
+    Assert::assertEquals(self::$post->post_name, $slug);
+  }
+
+  /**
    * @Given /^the post has the property "([^"]*)" of "([^"]*)"$/
    */
   public function thePostHasThePropertyOf($key, $value) {

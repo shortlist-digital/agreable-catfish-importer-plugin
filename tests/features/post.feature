@@ -4,7 +4,8 @@ Feature: Post
   Scenario: Fetch the all widgets post
     Given the post "http://www.stylist.co.uk/test-tech/all-widgets-test?previewId=46kzaa0"
     Then I should have an object of the post
-    And the post has the headline "All widgets test"
+    And the post has the headline "All widgets test wow"
+    And the post slug is "all-widgets-test"
     And the post has the property "short_headline" of "All widgets test (short headline)"
     And the post has the property "sell" of "This is the sell"
     And the category slug "test-tech"
