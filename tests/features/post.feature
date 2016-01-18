@@ -9,10 +9,10 @@ Feature: Post
     And the post has the property "sell" of "This is the sell"
     And the category slug "test-tech"
     And the widgets "paragraph,image,image,image,horizontal-rule,video,video,paragraph,paragraph"
-    And the image filename is "wedding-furs.jpg" at index 0
     And the paragraph widget at index 0:
       """
 <p>This is my HTML widget.&nbsp;</p>
+<p>I would use the word &quot;Wow&quot; to say how good it is. Here&#39;s some characters:&nbsp;&pound;&pound;!@$%)(*&amp;^%</p>
 <p>This is <strong>bold</strong>.</p>
 <p>This is <em>emphasised</em>.</p>
 <p>This is a <a href="http://google.com/" target="_blank">link</a>.</p>
@@ -20,6 +20,8 @@ Feature: Post
       """
     And the "image" "width" is "full" at index 0
     And the "image" "position" is "center" at index 0
+    And the "image" "caption" is "This is the caption text" at index 0
+    And the image filename is "wedding-furs.jpg" at index 0
     And the "video" "width" is "full" at index 0
     And the "video" "position" is "center" at index 0
     And the "video" "url" is "//player.vimeo.com/video/142546902" at index 1

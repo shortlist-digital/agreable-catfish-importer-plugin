@@ -43,7 +43,12 @@ class Widget {
           self::setPostMetaProperty($post, $metaLabel . '_width', 'widget_image_width', $widget->image->width);
           self::setPostMetaProperty($post, $metaLabel . '_position', 'widget_image_position', $widget->image->position);
           self::setPostMetaProperty($post, $metaLabel . '_crop', 'widget_image_crop', 'original');
+
+          if (isset($widget->image->caption)) {
+            self::setPostMetaProperty($post, $metaLabel . '_caption', 'widget_image_caption', $widget->image->caption);
+          }
           $widgetNames[] = $widget->acf_fc_layout;
+
           break;
         case 'video':
           self::setPostMetaProperty($post, $metaLabel . '_url', 'widget_video_url', $widget->video->url);
