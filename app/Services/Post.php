@@ -21,7 +21,6 @@ class Post {
 
     $postObject = $object->article;
     $postDom = HtmlDomParser::str_get_html($object->content);
-
     $postReformatted = new stdClass();
 
     $meshPost = new \Mesh\Post($postObject->slug);
