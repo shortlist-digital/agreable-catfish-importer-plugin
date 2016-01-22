@@ -27,6 +27,8 @@ class Post {
     $meshPost = new \Mesh\Post($postObject->slug);
     $meshPost->set('post_title', $postObject->headline);
 
+    $meshPost->set('article_type', self::setArticleType($object));
+
     $meshCategory = new \Mesh\Term($postObject->section->slug, 'category');
     wp_set_post_categories($meshPost->id, $meshCategory->id['term_id']);
 
@@ -53,6 +55,13 @@ class Post {
     Widget::setPostWidgets($post, $widgets, $postObject);
 
     return $post;
+  }
+
+  protected static function setArticleType($articleObject) {
+    if(isset($articleObject->analyticsPageTypeDimension)) {
+      return strtolower($articleObject->analyticsPageTypeDimension);
+    }
+    return 'article';
   }
 
   protected static function setHeroImages(TimberPost $post, $postDom) {
