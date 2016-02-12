@@ -27,7 +27,7 @@ acf_add_local_field_group(array (
       'required' => 0,
       'conditional_logic' => 0,
       'wrapper' => array (
-        'width' => '',
+        'width' => '33%',
         'class' => '',
         'id' => '',
       ),
@@ -43,7 +43,7 @@ acf_add_local_field_group(array (
       'required' => 0,
       'conditional_logic' => 0,
       'wrapper' => array (
-        'width' => '',
+        'width' => '33%',
         'class' => '',
         'id' => '',
       ),
@@ -55,6 +55,23 @@ acf_add_local_field_group(array (
       'save_as_timestamp' => 'true',
       'get_as_timestamp' => 'true',
     ),
+    array (
+      'key' => 'article_catfish-importer_url',
+      'label' => 'URL',
+      'name' => 'catfish-importer_url',
+      'type' => 'url',
+      'instructions' => 'The URL from imported from',
+      'required' => 0,
+      'conditional_logic' => 0,
+      'wrapper' => array (
+        'width' => '33%',
+        'class' => '',
+        'id' => '',
+      ),
+      'default_value' => '',
+      'placeholder' => '',
+    ),
+
   ),
   'location' => array (
     array (

@@ -6,6 +6,8 @@ use \WP_Post;
 use \TimberPost;
 use Sunra\PhpSimple\HtmlDomParser;
 
+use AgreableCatfishImporterPlugin\Services\User;
+
 class Post {
   public static function getPostFromUrl($postUrl) {
     $postJsonUrl = $postUrl . '.json';
@@ -28,8 +30,17 @@ class Post {
 
     $meshPost->set('article_type', self::setArticleType($object));
 
+    $meshPost->set('post_author', self::setAuthor($object->article->__author));
+
     $meshCategory = new \Mesh\Term($postObject->section->slug, 'category');
     wp_set_post_categories($meshPost->id, $meshCategory->id['term_id']);
+
+    $postTags = array();
+    foreach($object->article->tags as $tag) {
+      array_push($postTags, $tag->tag);
+    }
+    wp_set_post_tags($meshPost->id, $postTags);
+
 
     $meshPost->set('short_headline', $postObject->shortHeadline, true);
     $meshPost->set('sell', $postObject->sell, true);
@@ -41,6 +52,7 @@ class Post {
       $meshPost->set('automated_testing', true, true);
     }
 
+    $meshPost->set('catfish-importer_url', $postUrl, true);
     $meshPost->set('catfish-importer_imported', true, true);
     $meshPost->set('catfish-importer_date-updated', time(), true);
 
@@ -54,6 +66,14 @@ class Post {
     Widget::setPostWidgets($post, $widgets, $postObject);
 
     return $post;
+  }
+
+  protected static function setAuthor($authorObject) {
+    $user_id = User::checkUserByEmail($authorObject->emailAddress);
+    if ($user_id == false) {
+      $user_id = User::insertCatfishUser($authorObject);
+    }
+    return $user_id;
   }
 
   protected static function setArticleType($articleObject) {
