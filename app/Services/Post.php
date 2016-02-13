@@ -7,6 +7,7 @@ use \TimberPost;
 use Sunra\PhpSimple\HtmlDomParser;
 
 use AgreableCatfishImporterPlugin\Services\User;
+use AgreableCatfishImporterPlugin\Services\Category;
 
 class Post {
   public static function getPostFromUrl($postUrl) {
@@ -30,10 +31,11 @@ class Post {
 
     $meshPost->set('article_type', self::setArticleType($object));
 
-    $meshPost->set('post_author', self::setAuthor($object->article->__author));
+    if (isset($object->article->__author)) {
+      $meshPost->set('post_author', self::setAuthor($object->article->__author));
+    }
 
-    $meshCategory = new \Mesh\Term($postObject->section->slug, 'category');
-    wp_set_post_categories($meshPost->id, $meshCategory->id['term_id']);
+    Category::attachCategories($object->artecle->section, $postUrl, $meshPost->id);
 
     $postTags = array();
     foreach($object->article->tags as $tag) {
