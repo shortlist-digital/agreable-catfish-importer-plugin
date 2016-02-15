@@ -47,9 +47,10 @@ class Post {
     }
     wp_set_post_tags($meshPost->id, $postTags);
 
+    $sell = !empty($postObject->sell) ? $postObject->sell : $postObject->headline;
 
     $meshPost->set('short_headline', $postObject->shortHeadline, true);
-    $meshPost->set('sell', $postObject->sell, true);
+    $meshPost->set('sell', $sell, true);
 
     $meshPost->set('catfish-importer_imported', true, true);
 
