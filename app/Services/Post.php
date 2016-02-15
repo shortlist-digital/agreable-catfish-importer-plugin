@@ -12,7 +12,11 @@ use AgreableCatfishImporterPlugin\Services\Category;
 class Post {
   public static function getPostFromUrl($postUrl) {
     $postJsonUrl = $postUrl . '.json';
-    $postString = file_get_contents($postJsonUrl);
+    try {
+      $postString = file_get_contents($postJsonUrl);
+    } catch (Exception $e) {
+      throw new \Exception('Unable to retrieve JSON from URL ' . $postJsonUrl);
+    }
 
     if (!$object = json_decode($postString)) {
       throw new \Exception('Unable to retrieve JSON from URL ' . $postJsonUrl);
@@ -35,7 +39,7 @@ class Post {
       $meshPost->set('post_author', self::setAuthor($object->article->__author));
     }
 
-    Category::attachCategories($object->artecle->section, $postUrl, $meshPost->id);
+    Category::attachCategories($object->article->section, $postUrl, $meshPost->id);
 
     $postTags = array();
     foreach($object->article->tags as $tag) {
