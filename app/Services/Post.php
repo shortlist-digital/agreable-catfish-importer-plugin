@@ -33,6 +33,18 @@ class Post {
     $meshPost = new \Mesh\Post($postObject->slug);
     $meshPost->set('post_title', $postObject->headline);
 
+    // Set post published date
+    $displayDate = strtotime($postObject->displayDate);
+    $displayDate = date('o\-m\-d G\:i\:s', $displayDate);
+
+    wp_update_post(array(
+      'ID' => $meshPost->id,
+      'post_date' => $displayDate,
+      'post_date_gmt' => $displayDate,
+      'post_modified' => $displayDate,
+      'post_modified_gmt' => $displayDate
+    ));
+
     $meshPost->set('article_type', self::setArticleType($object));
 
     if (isset($object->article->__author)) {
@@ -43,7 +55,9 @@ class Post {
 
     $postTags = array();
     foreach($object->article->tags as $tag) {
-      array_push($postTags, $tag->tag);
+      if ($tag->type !== 'System') {
+        array_push($postTags, ucwords($tag->tag));
+      }
     }
     wp_set_post_tags($meshPost->id, $postTags);
 
