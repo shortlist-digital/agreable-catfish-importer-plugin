@@ -62,6 +62,7 @@ class Category {
   }
 
   public static function createChildCategory($name, $slug, $parent_id) {
+    $term = get_term_by('slug', $slug, 'category');
     if ($term) {
       $category = wp_update_term(
         $term->term_id, // the term
@@ -81,6 +82,10 @@ class Category {
           'parent' => $parent_id
         )
       );
+      if (is_wp_error($category)) {
+        $error_string = $category->get_error_message();
+        echo '<div id="message" class="error"><p>' . $error_string . '</p></div>';
+      }
       return $category['term_id'];
     }
 
