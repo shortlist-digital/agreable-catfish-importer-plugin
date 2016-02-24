@@ -5,8 +5,10 @@ use \stdClass;
 use AgreableCatfishImporterPlugin\Services\Post;
 
 class Sync {
+
   public static function getCategories() {
-    return Sitemap::getCategoriesFromIndex('http://www.stylist.co.uk/sitemap-index.xml');
+    $site_url = get_field('apple_news_url', 'option');
+    return Sitemap::getCategoriesFromIndex($site_url . 'sitemap-index.xml');
   }
 
   public static function importCategory($categorySitemap, $limit = 10, $mostRecent = true) {
