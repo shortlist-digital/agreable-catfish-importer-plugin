@@ -12,8 +12,8 @@ register_field_group(array (
   'fields' => array (
     array (
       'key' => 'apple_news_url',
-      'label' => 'Apple News Main URL',
-      'name' => 'apple_news_url',
+      'label' => 'Catfish Website URL',
+      'name' => 'catfish_website_url',
       'type' => 'url',
       'instructions' => 'Please put in either http://www.stylist.co.uk/ or http://www.shortlist.com/',
       'required' => 0,

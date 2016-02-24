@@ -7,7 +7,7 @@ use AgreableCatfishImporterPlugin\Services\Post;
 class Sync {
 
   public static function getCategories() {
-    $site_url = get_field('apple_news_url', 'option');
+    $site_url = get_field('catfish_website_url', 'option');
     return Sitemap::getCategoriesFromIndex($site_url . 'sitemap-index.xml');
   }
 
