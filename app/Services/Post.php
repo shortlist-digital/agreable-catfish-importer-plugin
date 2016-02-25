@@ -105,7 +105,7 @@ class Post {
   }
 
   protected static function setHeroImages(TimberPost $post, $postDom) {
-    $heroImageDom = $postDom->find('.slideshow__slide img,.gallery-overview__main-image img');
+    $heroImageDom = $postDom->find('.slideshow__slide img,.gallery-overview__main-image img,.gallery-overview img');
 
     $heroImageIds = [];
     foreach($heroImageDom as $index => $heroImageDom) {
