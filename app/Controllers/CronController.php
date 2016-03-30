@@ -1,39 +1,22 @@
 <?php
 namespace AgreableCatfishImporterPlugin\Controllers;
 
-
+use AgreableCatfishImporterPlugin\Services\Notification;
+use AgreableCatfishImporterPlugin\Services\SitemapParser;
 
 class CronController {
+
   function __construct() {
-  $slack_webhook_url = 'https://hooks.slack.com/services/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';
-    $settings = array(
-      'username' => 'Catfish Importer'
-    );
-    $this->client = $client = new \Maknz\Slack\Client($slack_webhook_url, $settings);
+    $this->notify = new Notification;
+    $this->sitemap = new SitemapParser;
   }
 
-
   public function tick() {
-    $this->test_cron();
+    echo "<pre>";
+    print_r($this->sitemap->get_all_posts());
   }
 
   public function test_cron() {
-    $current_time = date(DATE_RFC2822);
-    $this->client->attach([
-      'fallback' =>  'Imported POST NAME from SITE',
-      'color' => '#4CD964',
-      'fields' => [
-        [
-          'title' => 'Site',
-          'value' => 'Shortlist Pages',
-          'short' => true
-        ],
-        [
-          'title' => 'Post Name',
-          'value' => 'Example Post Name',
-          'short' => true
-        ]
-      ]
-    ])->send("New cron initiated message at $current_time");
+    $this->notify->post_import_complete();
   }
 }
