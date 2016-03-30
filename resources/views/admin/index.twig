@@ -15,7 +15,7 @@
       <td><a href="/wp/wp-admin/post.php?post={{ post.id }}&action=edit">{{ post.post_title }}</a></td>
       <td>{{ post.terms('category')[0] }}</td>
       <td>{{ post.post_date }}</td>
-      <td>{{ post.get_field('catfish-importer_date-updated') | date }}</td>
+      <td>{{ post.get_field('catfish_importer_date_updated') | date }}</td>
       <td><a href="{{post.get_author.get_link}}">{{ post.get_author.name }}</a></td>
     </tr>
   {% endfor %}

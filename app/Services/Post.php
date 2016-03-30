@@ -66,16 +66,16 @@ class Post {
     $meshPost->set('short_headline', $postObject->shortHeadline, true);
     $meshPost->set('sell', $sell, true);
 
-    $meshPost->set('catfish-importer_imported', true, true);
+    $meshPost->set('catfish_importer_imported', true, true);
 
     // If automated testing, set some metadata
     if (isset($_SERVER['is-automated-testing'])) {
       $meshPost->set('automated_testing', true, true);
     }
 
-    $meshPost->set('catfish-importer_url', $postUrl, true);
-    $meshPost->set('catfish-importer_imported', true, true);
-    $meshPost->set('catfish-importer_date-updated', time(), true);
+    $meshPost->set('catfish_importer_url', $postUrl, true);
+    $meshPost->set('catfish_importer_imported', true, true);
+    $meshPost->set('catfish_importer_date_updated', time(), true);
 
     if (!$post = new TimberPost($meshPost->id)) {
       throw new \Exception('Unexpected exception where Mesh did not create/fetch a post');

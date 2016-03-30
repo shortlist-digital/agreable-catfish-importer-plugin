@@ -132,8 +132,8 @@ class PostContext extends BehatContext {
    * @Given /^the post has import metadata$/
    */
   public function thePostHasImportMetadata() {
-    Assert::assertEquals(true, self::$post->get_field('catfish-importer_imported'));
-    Assert::assertNotNull(self::$post->get_field('catfish-importer_date-updated'));
+    Assert::assertEquals(true, self::$post->get_field('catfish_importer_imported'));
+    Assert::assertNotNull(self::$post->get_field('catfish_importer_date_updated'));
   }
 
   /**

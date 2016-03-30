@@ -15,15 +15,12 @@ class Notification {
   }
 
   public function post_import_complete($post_id = false) {
-    if ($post_id) {
-      $post = new TimberPost($post_id);
-    }
 
+    $post = new TimberPost($post_id);
     $current_time = gmdate(DATE_RFC2822);
     $this->client->attach([
-      'fallback' =>  "Imported POST NAME from $this->site_name",
+      'fallback' =>  "Imported $post->post_title from $this->site_name",
       'color' => '#4CD964',
-      'text' => 'http://pages-local.stylist.co.uk/example-guid',
       'fields' => [
         [
           'title' => 'Site',
@@ -32,9 +29,18 @@ class Notification {
         ],
         [
           'title' => 'Post Name',
-          'value' => 'Example Post Name',
+          'value' => $post->post_title,
           'short' => true
+        ],
+        [
+          'title' => 'Imported from:',
+          'value' => $post->catfish_importer_url
+        ],
+        [
+          'title' => 'Imported to:',
+          'value' => $post->guid
         ]
+
       ]
     ])->send("_New post imported at ".$current_time."_ ".date_default_timezone_get());
   }
