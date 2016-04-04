@@ -19,7 +19,7 @@ class Notification {
       'fallback' =>  $message,
       'color' => '#FF3B30',
       'text' => $message
-    ])->send('Something went wrong');
+    ])->send('Something went wrong:');
   }
 
   public function post_import_complete($post_id = false) {

@@ -14,7 +14,7 @@ class CronController {
   }
 
   public function test() {
-    return $this->notify->error('Something went wrong');
+    return $this->notify->error('Import failed in the EXAMPLE post');
   }
 
   public function tick() {
@@ -26,9 +26,8 @@ class CronController {
         try {
           $check = Sync::importUrl($post);
         } catch (Exception $e) {
-          print_r($e->getMessage());
-          //print_r("---\r\n");
-          die;
+          $error_message = $e->getMessage();
+          return $this->notify->error($error_message);
         }
         if ($check->success) {
           $this->notify->post_import_complete($check->post->id);
