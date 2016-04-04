@@ -7,3 +7,9 @@ $router->get([
   'uri'  => '/catfish-import',
   'uses' => __NAMESPACE__ . '\Controllers\CronController@tick'
 ]);
+
+$router->get([
+  'as'   => 'cronNotification',
+  'uri'  => '/catfish-import-test',
+  'uses' => __NAMESPACE__ . '\Controllers\CronController@test'
+]);
