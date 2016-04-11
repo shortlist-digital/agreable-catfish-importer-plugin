@@ -4,7 +4,7 @@
 
 $router->get([
   'as'   => 'testNotification',
-  'uri'  => '/catfish-import-test',
+  'uri'  => '/test-notification',
   'uses' => __NAMESPACE__ . '\Controllers\CronController@test'
 ]);
 

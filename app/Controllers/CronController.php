@@ -14,11 +14,11 @@ class CronController {
   }
 
   public function test() {
-    return $this->notify->error('Import failed in the EXAMPLE post');
+    return $this->sitemap->get_all_posts_in_order();
   }
 
   public function tick() {
-    $posts_array = $this->sitemap->get_all_posts();
+    $posts_array = $this->sitemap->get_all_posts_in_order();
     foreach($posts_array as $post) {
       $slug = $this->return_slug($post);
       $post_object = get_page_by_path($slug, 'OBJECT', 'post');
@@ -33,7 +33,7 @@ class CronController {
           $this->notify->post_import_complete($check->post->id);
           print_r($check);
         } else {
-          print_r($check);exit;
+          print_r($check);
         }
       }
     }

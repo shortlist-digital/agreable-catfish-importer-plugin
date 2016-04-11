@@ -50,6 +50,35 @@ class SitemapParser {
     return $posts;
   }
 
+  public function merge_sections_in_order($sections) {
+    $counts = array_map('count', $sections);
+    $key = array_flip($counts)[max($counts)];
+    $largest_section = $sections[$key];
+    echo $key."</br><pre>";
+    print_r($largest_section);die;
+  }
+
+  public function get_longest_section_length($sections) {
+    $counts = array_map('count', $sections);
+    $key = array_flip($counts)[max($counts)];
+    $largest_section = $sections[$key];
+    return count($largest_section);
+  }
+
+  public function get_all_posts_in_order() {
+    $posts = array();
+    $sorted_sections = $this->get_all_posts_sorted();
+    $length = $this->get_longest_section_length($sorted_sections);
+    for ($i = 0; $i <= $length; $i++) {
+      foreach($sorted_sections as $section) {
+        if (array_key_exists($i, $section)) {
+          array_push($posts, $section[$i]);
+        }
+      }
+    }
+    return $posts;
+  }
+
   public function get_all_posts() {
     $posts = array();
     $sections = $this->get_sections();

@@ -6,16 +6,18 @@ use \TimberPost;
 class Notification {
   function __construct() {
   date_default_timezone_set('GMT');
-  $slack_webhook_url = 'https://hooks.slack.com/services/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';
+  $slack_webhook_url = "https://hooks.slack.com/services/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";
+  $slack_webhook_error_url = "https://hooks.slack.com/services/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";
     $settings = array(
       'username' => 'Catfish Importer'
     );
     $this->site_name = get_bloginfo('name');
     $this->client = $client = new \Maknz\Slack\Client($slack_webhook_url, $settings);
+    $this->errorClient = $client = new \Maknz\Slack\Client($slack_webhook_error_url, $settings);
   }
 
   public function error($message) {
-    $this->client->attach([
+    $this->errorClient->attach([
       'fallback' =>  $message,
       'color' => '#FF3B30',
       'text' => $message
@@ -29,7 +31,7 @@ class Notification {
     $this->client->attach([
       'fallback' =>  "Imported $post->post_title from $this->site_name",
       'color' => '#4CD964',
-      'text' => "*".$post->post_title."*",
+      'text' => $post->post_title,
       'fields' => [
         [
           'title' => 'Site',

@@ -5,25 +5,42 @@ use \stdClass;
 use \WP_Post;
 use \TimberPost;
 use Sunra\PhpSimple\HtmlDomParser;
+use AgreableCatfishImporterPlugin\Services\Notification;
 
 use AgreableCatfishImporterPlugin\Services\User;
 use AgreableCatfishImporterPlugin\Services\Category;
 
+use Exception;
+
 class Post {
+
+  public static function notifyError($message) {
+    $notifier = new Notification;
+    $notifier->error($message);
+  }
+
   public static function getPostFromUrl($postUrl) {
+    $fail = false;
     $postJsonUrl = $postUrl . '.json';
     try {
       $postString = file_get_contents($postJsonUrl);
     } catch (Exception $e) {
-      throw new \Exception('Unable to retrieve JSON from URL ' . $postJsonUrl);
+      self::notifyError('Unable to retrieve JSON from URL ' . $postJsonUrl);
+      return false;
     }
 
     if (!$object = json_decode($postString)) {
-      throw new \Exception('Unable to retrieve JSON from URL ' . $postJsonUrl);
+      self::notifyError('Unable to retrieve JSON from URL ' . $postJsonUrl);
+      $fail = true;
     }
 
     if (!isset($object->article)) {
-      throw new \Exception('"Article" property does not exist in JSON');
+      self::notifyError('"Article" property does not exist in JSON, might be a full page embed or microsite');
+      $fail = true;
+    }
+
+    if ($fail) {
+      return false;
     }
 
     $postObject = $object->article;
@@ -78,7 +95,7 @@ class Post {
     $meshPost->set('catfish_importer_date_updated', time(), true);
 
     if (!$post = new TimberPost($meshPost->id)) {
-      throw new \Exception('Unexpected exception where Mesh did not create/fetch a post');
+      self::notifyError('Unexpected exception where Mesh did not create/fetch a post');
     }
 
     self::setHeroImages($post, $postDom);
@@ -120,9 +137,14 @@ class Post {
 
     }
 
-    update_post_meta($post->id, 'hero_images', $heroImageIds);
-    update_post_meta($post->id, '_hero_images', 'article_basic_hero_images');
-    set_post_thumbnail($post->id, $heroImageIds[0]);
+    if (array_key_exists(0, $heroImageIds)) {
+      update_post_meta($post->id, 'hero_images', $heroImageIds);
+      update_post_meta($post->id, '_hero_images', 'article_basic_hero_images');
+      set_post_thumbnail($post->id, $heroImageIds[0]);
+    } else {
+      $message = "$post->title has no hero images";
+      self::notifyError($message);
+    }
   }
 
   public static function getCategory(TimberPost $post) {
