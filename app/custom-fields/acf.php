@@ -82,7 +82,7 @@ acf_add_local_field_group(array (
       ),
     ),
   ),
-  'menu_order' => 0,
+  'menu_order' => 99,
   'position' => 'normal',
   'style' => 'default',
   'label_placement' => 'top',
