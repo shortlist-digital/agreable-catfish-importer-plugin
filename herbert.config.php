@@ -12,7 +12,8 @@ return [
      * Auto-load all required files.
      */
     'requires' => [
-        __DIR__ . '/app/custom-fields/acf.php'
+      __DIR__ . '/app/custom-fields/acf.php',
+      __DIR__ . '/app/hooks.php'
     ],
 
     /**

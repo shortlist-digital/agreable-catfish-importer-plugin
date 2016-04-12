@@ -4,8 +4,8 @@ if( function_exists('acf_add_local_field_group') ):
 
 $field['group'] = 'article_basic_group';
 $field['parent'] = 'article_basic_group';
-$field['key'] = 'article_catfish-importer_imported';
-$field['name'] = 'catfish-importer_imported';
+$field['key'] = 'article_catfish_importer_imported';
+$field['name'] = 'catfish_importer_imported';
 $field['label'] = 'Catfish imported';
 $field['type'] = 'true_false';
 $field['default_value'] = 0;
@@ -15,13 +15,13 @@ $field['instructions'] = 'Is this post imported from Catfish?';
 $field['message'] = '';
 
 acf_add_local_field_group(array (
-  'key' => 'article_catfish-importer_group',
+  'key' => 'article_catfish_importer_group',
   'title' => 'Catfish Importer',
   'fields' => array (
     array (
-      'key' => 'article_catfish-importer_imported',
+      'key' => 'article_catfish_importer_imported',
       'label' => 'Imported',
-      'name' => 'catfish-importer_imported',
+      'name' => 'catfish_importer_imported',
       'type' => 'true_false',
       'instructions' => 'Is this post imported from Catfish?',
       'required' => 0,
@@ -35,9 +35,9 @@ acf_add_local_field_group(array (
       'default_value' => 0,
     ),
     array (
-      'key' => 'article_catfish-importer_date-updated',
+      'key' => 'article_catfish_importer_date_updated',
       'label' => 'Updated',
-      'name' => 'catfish-importer_date-updated',
+      'name' => 'catfish_importer_date_updated',
       'type' => 'date_time_picker',
       'instructions' => 'When did the importer update this post?',
       'required' => 0,
@@ -56,9 +56,9 @@ acf_add_local_field_group(array (
       'get_as_timestamp' => 'true',
     ),
     array (
-      'key' => 'article_catfish-importer_url',
+      'key' => 'article_catfish_imported_url',
       'label' => 'URL',
-      'name' => 'catfish-importer_url',
+      'name' => 'catfish_importer_url',
       'type' => 'url',
       'instructions' => 'The URL from imported from',
       'required' => 0,
@@ -82,7 +82,7 @@ acf_add_local_field_group(array (
       ),
     ),
   ),
-  'menu_order' => 99,
+  'menu_order' => 100,
   'position' => 'normal',
   'style' => 'default',
   'label_placement' => 'top',
