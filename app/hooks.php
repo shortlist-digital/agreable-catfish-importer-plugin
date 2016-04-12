@@ -12,9 +12,10 @@ class ImporterHooks {
 
   public function add_retry_button($actions, $post) {
     $post = new TimberPost($post);
-    $actions['re_import'] = $this->get_html($post);
+    if ($post->catfish_importer_url) {
+      $actions['re_import'] = $this->get_html($post);
+    }
     return $actions;
-
   }
 
   public function get_html($post) {
