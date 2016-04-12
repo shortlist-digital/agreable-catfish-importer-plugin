@@ -48,6 +48,9 @@ class Post {
     $postReformatted = new stdClass();
 
     $meshPost = new \Mesh\Post($postObject->slug);
+    $meshPost->set('catfish_importer_url', $postUrl, true);
+    $meshPost->set('catfish_importer_imported', true, true);
+    $meshPost->set('catfish_importer_date_updated', time(), true);
     $meshPost->set('post_title', $postObject->headline);
 
     // Set post published date
@@ -90,9 +93,6 @@ class Post {
       $meshPost->set('automated_testing', true, true);
     }
 
-    $meshPost->set('catfish_importer_url', $postUrl, true);
-    $meshPost->set('catfish_importer_imported', true, true);
-    $meshPost->set('catfish_importer_date_updated', time(), true);
 
     if (!$post = new TimberPost($meshPost->id)) {
       self::notifyError('Unexpected exception where Mesh did not create/fetch a post');

@@ -56,7 +56,7 @@ acf_add_local_field_group(array (
       'get_as_timestamp' => 'true',
     ),
     array (
-      'key' => 'article_catfish_importer_url',
+      'key' => 'article_catfish_imported_url',
       'label' => 'URL',
       'name' => 'catfish_importer_url',
       'type' => 'url',

@@ -21,6 +21,7 @@ class CronController {
     $posts_array = $this->sitemap->get_all_posts_in_order();
     foreach($posts_array as $post) {
       $slug = $this->return_slug($post);
+      $slug = sanitize_title($slug);
       $post_object = get_page_by_path($slug, 'OBJECT', 'post');
       if (!$post_object) {
         try {
