@@ -47,7 +47,7 @@ class Post {
     $postDom = HtmlDomParser::str_get_html($object->content);
     $postReformatted = new stdClass();
 
-    $meshPost = new \Mesh\Post($postObject->slug, 'post', 'draft');
+    $meshPost = new \Mesh\Post($postObject->slug);
     $meshPost->set('catfish_importer_url', $postUrl, true);
     $meshPost->set('catfish_importer_imported', true, true);
     $meshPost->set('catfish_importer_date_updated', time(), true);
