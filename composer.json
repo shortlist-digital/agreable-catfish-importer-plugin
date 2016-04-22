@@ -3,15 +3,26 @@
   "type": "wordpress-plugin",
   "description": "Wordpress plugin for Shortlist Media.",
   "license": "MIT",
+  "repositories": [{
+    "type": "package",
+    "package": {
+      "name": "jonsherrard/mesh",
+      "version": "1.0",
+      "dist": {
+        "type": "zip",
+        "url": "https://github.com/jonsherrard/mesh/archive/master.zip"
+      }
+    }
+  }],
   "require": {
     "getherbert/framework": "~0.9",
     "facebook/webdriver": "~1.0",
-    "jarednova/mesh": "*",
     "behat/behat": "~2.5",
     "phpunit/phpunit": "5.0.*",
     "sunra/php-simple-html-dom-parser" : "~1.5",
     "maknz/slack": "^1.7",
-    "sabre/xml": "^1.4"
+    "sabre/xml": "^1.4",
+    "jonsherrard/mesh": "*"
   },
   "config": {
     "preferred-install": "dist"
