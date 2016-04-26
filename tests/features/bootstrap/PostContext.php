@@ -120,7 +120,7 @@ class PostContext extends BehatContext {
    * @Given /^there are (\d+) gallery images$/
    */
   public function thereAreGalleryImages($expectedNumberOfGalleryImages) {
-    $widgets = self::$post->get_field('article_widgets');
+    $widgets = self::$post->get_field('widgets');
     foreach($widgets as $widget) {
       if ($widget['acf_fc_layout'] === 'gallery') {
         Assert::assertEquals($expectedNumberOfGalleryImages, count($widget['gallery_items']));

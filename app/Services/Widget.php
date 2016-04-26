@@ -28,7 +28,7 @@ class Widget {
 
     foreach ($widgets as $key => $widget) {
 
-      $metaLabel = 'article_widgets_' . $key;
+      $metaLabel = 'widgets_' . $key;
 
       switch ($widget->acf_fc_layout) {
         case 'paragraph':
@@ -69,8 +69,8 @@ class Widget {
     }
 
     // This is an array of widget names for ACF
-    update_post_meta($post->id, 'article_widgets', serialize($widgetNames));
-    update_post_meta($post->id, '_article_widgets', 'article_widgets');
+    update_post_meta($post->id, 'widgets', serialize($widgetNames));
+    update_post_meta($post->id, '_widgets', 'widgets');
   }
 
   protected static function setGalleryWidget($post, stdClass $postObject, $widgetNames) {
@@ -100,11 +100,11 @@ class Widget {
       $imageIds[] = $meshImage->id;
     }
 
-    self::setPostMetaProperty($post, 'article_widgets_' . count($widgetNames) . '_gallery_items', 'widget_gallery_galleryitems', serialize($imageIds));
+    self::setPostMetaProperty($post, 'widgets_' . count($widgetNames) . '_gallery_items', 'widget_gallery_galleryitems', serialize($imageIds));
   }
 
   public static function getPostWidgets(TimberPost $post) {
-    return $post->get_field('article_widgets');
+    return $post->get_field('widgets');
   }
 
   /**
