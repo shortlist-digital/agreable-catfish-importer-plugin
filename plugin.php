@@ -4,7 +4,7 @@
  * @wordpress-plugin
  * Plugin Name:       Agreable Catfish Importer Plugin
  * Description:       A WordPress plugin to import Catfish content in to Croissant site.
- * Version:           1.0.0
+ * Version:           3.0.0
  * Author:            Shortlist Media
  * Author URI:        http://shortlistmedia.co.uk/
  * License:           MIT
@@ -23,8 +23,8 @@ if(file_exists(__DIR__ . '/../../../../vendor/getherbert/framework/bootstrap/aut
 }
 
 // Load Mesh (non-autoloadable)
-if(file_exists(__DIR__ . '/vendor/jonsherrard/mesh/')){
-  require_once __DIR__ . '/vendor/jonsherrard/mesh/mesh.php';
+if(file_exists(__DIR__ . '/vendor/jarednova/mesh/')){
+  require_once __DIR__ . '/vendor/jarednova/mesh/mesh.php';
 } else {
-  require_once __DIR__ . '/../../../../vendor/jonsherrard/mesh/mesh.php';
+  require_once __DIR__ . '/../../../../vendor/jarednova/mesh/mesh.php';
 }
