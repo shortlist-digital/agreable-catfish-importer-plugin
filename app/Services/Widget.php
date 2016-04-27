@@ -1,9 +1,10 @@
 <?php
 namespace AgreableCatfishImporterPlugin\Services;
 
-use \TimberPost;
-use \stdClass;
-use \Exception;
+use TimberPost;
+use stdClass;
+use Exception;
+use Mesh;
 use AgreableCatfishImporterPlugin\Services\Widgets\InlineImage;
 use AgreableCatfishImporterPlugin\Services\Widgets\Video;
 use AgreableCatfishImporterPlugin\Services\Widgets\Html;
@@ -25,7 +26,6 @@ class Widget {
    */
   public static function setPostWidgets(TimberPost $post, array $widgets, stdClass $catfishPostObject) {
     $widgetNames = [];
-
     foreach ($widgets as $key => $widget) {
 
       $metaLabel = 'widgets_' . $key;
@@ -36,7 +36,7 @@ class Widget {
           $widgetNames[] = $widget->acf_fc_layout;
           break;
         case 'image':
-          $image = new \Mesh\Image($widget->image->src);
+          $image = new Mesh\Image($widget->image->src);
 
           self::setPostMetaProperty($post, $metaLabel . '_image', 'widget_image_image', $image->id);
           self::setPostMetaProperty($post, $metaLabel . '_border', 'widget_image_border', 0);
@@ -70,7 +70,7 @@ class Widget {
 
     // This is an array of widget names for ACF
     update_post_meta($post->id, 'widgets', serialize($widgetNames));
-    update_post_meta($post->id, '_widgets', 'widgets');
+    update_post_meta($post->id, '_widgets', 'post_widgets');
   }
 
   protected static function setGalleryWidget($post, stdClass $postObject, $widgetNames) {
@@ -100,7 +100,7 @@ class Widget {
       $imageIds[] = $meshImage->id;
     }
 
-    self::setPostMetaProperty($post, 'widgets_' . count($widgetNames) . '_gallery_items', 'widget_gallery_galleryitems', serialize($imageIds));
+    self::setPostMetaProperty($post, 'post_widgets_' . count($widgetNames) . '_gallery_items', 'widget_gallery_galleryitems', serialize($imageIds));
   }
 
   public static function getPostWidgets(TimberPost $post) {

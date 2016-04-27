@@ -52,6 +52,10 @@ class Post {
     $meshPost->set('catfish_importer_imported', true, true);
     $meshPost->set('catfish_importer_date_updated', time(), true);
     $meshPost->set('post_title', $postObject->headline);
+    $meshPost->set('header_type', 'standard-hero');
+    $meshPost->set('header_display_hero_image', true);
+    $meshPost->set('header_display_headline', true);
+    $meshPost->set('header_display_sell', true);
 
     // Set post published date
     $displayDate = strtotime($postObject->displayDate);
