@@ -80,6 +80,11 @@ acf_add_local_field_group(array (
         'operator' => '==',
         'value' => 'post',
       ),
+      array (
+        'param' => 'current_user_role',
+        'operator' => '==',
+        'value' => 'administrator',
+      ),
     ),
   ),
   'menu_order' => 100,
