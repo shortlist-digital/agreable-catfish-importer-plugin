@@ -30,7 +30,29 @@ register_field_group(array (
       'maxlength' => '',
       'readonly' => 0,
       'disabled' => 0,
-    )
+    ),
+    array (
+      'key' => 'catfish_default_author',
+      'label' => 'Default Author',
+      'name' => 'catfish_default_author',
+      'type' => 'select',
+      'required' => 1,
+      'conditional_logic' => 0,
+      'wrapper' => array (
+        'width' => '100%',
+      ),
+      'choices' => [
+        'shortlist_web_team' => 'Shortlist Web Team',
+        'stylist_web_team' => 'Stylist Web Team',
+      ],
+      'default_value' => 'stylist_web_team',
+      'allow_null' => 0,
+      'multiple' => 0,
+      'ui' => 0,
+      'ajax' => 0,
+      'disabled' => 0,
+      'readonly' => 0,
+    ),
   ),
   'location' => array (
     array (
