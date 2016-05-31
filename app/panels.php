@@ -35,23 +35,19 @@ register_field_group(array (
       'key' => 'catfish_default_author',
       'label' => 'Default Author',
       'name' => 'catfish_default_author',
-      'type' => 'select',
-      'required' => 1,
-      'conditional_logic' => 0,
-      'wrapper' => array (
-        'width' => '100%',
+      'fields' => array (
       ),
-      'choices' => [
-        'the-shortlist-web-team' => 'The Shortlist Web Team',
-        'the-stylist-web-team' => 'The Stylist Web Team',
-      ],
-      'default_value' => 'stylist_web_team',
-      'allow_null' => 0,
-      'multiple' => 0,
-      'ui' => 0,
-      'ajax' => 0,
-      'disabled' => 0,
-      'readonly' => 0,
+      'location' => array (
+      ),
+      'menu_order' => 0,
+      'position' => 'normal',
+      'style' => 'default',
+      'label_placement' => 'top',
+      'instruction_placement' => 'label',
+      'hide_on_screen' => array (
+      ),
+      'active' => 1,
+      'description' => '',
     ),
   ),
   'location' => array (

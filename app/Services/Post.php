@@ -75,6 +75,8 @@ class Post {
       $meshPost->set('post_author', self::setAuthor($object->article->__author));
     } else {
       $default_author = get_field('catfish_default_author', 'option');
+      print_r($default_author);
+      die;
       $meshPost->set('post_author', $default_author, true);
     }
 
