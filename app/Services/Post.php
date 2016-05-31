@@ -73,6 +73,9 @@ class Post {
 
     if (isset($object->article->__author)) {
       $meshPost->set('post_author', self::setAuthor($object->article->__author));
+    } else {
+      $default_author = get_field('catfish_default_author', 'option');
+      $meshPost->set('post_author', $default_author, true);
     }
 
     Category::attachCategories($object->article->section, $postUrl, $meshPost->id);

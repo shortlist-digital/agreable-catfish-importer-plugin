@@ -42,8 +42,8 @@ register_field_group(array (
         'width' => '100%',
       ),
       'choices' => [
-        'shortlist_web_team' => 'Shortlist Web Team',
-        'stylist_web_team' => 'Stylist Web Team',
+        'the-shortlist-web-team' => 'The Shortlist Web Team',
+        'the-stylist-web-team' => 'The Stylist Web Team',
       ],
       'default_value' => 'stylist_web_team',
       'allow_null' => 0,
