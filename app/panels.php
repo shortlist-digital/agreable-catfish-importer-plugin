@@ -4,6 +4,8 @@
 
 $options_page_name = 'acf-options';
 
+$users = get_users( array( 'fields' => array( 'display_name' ) ) );
+
 if( function_exists('register_field_group') ):
 
 register_field_group(array (
@@ -33,21 +35,11 @@ register_field_group(array (
     ),
     array (
       'key' => 'catfish_default_author',
-      'label' => 'Default Author',
+      'label' => 'Default Article Author',
       'name' => 'catfish_default_author',
-      'fields' => array (
-      ),
-      'location' => array (
-      ),
-      'menu_order' => 0,
-      'position' => 'normal',
-      'style' => 'default',
-      'label_placement' => 'top',
-      'instruction_placement' => 'label',
-      'hide_on_screen' => array (
-      ),
-      'active' => 1,
-      'description' => '',
+      'type' => 'user',
+      'required' => 1,
+      'allow_null' => 0,
     ),
   ),
   'location' => array (
