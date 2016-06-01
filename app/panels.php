@@ -4,8 +4,6 @@
 
 $options_page_name = 'acf-options';
 
-$users = get_users( array( 'fields' => array( 'display_name' ) ) );
-
 if( function_exists('register_field_group') ):
 
 register_field_group(array (
