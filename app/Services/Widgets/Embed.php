@@ -5,9 +5,9 @@ use stdClass;
 
 class Embed {
   public static function getFromWidgetDom($widgetDom) {
-    if (preg_match('/iframe/', $widgetDom->innertext)) {
+    if (preg_match('/iframe/', $widgetDom->outertext)) {
       return self::handleFrame($widgetDom);
-    } elseif (preg_match('/blockquote/', $widgetDom->innertext)) {
+    } elseif (preg_match('/blockquote/', $widgetDom->outertext)) {
       return self::handleBlock($widgetDom);
     } else {
       return false;
@@ -26,11 +26,7 @@ class Embed {
         $widgetData = new stdClass();
         $widgetData->type = 'embed';
         $widgetData->embed = $href;
-        $test = array();
-        array_push($test, $widgetData);
-        array_push($test, $widgetData);
-        return $test;
-        //return $widgetData;
+        return $widgetData;
         break;
       }
     }
