@@ -69,8 +69,6 @@ class Post {
       'post_modified_gmt' => $displayDate
     ));
 
-    $meshPost->set('article_type', self::setArticleType($object));
-
     if (isset($object->article->__author)) {
       $meshPost->set('post_author', self::setAuthor($object->article->__author));
     }

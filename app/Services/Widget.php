@@ -31,6 +31,21 @@ class Widget {
       $metaLabel = 'widgets_' . $key;
 
       switch ($widget->acf_fc_layout) {
+        case 'embed':
+          self::setPostMetaProperty($post, $metaLabel . '_embed', 'widget_embed', $widget->embed);
+          self::setPostMetaProperty($post, $metaLabel . '_width', 'widget_embed_width', 'medium');
+          $widgetNames[] = $widget->acf_fc_layout;
+          break;
+        case 'heading':
+          self::setPostMetaProperty($post, $metaLabel . '_text', 'widget_heading_text', $widget->text);
+          self::setPostMetaProperty($post, $metaLabel . '_aligment', 'widget_heading_alignment', $widget->alignment);
+          self::setPostMetaProperty($post, $metaLabel . '_font', 'widget_heading_font', $widget->font);
+          $widgetNames[] = $widget->acf_fc_layout;
+          break;
+        case 'html':
+          self::setPostMetaProperty($post, $metaLabel . '_html', 'widget_html', $widget->html);
+          $widgetNames[] = $widget->acf_fc_layout;
+          break;
         case 'paragraph':
           self::setPostMetaProperty($post, $metaLabel . '_paragraph', 'widget_paragraph_html', $widget->paragraph);
           $widgetNames[] = $widget->acf_fc_layout;
@@ -175,7 +190,11 @@ class Widget {
         $widgetData = HorizontalRule::getFromWidgetDom($widget);
       }
 
-      if ($widgetData) {
+      if (is_array($widgetData)) {
+        foreach($widgetData as $widget) {
+          $widgets[] = self::makeWidget($widget->type, $widget);
+        }
+      } else {
         $widgets[] = self::makeWidget($widgetData->type, $widgetData);
       }
 

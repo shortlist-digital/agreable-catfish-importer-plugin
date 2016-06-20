@@ -6,35 +6,16 @@ use \stdClass;
 class Video {
   public static function getFromWidgetDom($widgetDom) {
     $widgetData = new stdClass();
-    $widgetData->type = 'video';
-    $widgetData->video = new stdClass();
+    $widgetData->type = 'embed';
     $videoIframe = $widgetDom->find('iframe');
+    $facebookVideo = $widgetDom->find('div[data-href]');
+
     if (!isset($videoIframe[0])) {
-      return $widgetData;
+      $widgetData->embed = $facebookVideo[0]->{'data-href'};
+    } else {
+      $widgetData->embed = $videoIframe[0]->src;
     }
 
-    $widgetData->video->url = $videoIframe[0]->src;
-
-    $innerDom = $widgetDom->find('.article__content__inline-video');
-    if (count($innerDom) > 0) {
-      $classes = $innerDom[0]->class;
-
-      if (strpos($classes, 'inline-video--full') !== false) {
-        $widgetData->video->width = 'full';
-      } else if (strpos($classes, 'inline-video--medium') !== false) {
-        $widgetData->video->width = 'medium';
-      } else {
-        $widgetData->video->width = 'small';
-      }
-
-      if (strpos($classes, 'inline-video--center') !== false) {
-        $widgetData->video->position = 'center';
-      } else if (strpos($classes, 'inline-video--left') !== false) {
-        $widgetData->video->position = 'left';
-      } else {
-        $widgetData->video->position = 'right';
-      }
-    }
     return $widgetData;
   }
 }
