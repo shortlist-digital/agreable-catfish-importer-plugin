@@ -35,8 +35,8 @@ class Html {
         if (!empty($current_paragraph_string)) {
           $paragraph_html = new \simple_html_dom();
           $paragraphDom = $paragraph_html->load($current_paragraph_string);
-          $current_paragraph_string = "";
           array_push($widgets, Paragraph::getFromWidgetDom($paragraphDom));
+          $current_paragraph_string = "";
         }
         if (isset($node->find('h2')[0])) {
           array_push($widgets, Heading::getFromWidgetDom($node));
@@ -52,6 +52,11 @@ class Html {
           }
         }
       }
+    }
+    if (!empty($current_paragraph_string)) {
+      $paragraph_html = new \simple_html_dom();
+      $paragraphDom = $paragraph_html->load($current_paragraph_string);
+      array_push($widgets, Paragraph::getFromWidgetDom($paragraphDom));
     }
     return count($widgets) ? $widgets : false;
   }
