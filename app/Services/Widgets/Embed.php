@@ -14,15 +14,32 @@ class Embed {
     }
   }
 
-  public static function handleFrame() {
+  public static function handleFrame($widgetDom) {
+    $frame = $widgetDom->find('iframe');
+    $url = $frame[0]->src;
+    $parts = parse_url($url);
+    parse_str($parts['query'], $query);
+    if (isset($query['href'])) {
+      $href = $query['href'];
+      $url = $href;
+    }
+    $check = wp_oembed_get($url);
+    if ($check) {
+      $widgetData = new stdClass();
+      $widgetData->type = 'embed';
+      $widgetData->embed = $url;
+      return $widgetData;
+      break;
+    }
     return false;
   }
 
   public static function handleBlock($widgetDom) {
     $links = $widgetDom->find('a');
-    foreach($links as $link) {
+    foreach(array_reverse($links) as $link) {
       $href = $link->href;
-      if (preg_match('/(?=.*twitter)(?=.*status)/', $href)) {
+      $check = wp_oembed_get($href);
+      if ($check) {
         $widgetData = new stdClass();
         $widgetData->type = 'embed';
         $widgetData->embed = $href;

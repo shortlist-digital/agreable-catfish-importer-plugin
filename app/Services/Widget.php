@@ -104,18 +104,22 @@ class Widget {
 
     $imageIds = [];
     foreach($galleryData->images as $image) {
+      $title = $image->title;
+      if ($title = ".") {
+        $title = "";
+      }
       $imageUrl = array_pop($image->__mainImageUrls);
 
       $meshImage = new \Mesh\Image($imageUrl);
       $imagePost = get_post($meshImage->id);
-      $imagePost->post_title = $image->title;
+      $imagePost->post_title = $title;
       $imagePost->post_excerpt = $image->description;
       wp_update_post($imagePost);
 
       $imageIds[] = $meshImage->id;
     }
 
-    self::setPostMetaProperty($post, 'post_widgets_' . count($widgetNames) . '_gallery_items', 'widget_gallery_galleryitems', serialize($imageIds));
+    self::setPostMetaProperty($post, 'widgets_' . count($widgetNames) . '_gallery_items', 'widget_gallery_galleryitems', serialize($imageIds));
   }
 
   public static function getPostWidgets(TimberPost $post) {

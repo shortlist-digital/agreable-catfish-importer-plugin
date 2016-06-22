@@ -11,6 +11,10 @@ class Html {
     $allowable_tags = '<a><b><i><br><em><strong><p><h3>';
     $stripped_string = strip_tags($html_string, $allowable_tags);
     $test = ($html_string == $stripped_string);
+    if (ctype_space(strip_tags(html_entity_decode($html_string, ENT_HTML5, 'iso-8859-1')))) {
+      echo "woo"; die;
+      return false;
+    }
     return $test;
   }
 
@@ -30,7 +34,8 @@ class Html {
     $current_paragraph_string = "";
     foreach($widgetDom->find('*') as  $index=>$node) {
       if (self::checkIfValidParagraph($node->outertext)) {
-        $current_paragraph_string .= $node->outertext;
+        $new_paragraph = str_replace("<p>&nbsp;</p>", "", $node->outertext);
+        $current_paragraph_string .= $new_paragraph;
       } else {
         if (!empty($current_paragraph_string)) {
           $paragraph_html = new \simple_html_dom();
