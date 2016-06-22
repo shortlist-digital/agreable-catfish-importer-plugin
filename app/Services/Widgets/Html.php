@@ -2,6 +2,7 @@
 namespace AgreableCatfishImporterPlugin\Services\Widgets;
 
 use stdClass;
+use Sunra\PhpSimple\HtmlDomParser;
 use AgreableCatfishImporterPlugin\Services\Widgets\Paragraph;
 use AgreableCatfishImporterPlugin\Services\Widgets\Heading;
 use AgreableCatfishImporterPlugin\Services\Widgets\Embed;
@@ -38,8 +39,7 @@ class Html {
         $current_paragraph_string .= $new_paragraph;
       } else {
         if (!empty($current_paragraph_string)) {
-          $paragraph_html = new \simple_html_dom();
-          $paragraphDom = $paragraph_html->load($current_paragraph_string);
+          $paragraphDom = HtmlDomParser::str_get_html($current_paragraph_string);
           array_push($widgets, Paragraph::getFromWidgetDom($paragraphDom));
           $current_paragraph_string = "";
         }
@@ -59,8 +59,7 @@ class Html {
       }
     }
     if (!empty($current_paragraph_string)) {
-      $paragraph_html = new \simple_html_dom();
-      $paragraphDom = $paragraph_html->load($current_paragraph_string);
+      $paragraphDom = HtmlDomParser::str_get_html($current_paragraph_string);
       array_push($widgets, Paragraph::getFromWidgetDom($paragraphDom));
     }
     return count($widgets) ? $widgets : false;
