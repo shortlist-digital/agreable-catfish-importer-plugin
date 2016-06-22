@@ -190,7 +190,7 @@ class Widget {
             $widgetData = Video::getFromWidgetDom($widget);
             break;
         }
-      } else if (isset($widgetWrapper->find('hr')[0])) {
+      } else if (!null == ($widget = $widgetWrapper->find('hr')[0])) {
         $widgetData = HorizontalRule::getFromWidgetDom($widget);
       }
 
@@ -198,7 +198,7 @@ class Widget {
         foreach($widgetData as $widget) {
           $widgets[] = self::makeWidget($widget->type, $widget);
         }
-      } else {
+      } elseif ($widgetData) {
         $widgets[] = self::makeWidget($widgetData->type, $widgetData);
       }
 

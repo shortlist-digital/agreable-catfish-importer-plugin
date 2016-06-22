@@ -68,7 +68,8 @@ class Html {
   public static function checkStringAgainstBlacklist($string) {
     $allowed = true;
     $blacklist = array(
-      'platform.twitter.com'
+      'platform.twitter.com',
+      'platform.instagram.com'
     );
 
     foreach($blacklist as $check) {

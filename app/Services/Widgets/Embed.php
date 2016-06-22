@@ -16,20 +16,24 @@ class Embed {
 
   public static function handleFrame($widgetDom) {
     $frame = $widgetDom->find('iframe');
-    $url = $frame[0]->src;
-    $parts = parse_url($url);
-    parse_str($parts['query'], $query);
-    if (isset($query['href'])) {
-      $href = $query['href'];
-      $url = $href;
-    }
-    $check = wp_oembed_get($url);
-    if ($check) {
-      $widgetData = new stdClass();
-      $widgetData->type = 'embed';
-      $widgetData->embed = $url;
-      return $widgetData;
-      break;
+    if (isset($frame[0])) {
+      $url = $frame[0]->src;
+      $parts = parse_url($url);
+      if (isset($parts['query'])) {
+        parse_str($parts['query'], $query);
+        if (isset($query['href'])) {
+          $href = $query['href'];
+          $url = $href;
+        }
+      }
+      $check = wp_oembed_get($url);
+      if ($check) {
+        $widgetData = new stdClass();
+        $widgetData->type = 'embed';
+        $widgetData->embed = $url;
+        return $widgetData;
+        break;
+      }
     }
     return false;
   }
