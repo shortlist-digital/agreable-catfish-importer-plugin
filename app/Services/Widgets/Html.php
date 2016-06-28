@@ -43,11 +43,13 @@ class Html {
           array_push($widgets, Paragraph::getFromWidgetDom($paragraphDom));
           $current_paragraph_string = "";
         }
-        if (isset($node->find('h2')[0])) {
+        if ($node->tag == 'h2') {
           array_push($widgets, Heading::getFromWidgetDom($node));
+          continue;
         }
         if ($embedData = Embed::getFromWidgetDom($node)) {
           array_push($widgets, $embedData);
+          continue;
         } else {
           if (self::checkStringAgainstBlacklist($node->outertext)) {
             $html = new stdClass();
