@@ -2,6 +2,7 @@
 namespace AgreableCatfishImporterPlugin\Services\Widgets;
 
 use stdClass;
+use Illuminate\Support\Collection;
 use Sunra\PhpSimple\HtmlDomParser;
 use AgreableCatfishImporterPlugin\Services\Widgets\Paragraph;
 use AgreableCatfishImporterPlugin\Services\Widgets\Heading;
@@ -13,7 +14,6 @@ class Html {
     $stripped_string = strip_tags($html_string, $allowable_tags);
     $test = ($html_string == $stripped_string);
     if (ctype_space(strip_tags(html_entity_decode($html_string, ENT_HTML5, 'iso-8859-1')))) {
-      echo "woo"; die;
       return false;
     }
     return $test;
@@ -47,6 +47,14 @@ class Html {
           array_push($widgets, Heading::getFromWidgetDom($node));
           continue;
         }
+        if ($node->class == 'pb_feed') {
+          $game = $node->{'data-game'};
+          $string = "<blockquote><a href='http://www.playbuzz.com$game'></a></blockquote>";
+          $fake = HtmlDomParser::str_get_html($string);
+          $embedData = Embed::getFromWidgetDom($fake);
+          array_push($widgets, $embedData);
+          continue;
+        }
         if ($embedData = Embed::getFromWidgetDom($node)) {
           array_push($widgets, $embedData);
           continue;
@@ -64,6 +72,31 @@ class Html {
       $paragraphDom = HtmlDomParser::str_get_html($current_paragraph_string);
       array_push($widgets, Paragraph::getFromWidgetDom($paragraphDom));
     }
+    $widgetCollection = new Collection($widgets);
+    // HTML Merge step
+    foreach($widgets as $index=> $widget):
+      if ($index != 0) {
+        $prev = $widgets[$index-1];
+        if (($prev->type == 'html') && ($widget->type == 'html')) {
+          $widget->html = $prev->html.$widget->html;
+          unset($widgets[$index-1]);
+        }
+      }
+    endforeach;
+    $widgets = array_values($widgets);
+    $htmlCheck = $widgetCollection->reduce(function ($carry, $item) {
+      return ($item->type == 'html');
+    });
+    if ($htmlCheck) {
+      $widgets = array($widgetCollection->reduce(function ($carry, $item) {
+        if (!$carry) {
+          $carry = new stdClass();
+        }
+        $carry->type = $item->type;
+        $carry->html .= $item->html;
+        return $carry;
+      }));
+    }
     return count($widgets) ? $widgets : false;
   }
 
@@ -71,7 +104,8 @@ class Html {
     $allowed = true;
     $blacklist = array(
       'platform.twitter.com',
-      'platform.instagram.com'
+      'platform.instagram.com',
+      'cdn.playbuzz.com'
     );
 
     foreach($blacklist as $check) {
