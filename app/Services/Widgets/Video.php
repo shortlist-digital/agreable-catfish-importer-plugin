@@ -6,35 +6,39 @@ use \stdClass;
 class Video {
   public static function getFromWidgetDom($widgetDom) {
     $widgetData = new stdClass();
-    $widgetData->type = 'video';
-    $widgetData->video = new stdClass();
+    $widgetData->type = 'embed';
     $videoIframe = $widgetDom->find('iframe');
+    $facebookVideo = $widgetDom->find('div[data-href]');
+
     if (!isset($videoIframe[0])) {
-      return $widgetData;
+      $widgetData->embed = $facebookVideo[0]->{'data-href'};
+    } else {
+      $src = self::filterFrameSrc($videoIframe[0]->src);
+      $widgetData->embed = $src;
     }
 
-    $widgetData->video->url = $videoIframe[0]->src;
-
-    $innerDom = $widgetDom->find('.article__content__inline-video');
-    if (count($innerDom) > 0) {
-      $classes = $innerDom[0]->class;
-
-      if (strpos($classes, 'inline-video--full') !== false) {
-        $widgetData->video->width = 'full';
-      } else if (strpos($classes, 'inline-video--medium') !== false) {
-        $widgetData->video->width = 'medium';
-      } else {
-        $widgetData->video->width = 'small';
-      }
-
-      if (strpos($classes, 'inline-video--center') !== false) {
-        $widgetData->video->position = 'center';
-      } else if (strpos($classes, 'inline-video--left') !== false) {
-        $widgetData->video->position = 'left';
-      } else {
-        $widgetData->video->position = 'right';
-      }
-    }
     return $widgetData;
+  }
+
+  public static function filterFrameSrc($url) {
+		if (!preg_match("~^(?:f|ht)tps?://~i", $url)) {
+			$url = str_replace("//","", $url);
+			$url = "http://" . $url;
+    }
+  	if (preg_match('/youtube\.com\/watch\?v=([^\&\?\/]+)/', $url, $id)) {
+			$values = $id[1];
+		} else if (preg_match('/youtube\.com\/embed\/([^\&\?\/]+)/', $url, $id)) {
+			$values = $id[1];
+		} else if (preg_match('/youtube\.com\/v\/([^\&\?\/]+)/', $url, $id)) {
+			$values = $id[1];
+		} else if (preg_match('/youtu\.be\/([^\&\?\/]+)/', $url, $id)) {
+			$values = $id[1];
+		}
+		else if (preg_match('/youtube\.com\/verify_age\?next_url=\/watch%3Fv%3D([^\&\?\/]+)/', $url, $id)) {
+				$values = $id[1];
+		} else {
+			return $url;
+		}
+		return "https://www.youtube.com/watch?v=".$values;
   }
 }

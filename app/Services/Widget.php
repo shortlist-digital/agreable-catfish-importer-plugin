@@ -31,6 +31,21 @@ class Widget {
       $metaLabel = 'widgets_' . $key;
 
       switch ($widget->acf_fc_layout) {
+        case 'embed':
+          self::setPostMetaProperty($post, $metaLabel . '_embed', 'widget_embed', $widget->embed);
+          self::setPostMetaProperty($post, $metaLabel . '_width', 'widget_embed_width', 'medium');
+          $widgetNames[] = $widget->acf_fc_layout;
+          break;
+        case 'heading':
+          self::setPostMetaProperty($post, $metaLabel . '_text', 'widget_heading_text', $widget->text);
+          self::setPostMetaProperty($post, $metaLabel . '_aligment', 'widget_heading_alignment', $widget->alignment);
+          self::setPostMetaProperty($post, $metaLabel . '_font', 'widget_heading_font', $widget->font);
+          $widgetNames[] = $widget->acf_fc_layout;
+          break;
+        case 'html':
+          self::setPostMetaProperty($post, $metaLabel . '_html', 'widget_html', $widget->html);
+          $widgetNames[] = $widget->acf_fc_layout;
+          break;
         case 'paragraph':
           self::setPostMetaProperty($post, $metaLabel . '_paragraph', 'widget_paragraph_html', $widget->paragraph);
           $widgetNames[] = $widget->acf_fc_layout;
@@ -89,18 +104,22 @@ class Widget {
 
     $imageIds = [];
     foreach($galleryData->images as $image) {
+      $title = $image->title;
+      if ($title = ".") {
+        $title = "";
+      }
       $imageUrl = array_pop($image->__mainImageUrls);
 
       $meshImage = new \Mesh\Image($imageUrl);
       $imagePost = get_post($meshImage->id);
-      $imagePost->post_title = $image->title;
+      $imagePost->post_title = $title;
       $imagePost->post_excerpt = $image->description;
       wp_update_post($imagePost);
 
       $imageIds[] = $meshImage->id;
     }
 
-    self::setPostMetaProperty($post, 'post_widgets_' . count($widgetNames) . '_gallery_items', 'widget_gallery_galleryitems', serialize($imageIds));
+    self::setPostMetaProperty($post, 'widgets_' . count($widgetNames) . '_gallery_items', 'widget_gallery_galleryitems', serialize($imageIds));
   }
 
   public static function getPostWidgets(TimberPost $post) {
@@ -171,11 +190,15 @@ class Widget {
             $widgetData = Video::getFromWidgetDom($widget);
             break;
         }
-      } else if (isset($widgetWrapper->find('hr')[0])) {
+      } else if (!null == ($widget = $widgetWrapper->find('hr')[0])) {
         $widgetData = HorizontalRule::getFromWidgetDom($widget);
       }
 
-      if ($widgetData) {
+      if (is_array($widgetData)) {
+        foreach($widgetData as $widget) {
+          $widgets[] = self::makeWidget($widget->type, $widget);
+        }
+      } elseif ($widgetData) {
         $widgets[] = self::makeWidget($widgetData->type, $widgetData);
       }
 

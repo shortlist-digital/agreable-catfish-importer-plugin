@@ -53,7 +53,6 @@ class Post {
     $meshPost->set('catfish_importer_date_updated', time(), true);
     $meshPost->set('post_title', $postObject->headline);
     $meshPost->set('header_type', 'standard-hero');
-    $meshPost->set('header_display_hero_image', true);
     $meshPost->set('header_display_headline', true);
     $meshPost->set('header_display_sell', true);
 
@@ -68,8 +67,6 @@ class Post {
       'post_modified' => $displayDate,
       'post_modified_gmt' => $displayDate
     ));
-
-    $meshPost->set('article_type', self::setArticleType($object));
 
     if (isset($object->article->__author)) {
       $meshPost->set('post_author', self::setAuthor($object->article->__author));
@@ -106,7 +103,9 @@ class Post {
       self::notifyError('Unexpected exception where Mesh did not create/fetch a post');
     }
 
-    self::setHeroImages($post, $postDom);
+    $show_header = self::setHeroImages($post, $postDom, $postObject);
+
+    $meshPost->set('header_display_hero_image', $show_header);
 
     $widgets = Widget::getWidgetsFromDom($postDom);
     Widget::setPostWidgets($post, $widgets, $postObject);
@@ -129,7 +128,8 @@ class Post {
     return 'article';
   }
 
-  protected static function setHeroImages(TimberPost $post, $postDom) {
+  protected static function setHeroImages(TimberPost $post, $postDom, $postObject) {
+    $show_header = true;
     $heroImageDom = $postDom->find('.slideshow__slide img,.gallery-overview__main-image img,.gallery-overview img');
 
     $heroImageIds = [];
@@ -142,7 +142,21 @@ class Post {
       $meshImage = new \Mesh\Image($heroImage->src);
       $heroImage->id = $meshImage->id;
       $heroImageIds[] = (string)$heroImage->id;
+    }
+    if (!count($heroImageIds)) {
+      $show_header = false;
+    }
 
+    if ((!count($heroImageIds)) && (isset($postObject->images->widgets[0]->imageUrl))) {
+      $url = $postObject->images->widgets[0]->imageUrl;
+      $heroImage = new stdClass();
+      $heroImage->src = $url;
+      $heroImage->filename = substr($url, strrpos($url, '/') + 1);
+      $heroImage->name = substr($heroImage->filename, 0, strrpos($heroImage->filename, '.'));
+      $heroImage->extension = substr($heroImage->filename, strrpos($heroImage->filename, '.') + 1);
+      $meshImage = new \Mesh\Image($heroImage->src);
+      $heroImage->id = $meshImage->id;
+      $heroImageIds[] = (string)$heroImage->id;
     }
 
     if (array_key_exists(0, $heroImageIds)) {
@@ -153,6 +167,7 @@ class Post {
       $message = "$post->title has no hero images";
       self::notifyError($message);
     }
+    return $show_header;
   }
 
   public static function getCategory(TimberPost $post) {
