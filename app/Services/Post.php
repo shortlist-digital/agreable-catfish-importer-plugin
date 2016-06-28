@@ -110,6 +110,8 @@ class Post {
     $widgets = Widget::getWidgetsFromDom($postDom);
     Widget::setPostWidgets($post, $widgets, $postObject);
 
+    do_action('catfish_importer_post', $post->ID);
+
     return $post;
   }
 
