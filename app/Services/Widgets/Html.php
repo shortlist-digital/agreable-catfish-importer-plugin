@@ -47,14 +47,6 @@ class Html {
           array_push($widgets, Heading::getFromWidgetDom($node));
           continue;
         }
-        if ($node->class == 'pb_feed') {
-          $game = $node->{'data-game'};
-          $string = "<blockquote><a href='http://www.playbuzz.com$game'></a></blockquote>";
-          $fake = HtmlDomParser::str_get_html($string);
-          $embedData = Embed::getFromWidgetDom($fake);
-          array_push($widgets, $embedData);
-          continue;
-        }
         if ($embedData = Embed::getFromWidgetDom($node)) {
           array_push($widgets, $embedData);
           continue;
@@ -104,8 +96,7 @@ class Html {
     $allowed = true;
     $blacklist = array(
       'platform.twitter.com',
-      'platform.instagram.com',
-      'cdn.playbuzz.com'
+      'platform.instagram.com'
     );
 
     foreach($blacklist as $check) {
