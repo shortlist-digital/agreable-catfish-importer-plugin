@@ -10,7 +10,7 @@ use AgreableCatfishImporterPlugin\Services\Widgets\Embed;
 
 class Html {
   public static function checkIfValidParagraph($html_string) {
-    $allowable_tags = '<a><b><i><br><em><strong><p><h3><ul><ol><li>';
+    $allowable_tags = '<a><b><i><br><em><strong><p><h3><ul><ol><li><span>';
     $stripped_string = strip_tags($html_string, $allowable_tags);
     $test = ($html_string == $stripped_string);
     if (ctype_space(strip_tags(html_entity_decode($html_string, ENT_HTML5, 'iso-8859-1')))) {
