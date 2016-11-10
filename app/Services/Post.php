@@ -68,7 +68,10 @@ class Post {
       'post_modified_gmt' => $displayDate
     ));
 
-    if (isset($object->article->__author)) {
+    if (isset($object->article->__author) &&
+        isset($object->article->__author->emailAddress) &&
+        $object->article->__author->emailAddress) {
+
       $meshPost->set('post_author', self::setAuthor($object->article->__author));
     } else {
       $get_author_details = get_field('catfish_default_author', 'option');
