@@ -83,6 +83,7 @@ class Html {
       $widgets = array($widgetCollection->reduce(function ($carry, $item) {
         if (!$carry) {
           $carry = new stdClass();
+          $carry->html = '';
         }
         $carry->type = $item->type;
         $carry->html .= $item->html;
