@@ -46,7 +46,7 @@ Feature: Post
     Given the post "http://www.stylist.co.uk/people/the-liz-jones-interview"
     Then I should have an object of the post
     And the post has the headline "The Liz Jones Interview"
-    And the widgets "paragraph,paragraph,paragraph,paragraph"
+    And the widgets "html,paragraph,html,paragraph,html,paragraph,paragraph,paragraph'"
     And the paragraph widget at index 0:
       """
 <div class="legacy-custom-html">
