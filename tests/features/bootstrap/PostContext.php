@@ -101,17 +101,36 @@ class PostContext extends BehatContext {
   /**
    * @Given /^the "([^"]*)" "([^"]*)" is "([^"]*)" at index (\d+)$/
    */
-  public function theWidgetPropertyIsAtIndex($widgetName, $property, $value, $index) {
+  public function theWidgetPropertyIsAtIndex($widgetName, $property, $value, $index, $stringSearch = false) {
     $widget = Widget::getPostWidgetsFiltered(self::$post, $widgetName, $index);
     Assert::assertNotNull($widget);
     Assert::assertTrue(isset($widget[$property]));
-    Assert::assertEquals($value, $widget[$property]);
+
+    if ($stringSearch) {
+      Assert::assertContains($value, $widget[$property]);
+    } else {
+      Assert::assertEquals($value, $widget[$property]);
+    }
   }
 
   /**
-   * @Given /^the number of hero widgets is (\d+)$/
+   * @Given /^the "([^"]*)" "([^"]*)" contains "([^"]*)" at index (\d+)$/
    */
-  public function theNumberOfHeroWidgetsIs($expectedHeroImageNumber) {
+  public function theWidgetPropertyStringSearchIsAtIndex($widgetName, $property, $value, $index) {
+    $this->theWidgetPropertyIsAtIndex($widgetName, $property, $value, $index, true);
+  }
+
+  /**
+   * @Given /^the "([^"]*)" "([^"]*)" at index (\d+) is:$/
+   */
+  public function theWidgetPropertyMultilineIsAtIndex($widgetName, $property, $index, PyStringNode $value) {
+    $this->theWidgetPropertyIsAtIndex($widgetName, $property, $value, $index);
+  }
+
+  /**
+   * @Given /^the number of hero images is (\d+)$/
+   */
+  public function theNumberOfHeroImagesIs($expectedHeroImageNumber) {
     Assert::assertNotNull(self::$post->get_field('hero_images'));
     Assert::assertEquals($expectedHeroImageNumber, count(self::$post->get_field('hero_images')));
   }

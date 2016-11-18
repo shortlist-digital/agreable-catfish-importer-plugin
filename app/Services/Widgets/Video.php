@@ -8,37 +8,46 @@ class Video {
     $widgetData = new stdClass();
     $widgetData->type = 'embed';
     $videoIframe = $widgetDom->find('iframe');
-    $facebookVideo = $widgetDom->find('div[data-href]');
+    $facebookVideo = $widgetDom->find('.fb-video');
 
     if (!isset($videoIframe[0])) {
-      $widgetData->embed = $facebookVideo[0]->{'data-href'};
+      $widgetData->embed = self::getFacebookEmbedUrl($facebookVideo[0]->{'data-href'});
     } else {
-      $src = self::filterFrameSrc($videoIframe[0]->src);
-      $widgetData->embed = $src;
+      $widgetData->embed = self::getYouTubeEmbedUrl($videoIframe[0]->src);
     }
 
     return $widgetData;
   }
 
-  public static function filterFrameSrc($url) {
-		if (!preg_match("~^(?:f|ht)tps?://~i", $url)) {
-			$url = str_replace("//","", $url);
-			$url = "http://" . $url;
+  protected static function getFacebookEmbedUrl($url) {
+    if (strpos($url, 'https://www.facebook.com') === false) {
+      if ($url[0] !== '/') {
+        $url = '/' . $url;
+      }
+      $url = 'https://www.facebook.com' . $url;
     }
-  	if (preg_match('/youtube\.com\/watch\?v=([^\&\?\/]+)/', $url, $id)) {
-			$values = $id[1];
-		} else if (preg_match('/youtube\.com\/embed\/([^\&\?\/]+)/', $url, $id)) {
-			$values = $id[1];
-		} else if (preg_match('/youtube\.com\/v\/([^\&\?\/]+)/', $url, $id)) {
-			$values = $id[1];
-		} else if (preg_match('/youtu\.be\/([^\&\?\/]+)/', $url, $id)) {
-			$values = $id[1];
-		}
-		else if (preg_match('/youtube\.com\/verify_age\?next_url=\/watch%3Fv%3D([^\&\?\/]+)/', $url, $id)) {
-				$values = $id[1];
-		} else {
-			return $url;
-		}
-		return "https://www.youtube.com/watch?v=".$values;
+    return $url;
+  }
+
+  public static function getYouTubeEmbedUrl($url) {
+    if (!preg_match("~^(?:f|ht)tps?://~i", $url)) {
+      $url = str_replace("//","", $url);
+      $url = "http://" . $url;
+    }
+    if (preg_match('/youtube\.com\/watch\?v=([^\&\?\/]+)/', $url, $id)) {
+      $values = $id[1];
+    } else if (preg_match('/youtube\.com\/embed\/([^\&\?\/]+)/', $url, $id)) {
+      $values = $id[1];
+    } else if (preg_match('/youtube\.com\/v\/([^\&\?\/]+)/', $url, $id)) {
+      $values = $id[1];
+    } else if (preg_match('/youtu\.be\/([^\&\?\/]+)/', $url, $id)) {
+      $values = $id[1];
+    }
+    else if (preg_match('/youtube\.com\/verify_age\?next_url=\/watch%3Fv%3D([^\&\?\/]+)/', $url, $id)) {
+        $values = $id[1];
+    } else {
+      return $url;
+    }
+    return "https://www.youtube.com/watch?v=".$values;
   }
 }
