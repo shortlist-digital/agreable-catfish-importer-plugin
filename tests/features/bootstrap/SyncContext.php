@@ -36,10 +36,6 @@ class SyncContext extends BehatContext {
       'post_type' => 'post',
       'meta_query' => array(
         array(
-          'key' => 'catfish-importer_imported',
-          'value' => true
-        ),
-        array(
           'key' => 'automated_testing',
           'value' => true
         )
@@ -59,7 +55,7 @@ class SyncContext extends BehatContext {
    * @AfterSuite
    */
   public static function after(SuiteEvent $scope) {
-    // self::deleteAllTestArticles();
+    self::deleteAllTestArticles();
   }
 
   protected static function deleteAllTestArticles() {
