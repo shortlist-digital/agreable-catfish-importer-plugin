@@ -105,7 +105,7 @@ class Widget {
     $imageIds = [];
     foreach($galleryData->images as $image) {
       $title = $image->title;
-      if ($title = ".") {
+      if ($title == ".") {
         $title = "";
       }
       $imageUrl = array_pop($image->__mainImageUrls);
