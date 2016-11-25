@@ -41,12 +41,26 @@ Feature: Post
     And the number of hero images is 1
     And the widgets "paragraph,gallery"
     And there are 10 gallery images
+    And gallery item 1 has title "Number 11 by Jonathan Coe"
+    And gallery item 1 has caption:
+      """
+<p>Coe paints a bleak picture of life in the UK as librarians who rely on food banks exist alongside the super rich who build elaborate subterranean extensions to accommodate their swimming pools and cinemas.&nbsp; Staff quarters for the nannies and caretakers are always located on the deepest, darkest floor. Depressing and amusing in fairly equal measure.</p>
+
+<p><em><a href="http://www.amazon.co.uk/372/dp/0670923796" target="_blank">Buy it here</a></em></p>
+      """
+    And gallery item 2 has title "The Clasp by Sloane Crosley"
+    And gallery item 2 has caption:
+      """
+<p>When Kezia, Nathaniel and Victor meet up at the wedding of their ludicrously wealthy heiress friend, Victor stumbles into a mystery about a valuable necklace that will lead them all to France&hellip; A clever, funny story about those difficult post college years inspired by <em>The Necklace</em> by Guy de Maupassant.</p>
+
+<p><em><a href="http://www.amazon.co.uk/The-Clasp-Sloane-Crosley/dp/0091954436" target="_blank">Buy it here</a></em></p>
+      """
 
   Scenario: Correctly encode the paragraph widget of an article
     Given the post "http://www.stylist.co.uk/people/the-liz-jones-interview"
     Then I should have an object of the post
     And the post has the headline "The Liz Jones Interview"
-    And the widgets "html,paragraph,html,paragraph,html,paragraph,paragraph,paragraph'"
+    And the widgets "html,paragraph,html,paragraph,html,paragraph,paragraph,paragraph"
     And the paragraph widget at index 0:
       """
 <div class="legacy-custom-html">

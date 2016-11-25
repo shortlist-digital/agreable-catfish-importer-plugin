@@ -156,9 +156,42 @@ class PostContext extends BehatContext {
   }
 
   /**
+   * @Given /^gallery item (\d+) has title "([^"]*)"$/
+   */
+  public function galleryItemHasTitle($gallery_index, $title) {
+    $widget = $this->getGalleryWidgetFromPost(self::$post);
+
+    Assert::assertNotNull($widget);
+
+    $gallery_item = $widget['gallery_items'][$gallery_index -1];
+    Assert::assertEquals($title, $gallery_item['title']);
+  }
+
+  /**
+   * @Given /^gallery item (\d+) has caption:$/
+   */
+  public function galleryItemHasCaption($gallery_index, PyStringNode $caption) {
+    $widget = $this->getGalleryWidgetFromPost(self::$post);
+
+    Assert::assertNotNull($widget);
+
+    $gallery_item = $widget['gallery_items'][$gallery_index -1];
+    Assert::assertEquals((string)$caption, $gallery_item['caption']);
+  }
+
+  protected function getGalleryWidgetFromPost($post) {
+    $widgets = self::$post->get_field('widgets');
+    foreach($widgets as $widget) {
+      if ($widget['acf_fc_layout'] === 'gallery') {
+        return $widget;
+      }
+    }
+  }
+
+  /**
    * @AfterSuite
    */
   public static function after(SuiteEvent $scope) {
-    // wp_delete_post(self::$post->id);
+    wp_delete_post(self::$post->id);
   }
 }
