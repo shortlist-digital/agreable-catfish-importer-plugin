@@ -32,7 +32,7 @@ class SitemapContext extends BehatContext {
    * @Given /^the category sitemap "([^"]*)"$/
    */
   public function theCategorySitemap($categorySitemap) {
-    self::$categoryPosts = Sitemap::getPostsFromCategory($categorySitemap);
+    self::$categoryPosts = Sitemap::getPostUrlsFromCategory($categorySitemap);
   }
 
   /**

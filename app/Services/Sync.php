@@ -2,6 +2,7 @@
 namespace AgreableCatfishImporterPlugin\Services;
 
 use \stdClass;
+use \WP_Query;
 use AgreableCatfishImporterPlugin\Services\Post;
 
 class Sync {
@@ -12,7 +13,7 @@ class Sync {
   }
 
   public static function importCategory($categorySitemap, $limit = 10, $mostRecent = true) {
-    $postUrls = Sitemap::getPostsFromCategory($categorySitemap);
+    $postUrls = Sitemap::getPostUrlsFromCategory($categorySitemap);
     $response = new stdClass();
     $response->posts = [];
     if ($limit !== -1) {
@@ -43,5 +44,32 @@ class Sync {
     }
 
     return $response;
+  }
+
+  public static function getImportCategoryStatus($categorySitemap) {
+    $postUrls = Sitemap::getPostUrlsFromCategory($categorySitemap);
+
+    // http://www.stylist.co.uk/sitemap/life.xml > life
+    $categorySlug = substr($categorySitemap, strrpos($categorySitemap, '/') + 1);
+    $categorySlug = str_replace('.xml', '', $categorySlug);
+
+    $query = array(
+      'post_type' => 'post',
+      'category_name' => $categorySlug,
+      'meta_query' => array(
+        array(
+          'key' => 'catfish_importer_imported',
+          'value' => true
+        )
+      )
+    );
+
+    $status = new stdClass();
+
+    $query = new WP_Query($query);
+    $status->importedCount = $query->post_count;
+    $status->categoryTotal = count($postUrls);
+
+    return $status;
   }
 }

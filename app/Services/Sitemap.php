@@ -7,7 +7,7 @@ class Sitemap {
     return self::getUrlsFromSitemap($sitemapIndex);
   }
 
-  public static function getPostsFromCategory($categorySitemap) {
+  public static function getPostUrlsFromCategory($categorySitemap) {
     return self::getUrlsFromSitemap($categorySitemap);
   }
 

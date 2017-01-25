@@ -62,16 +62,14 @@ jQuery(function() {
   }
 
   function getCategoryStatus(sitemapUrl) {
+    $status.html('Fetching stats for category&hellip;')
     $.get(
-      ajaxUrl + '?action=catfishimporter_get_category_status',
+      ajaxUrl + '?action=catfishimporter_get_category_status&sitemapUrl=' + sitemapUrl,
       function onResponse(response) {
         console.log(response)
-        // $status.html($status.html() + 'Sync complete, imported: ' + response.posts.length + '\r\n')
-        // response.posts.forEach(function onPost(post) {
-        //   $status.html($status.html() + 'ID: ' + post.id + ', ' + post.url + '\r\n')
-        // })
-        // $syncCategoryButton.removeAttr('disabled')
-        // console.log(response);
+        $status.html('Current status for category: imported ' +
+          response.importedCount + ' out of ' + response.categoryTotal +
+          ' (' + Math.round((response.importedCount/response.categoryTotal)*100) + '%)\r\n')
       }
     ).fail(function onSyncError(error) {
       $status.html($status.html() + 'Get category status for ' + sitemapUrl + ' failed\r\n')

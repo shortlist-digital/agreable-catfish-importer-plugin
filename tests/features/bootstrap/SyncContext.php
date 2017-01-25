@@ -10,10 +10,13 @@ use \PHPUnit_Framework_Assert as Assert;
 
 class SyncContext extends BehatContext {
 
+  protected static $categorySitemap;
+
   /**
    * @Given /^I sync (\d+) most recent posts from the category sitemap "([^"]*)"$/
    */
   public function iSyncMostRecentPostsFromTheCategory($numberOfPosts, $categorySitemap) {
+    self::$categorySitemap = $categorySitemap;
     $importResponse = Sync::importCategory($categorySitemap, $numberOfPosts);
     Assert::assertNotNull($importResponse);
     Assert::assertEquals($numberOfPosts, count($importResponse->posts));
@@ -42,5 +45,14 @@ class SyncContext extends BehatContext {
     $post = new TimberPost($posts[0]);
 
     Assert::assertTrue($post->has_term($categorySlug, 'category'));
+  }
+
+  /**
+   * @Given /^I should have the category import status of (\d+) out of (\d+) imported$/
+   */
+  public function iShouldHaveTheCategoryImportStatusOfOutOfImported($expectedNumberImported, $expectedNumberTotal) {
+    $categoryImportStatus = Sync::getImportCategoryStatus(self::$categorySitemap);
+    Assert::assertEquals($expectedNumberImported, $categoryImportStatus->importedCount);
+    Assert::assertEquals($expectedNumberTotal, $categoryImportStatus->categoryTotal);
   }
 }
