@@ -20,6 +20,13 @@ class Html {
   }
 
   public static function getFromWidgetDom($widgetDom) {
+
+    // Remove the <div class="legacy-custom-html"/> that Clock wrap
+    // around the content
+    if (isset($widgetDom->find('.legacy-custom-html')[0])) {
+      $widgetDom = $widgetDom->find('.legacy-custom-html')[0];
+    }
+
     if (self::checkIfValidParagraph($widgetDom->innertext)) {
       return Paragraph::getFromWidgetDom($widgetDom);
     }

@@ -8,17 +8,11 @@ use Behat\Behat\Context\BehatContext,
   Behat\Behat\Exception\PendingException;
 use Behat\Gherkin\Node\PyStringNode,
     Behat\Gherkin\Node\TableNode;
-use Behat\Behat\Event\SuiteEvent;
+use Behat\Behat\Event\FeatureEvent;
 use \PHPUnit_Framework_Assert as Assert;
 
 class PostContext extends BehatContext {
   private static $post;
-
-  /**
-   * @BeforeSuite
-   */
-  public static function prepare(SuiteEvent $scope) {
-  }
 
   /**
    * @Given /^the post "([^"]*)"$/
@@ -186,12 +180,5 @@ class PostContext extends BehatContext {
         return $widget;
       }
     }
-  }
-
-  /**
-   * @AfterSuite
-   */
-  public static function after(SuiteEvent $scope) {
-    wp_delete_post(self::$post->id);
   }
 }

@@ -23,6 +23,11 @@ add_action('wp_ajax_catfishimporter_list_categories', function() {
   catfishimporter_api_response($response);
 });
 
+add_action('wp_ajax_catfishimporter_get_category_status', function() {
+  $response = Sync::getCategories();
+  catfishimporter_api_response($response);
+});
+
 function catfishimporter_api_response($response) {
   header('Content-type: Application/json');
   echo json_encode($response); exit;

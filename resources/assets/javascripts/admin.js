@@ -1,7 +1,8 @@
 jQuery(function() {
-  if (jQuery('body.catfish-importer_page_sync').length === 0) {
+  if (jQuery('body.toplevel_page_catfish-importer-index').length === 0) {
     return // If not on Catfish importer page, quit
   }
+  console.log('CatfishImporter init')
 
   var $ = jQuery
   var $categorySelect = $('select[name=category]')
@@ -21,8 +22,15 @@ jQuery(function() {
   function listSections() {
     $.getJSON(ajaxUrl + '?action=catfishimporter_list_categories', function onListSections(response) {
       $categorySelect.html('')
+      $categorySelect.append($('<option value="">').html('Select one...'))
       response.forEach(function(category) {
         $categorySelect.append($('<option>').html(category))
+      })
+
+      $categorySelect.on('change', function(event) {
+        var sitemapSelected = $(event.currentTarget).val()
+        console.log('Sitemap selected: ' + sitemapSelected)
+        getCategoryStatus(sitemapSelected)
       })
     });
   }
@@ -48,6 +56,25 @@ jQuery(function() {
       }
     ).fail(function onSyncError(error) {
       $status.html($status.html() + 'Sync failed, see error in developer console')
+      $syncCategoryButton.removeAttr('disabled')
+      console.log(error)
+    })
+  }
+
+  function getCategoryStatus(sitemapUrl) {
+    $.get(
+      ajaxUrl + '?action=catfishimporter_get_category_status',
+      function onResponse(response) {
+        console.log(response)
+        // $status.html($status.html() + 'Sync complete, imported: ' + response.posts.length + '\r\n')
+        // response.posts.forEach(function onPost(post) {
+        //   $status.html($status.html() + 'ID: ' + post.id + ', ' + post.url + '\r\n')
+        // })
+        // $syncCategoryButton.removeAttr('disabled')
+        // console.log(response);
+      }
+    ).fail(function onSyncError(error) {
+      $status.html($status.html() + 'Get category status for ' + sitemapUrl + ' failed\r\n')
       $syncCategoryButton.removeAttr('disabled')
       console.log(error)
     })
