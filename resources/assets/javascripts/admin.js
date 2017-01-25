@@ -18,6 +18,7 @@ jQuery(function() {
   $syncUrlButton.click(onSyncUrlClick)
 
   listSections()
+  getCurrentStatus()
 
   function listSections() {
     $.getJSON(ajaxUrl + '?action=catfishimporter_list_categories', function onListSections(response) {
@@ -100,6 +101,23 @@ jQuery(function() {
     ).fail(function onSyncError(error) {
       $status.html($status.html() + 'Sync failed, see error in developer console')
       $syncUrlButton.removeAttr('disabled')
+      console.log(error)
+    })
+  }
+
+  function getCurrentStatus() {
+    $status.html('Fetching stats&hellip;')
+    $.get(
+      ajaxUrl + '?action=catfishimporter_get_status',
+      function onResponse(response) {
+        console.log(response)
+        $status.html('Current status: imported ' +
+          response.importedCount + ' out of ' + response.total +
+          ' (' + Math.round((response.importedCount/response.total)*100) + '%)\r\n')
+      }
+    ).fail(function onSyncError(error) {
+      $status.html($status.html() + 'Get category status for ' + sitemapUrl + ' failed\r\n')
+      $syncCategoryButton.removeAttr('disabled')
       console.log(error)
     })
   }

@@ -72,4 +72,21 @@ class Sync {
 
     return $status;
   }
+
+  public static function getImportStatus() {
+
+    $totalStatus = new stdClass();
+    $totalStatus->importedCount = 0;
+    $totalStatus->total = 0;
+
+    $categories = self::getCategories();
+    foreach($categories as $categoryUrl) {
+      $categoryStatus = self::getImportCategoryStatus($categoryUrl);
+
+      $totalStatus->importedCount += $categoryStatus->importedCount;
+      $totalStatus->total += $categoryStatus->categoryTotal;
+    }
+
+    return $totalStatus;
+  }
 }

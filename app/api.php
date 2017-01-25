@@ -24,6 +24,11 @@ add_action('wp_ajax_catfishimporter_list_categories', function() {
   catfishimporter_api_response($response);
 });
 
+add_action('wp_ajax_catfishimporter_get_status', function() {
+  $response = Sync::getImportStatus();
+  catfishimporter_api_response($response);
+});
+
 add_action('wp_ajax_catfishimporter_get_category_status', function() {
   if (!isset($_GET['sitemapUrl']) || !$_GET['sitemapUrl']) {
     throw new Exception('sitemapUrl is missing from query');

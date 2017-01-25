@@ -11,6 +11,7 @@ use \PHPUnit_Framework_Assert as Assert;
 class SyncContext extends BehatContext {
 
   protected static $categorySitemap;
+  protected static $totalStatus;
 
   /**
    * @Given /^I sync (\d+) most recent posts from the category sitemap "([^"]*)"$/
@@ -55,4 +56,21 @@ class SyncContext extends BehatContext {
     Assert::assertEquals($expectedNumberImported, $categoryImportStatus->importedCount);
     Assert::assertEquals($expectedNumberTotal, $categoryImportStatus->categoryTotal);
   }
+
+  /**
+   * @Given /^I retrive the full import status$/
+   */
+  public function iRetriveTheFullImportStatus() {
+    self::$totalStatus = Sync::getImportStatus();
+  }
+
+  /**
+   * @Then /^I should see a couple of imported out of at least (\d+)$/
+   */
+  public function iShouldSeeACoupleOfImportedOutOfAtLeast($arg) {
+    // Assert::assertGreaterThan(0, self::$totalStatus->importedCount);
+    Assert::assertGreaterThan(10000, self::$totalStatus->total);
+  }
+
+
 }
