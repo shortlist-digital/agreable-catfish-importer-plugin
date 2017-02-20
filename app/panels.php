@@ -63,18 +63,18 @@ $panel->add([
   'type'   => 'panel',
   'as'     => 'mainPanel',
   'title'  => 'Catfish Importer',
-  'rename' => 'Recent imports',
+  'rename' => 'Sync',
   'slug'   => 'catfish-importer-index',
   'icon'   => 'dashicons-download',
-  'uses'   => __NAMESPACE__ . '\Controllers\AdminController@index'
+  'uses'   => __NAMESPACE__ . '\Controllers\AdminController@sync'
 ]);
 
 $panel->add([
   'type'   => 'sub-panel',
   'parent' => 'mainPanel',
-  'as'     => 'syncPanel',
-  'title'  => 'Sync',
-  'slug'   => 'sync',
-  'uses'   => __NAMESPACE__ . '\Controllers\AdminController@sync'
+  'as'     => 'recentImportPanel',
+  'title'  => 'Recent Imports',
+  'slug'   => 'recentImport',
+  'uses'   => __NAMESPACE__ . '\Controllers\AdminController@index'
 ]);
 

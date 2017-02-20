@@ -1,6 +1,7 @@
 <?php namespace AgreableCatfishImporterPlugin;
 
 use AgreableCatfishImporterPlugin\Services\Sync;
+use \Exception;
 
 set_time_limit(0);
 
@@ -20,6 +21,20 @@ add_action('wp_ajax_catfishimporter_start_sync-url', function() {
 
 add_action('wp_ajax_catfishimporter_list_categories', function() {
   $response = Sync::getCategories();
+  catfishimporter_api_response($response);
+});
+
+add_action('wp_ajax_catfishimporter_get_status', function() {
+  $response = Sync::getImportStatus();
+  catfishimporter_api_response($response);
+});
+
+add_action('wp_ajax_catfishimporter_get_category_status', function() {
+  if (!isset($_GET['sitemapUrl']) || !$_GET['sitemapUrl']) {
+    throw new Exception('sitemapUrl is missing from query');
+  }
+
+  $response = Sync::getImportCategoryStatus($_GET['sitemapUrl']);
   catfishimporter_api_response($response);
 });
 

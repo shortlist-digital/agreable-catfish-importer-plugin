@@ -1,7 +1,8 @@
 jQuery(function() {
-  if (jQuery('body.catfish-importer_page_sync').length === 0) {
+  if (jQuery('body.toplevel_page_catfish-importer-index').length === 0) {
     return // If not on Catfish importer page, quit
   }
+  console.log('CatfishImporter init')
 
   var $ = jQuery
   var $categorySelect = $('select[name=category]')
@@ -17,12 +18,20 @@ jQuery(function() {
   $syncUrlButton.click(onSyncUrlClick)
 
   listSections()
+  getCurrentStatus()
 
   function listSections() {
     $.getJSON(ajaxUrl + '?action=catfishimporter_list_categories', function onListSections(response) {
       $categorySelect.html('')
+      $categorySelect.append($('<option value="">').html('Select one...'))
       response.forEach(function(category) {
         $categorySelect.append($('<option>').html(category))
+      })
+
+      $categorySelect.on('change', function(event) {
+        var sitemapSelected = $(event.currentTarget).val()
+        console.log('Sitemap selected: ' + sitemapSelected)
+        getCategoryStatus(sitemapSelected)
       })
     });
   }
@@ -53,6 +62,23 @@ jQuery(function() {
     })
   }
 
+  function getCategoryStatus(sitemapUrl) {
+    $status.html('Fetching stats for category&hellip;')
+    $.get(
+      ajaxUrl + '?action=catfishimporter_get_category_status&sitemapUrl=' + sitemapUrl,
+      function onResponse(response) {
+        console.log(response)
+        $status.html('Current status for category: imported ' +
+          response.importedCount + ' out of ' + response.categoryTotal +
+          ' (' + Math.round((response.importedCount/response.categoryTotal)*100) + '%)\r\n')
+      }
+    ).fail(function onSyncError(error) {
+      $status.html($status.html() + 'Get category status for ' + sitemapUrl + ' failed\r\n')
+      $syncCategoryButton.removeAttr('disabled')
+      console.log(error)
+    })
+  }
+
   function onSyncUrlClick(event) {
     event.preventDefault()
     $status.html('Syncing URL\r\n')
@@ -75,6 +101,23 @@ jQuery(function() {
     ).fail(function onSyncError(error) {
       $status.html($status.html() + 'Sync failed, see error in developer console')
       $syncUrlButton.removeAttr('disabled')
+      console.log(error)
+    })
+  }
+
+  function getCurrentStatus() {
+    $status.html('Fetching stats&hellip;')
+    $.get(
+      ajaxUrl + '?action=catfishimporter_get_status',
+      function onResponse(response) {
+        console.log(response)
+        $status.html('Current status: imported ' +
+          response.importedCount + ' out of ' + response.total +
+          ' (' + Math.round((response.importedCount/response.total)*100) + '%)\r\n')
+      }
+    ).fail(function onSyncError(error) {
+      $status.html($status.html() + 'Get category status for ' + sitemapUrl + ' failed\r\n')
+      $syncCategoryButton.removeAttr('disabled')
       console.log(error)
     })
   }

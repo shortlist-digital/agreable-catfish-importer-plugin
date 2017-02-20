@@ -6,22 +6,18 @@ use Behat\Behat\Context\BehatContext,
   Behat\Behat\Exception\PendingException;
 use Behat\Gherkin\Node\PyStringNode,
     Behat\Gherkin\Node\TableNode;
-use Behat\Behat\Event\SuiteEvent;
 use \PHPUnit_Framework_Assert as Assert;
 
 class SyncContext extends BehatContext {
 
-  /**
-   * @BeforeSuite
-   */
-  public static function prepare(SuiteEvent $scope) {
-    self::deleteAllTestArticles();
-  }
+  protected static $categorySitemap;
+  protected static $totalStatus;
 
   /**
    * @Given /^I sync (\d+) most recent posts from the category sitemap "([^"]*)"$/
    */
   public function iSyncMostRecentPostsFromTheCategory($numberOfPosts, $categorySitemap) {
+    self::$categorySitemap = $categorySitemap;
     $importResponse = Sync::importCategory($categorySitemap, $numberOfPosts);
     Assert::assertNotNull($importResponse);
     Assert::assertEquals($numberOfPosts, count($importResponse->posts));
@@ -34,6 +30,7 @@ class SyncContext extends BehatContext {
   public function iShouldHaveImportedPosts($expectedNumberOfPosts, $categorySlug) {
     $query = array(
       'post_type' => 'post',
+      'category_name' => $categorySlug,
       'meta_query' => array(
         array(
           'key' => 'automated_testing',
@@ -52,23 +49,28 @@ class SyncContext extends BehatContext {
   }
 
   /**
-   * @AfterSuite
+   * @Given /^I should have the category import status of (\d+) out of (\d+) imported$/
    */
-  public static function after(SuiteEvent $scope) {
-    self::deleteAllTestArticles();
+  public function iShouldHaveTheCategoryImportStatusOfOutOfImported($expectedNumberImported, $expectedNumberTotal) {
+    $categoryImportStatus = Sync::getImportCategoryStatus(self::$categorySitemap);
+    Assert::assertEquals($expectedNumberImported, $categoryImportStatus->importedCount);
+    Assert::assertEquals($expectedNumberTotal, $categoryImportStatus->categoryTotal);
   }
 
-  protected static function deleteAllTestArticles() {
-    $query = [
-      'post_type' => 'post',
-      'meta_key'  => 'automated_testing',
-      'meta_value'  => true,
-    ];
-
-    $query = new WP_Query($query);
-    $posts = $query->get_posts();
-    foreach($posts as $post) {
-      wp_delete_post($post->ID, true);
-    }
+  /**
+   * @Given /^I retrive the full import status$/
+   */
+  public function iRetriveTheFullImportStatus() {
+    self::$totalStatus = Sync::getImportStatus();
   }
+
+  /**
+   * @Then /^I should see a couple of imported out of at least (\d+)$/
+   */
+  public function iShouldSeeACoupleOfImportedOutOfAtLeast($arg) {
+    // Assert::assertGreaterThan(0, self::$totalStatus->importedCount);
+    Assert::assertGreaterThan(10000, self::$totalStatus->total);
+  }
+
+
 }
