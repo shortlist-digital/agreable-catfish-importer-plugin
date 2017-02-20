@@ -26,7 +26,6 @@ class PostContext extends BehatContext {
    */
   public function iShouldHaveAnObjectOfThePost() {
     Assert::assertInstanceOf('TimberPost', self::$post);
-
   }
 
   /**
@@ -181,4 +180,20 @@ class PostContext extends BehatContext {
       }
     }
   }
+
+  /**
+   * @Given /^the post has (\d+) images$/
+   */
+  public function thePostHasImages($count)
+  {
+    $widgets = self::$post->get_field('widgets');
+    $image_count = 0;
+    foreach ($widgets as $key => $widget) {
+      if ($widget['acf_fc_layout'] == "image") {
+        $image_count = $image_count + 1;
+      }
+    }
+    Assert::assertEquals($count, $image_count);
+  }
+
 }
