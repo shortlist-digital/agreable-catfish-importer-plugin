@@ -10,7 +10,7 @@ use AgreableCatfishImporterPlugin\Services\Widgets\Embed;
 
 class Html {
   public static function checkIfValidParagraph($html_string) {
-    $allowable_tags = '<a><b><i><br><em><strong><p><h3><ul><ol><li><span><center>';
+    $allowable_tags = '<a><b><i><br><em><sup><sub><strong><p><h3><ul><ol><li><span><center>';
     $stripped_string = strip_tags($html_string, $allowable_tags);
     $test = ($html_string == $stripped_string);
     if (ctype_space(strip_tags(html_entity_decode($html_string, ENT_HTML5, 'iso-8859-1')))) {
@@ -29,8 +29,7 @@ class Html {
 
     if (self::checkIfValidParagraph($widgetDom->innertext)) {
       return Paragraph::getFromWidgetDom($widgetDom);
-    }
-    else {
+    } else {
       return array_filter(self::breakIntoWidgets($widgetDom));
     }
     return $widgetData;
@@ -71,7 +70,6 @@ class Html {
       $paragraphDom = HtmlDomParser::str_get_html($current_paragraph_string);
       array_push($widgets, Paragraph::getFromWidgetDom($paragraphDom));
     }
-    $widgetCollection = new Collection($widgets);
     // HTML Merge step
     foreach($widgets as $index=> $widget):
       if ($index != 0) {
@@ -83,17 +81,24 @@ class Html {
       }
     endforeach;
     $widgets = array_values($widgets);
-    $htmlCheck = $widgetCollection->reduce(function ($carry, $item) {
-      return ($item->type == 'html');
+
+    $widgetCollection = new Collection($widgets);
+    $htmlCheck = $widgetCollection->reduce(function ($carry, $widget) {
+      return ($widget->type == 'html');
     });
     if ($htmlCheck) {
       $widgets = array($widgetCollection->reduce(function ($carry, $item) {
-        if (!$carry) {
-          $carry = new stdClass();
-          $carry->html = '';
+        try {
+          if (!$carry) {
+            $carry = new stdClass();
+            $carry->html = '';
+          }
+          $carry->type = $item->type;
+          $carry->html .= $item->html;
+
+        } catch (\Exception $e) {
+          print_r($e);
         }
-        $carry->type = $item->type;
-        $carry->html .= $item->html;
         return $carry;
       }));
     }
