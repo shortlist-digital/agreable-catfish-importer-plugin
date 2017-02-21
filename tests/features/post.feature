@@ -1,12 +1,6 @@
 Feature: Post
   Test the importing an post
 
-  Scenario: Article has correct number of images
-    Given the post "http://www.shortlist.com/style/fashion/best-trainers-sneakers-hottest-february-2017"
-    Then I should have an object of the post
-    And the post has the headline "The 10 Hottest Trainers for February 2017"
-    And the post has 10 images
-
   Scenario: Fetch the all widgets post
     Given the post "http://www.stylist.co.uk/test-tech/all-widgets-test?previewId=46kzaa0"
     Then I should have an object of the post
@@ -72,3 +66,10 @@ Feature: Post
 <p>She’s been fired, divorced and reviled for her forthright and outlandish views which she charts in her weekly columns for the <em>Daily Mail</em>, but she never stays down for long. <em>Stylist</em>’s Alix Walker meets the UK’s most controversial writer</p>
 
       """
+
+
+    Scenario: Article has correct number of widgets
+      Given the post "http://www.shortlist.com/style/fashion/best-trainers-sneakers-hottest-february-2017"
+      Then I should have an object of the post
+      And the post has the headline "The 10 Hottest Trainers for February 2017"
+      And the post has 10 "image" widgets

@@ -182,14 +182,13 @@ class PostContext extends BehatContext {
   }
 
   /**
-   * @Given /^the post has (\d+) images$/
+   * @Given /^the post has (\d+) "([^"]*)" widgets$/
    */
-  public function thePostHasImages($count)
-  {
+  public function thePostHasWidgets($count, $widget_type) {
     $widgets = self::$post->get_field('widgets');
     $image_count = 0;
     foreach ($widgets as $key => $widget) {
-      if ($widget['acf_fc_layout'] == "image") {
+      if ($widget['acf_fc_layout'] == $widget_type) {
         $image_count = $image_count + 1;
       }
     }
