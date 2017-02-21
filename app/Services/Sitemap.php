@@ -14,9 +14,13 @@ class Sitemap {
   protected static function getUrlsFromSitemap($sitemapLocation) {
     $sitemap = HtmlDomParser::file_get_html($sitemapLocation);
     $urls = [];
-    foreach($sitemap->find('loc') as $loc) {
-      $urls[] = $loc->innertext;
+    // Only process if object is returned
+    if (is_object($sitemap)) {
+      foreach($sitemap->find('loc') as $loc) {
+        $urls[] = $loc->innertext;
+      }
+      return $urls;
     }
-    return $urls;
+    return null;
   }
 }
