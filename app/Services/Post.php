@@ -101,7 +101,6 @@ class Post {
       $meshPost->set('automated_testing', true, true);
     }
 
-
     if (!$post = new TimberPost($meshPost->id)) {
       self::notifyError('Unexpected exception where Mesh did not create/fetch a post');
     }
