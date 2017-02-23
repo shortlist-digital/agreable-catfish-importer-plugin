@@ -41,6 +41,7 @@ class SyncContext extends BehatContext {
 
     $query = new WP_Query($query);
     $posts = $query->get_posts();
+
     Assert::assertEquals($expectedNumberOfPosts, count($posts));
 
     $post = new TimberPost($posts[0]);

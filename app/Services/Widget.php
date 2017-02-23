@@ -4,7 +4,6 @@ namespace AgreableCatfishImporterPlugin\Services;
 use TimberPost;
 use stdClass;
 use Exception;
-use Mesh;
 use AgreableCatfishImporterPlugin\Services\Widgets\InlineImage;
 use AgreableCatfishImporterPlugin\Services\Widgets\Video;
 use AgreableCatfishImporterPlugin\Services\Widgets\Html;
@@ -51,9 +50,10 @@ class Widget {
           $widgetNames[] = $widget->acf_fc_layout;
           break;
         case 'image':
-          $image = new Mesh\Image($widget->image->src);
+          // Upload the image and return image id
+          $image_id = self::sideLoadImage($widget->image->src);
 
-          self::setPostMetaProperty($post, $metaLabel . '_image', 'widget_image_image', $image->id);
+          self::setPostMetaProperty($post, $metaLabel . '_image', 'widget_image_image', $image_id);
           self::setPostMetaProperty($post, $metaLabel . '_border', 'widget_image_border', 0);
           self::setPostMetaProperty($post, $metaLabel . '_width', 'widget_image_width', $widget->image->width);
           self::setPostMetaProperty($post, $metaLabel . '_position', 'widget_image_position', $widget->image->position);
@@ -110,19 +110,23 @@ class Widget {
       }
       $imageUrl = array_pop($image->__mainImageUrls);
 
-      $meshImage = new \Mesh\Image($imageUrl);
-      $imagePost = get_post($meshImage->id);
+      // Upload the image and return image id
+      $image_id = self::sideLoadImage($imageUrl);
+
+      $imagePost = get_post($image_id);
       $imagePost->post_title = $title;
       $imagePost->post_excerpt = $image->description;
+
       wp_update_post($imagePost);
 
-      $imageIds[] = $meshImage->id;
+      $imageIds[] = $image_id;
     }
 
     self::setPostMetaProperty($post, 'widgets_' . count($widgetNames) . '_gallery_items', 'widget_gallery_galleryitems', serialize($imageIds));
   }
 
   public static function getPostWidgets(TimberPost $post) {
+    // return ~ $post->get_field('widgets');
     return $post->get_field('widgets');
   }
 
@@ -207,6 +211,105 @@ class Widget {
 
     return $widgets;
   }
+
+  /**
+   * Create an image for image widgets and gallery widgets to use
+   */
+  protected static function sideLoadImage($url) {
+    $image_exists = self::checkIfImageExists( $url );
+		if ($image_exists) {
+			$upload_info = self::getImageData( $url );
+			$id = self::createImage( $upload_info );
+		} else {
+			$url = str_replace(' ', '%20', $url);
+			$upload_info = self::uploadImage( $url );
+			$id = self::createImage( $upload_info );
+		}
+		return $id;
+  }
+
+  /**
+   * create function adapted from Mesh for performance
+   */
+	protected static function createImage( $image_info, $post_type = 'attachment' ) {
+		$filename = $image_info['file'];
+		$pathinfo = pathinfo( $filename );
+		$filetype = wp_check_filetype( basename( $filename ), null );
+		$data = array(
+			'post_title' => $pathinfo['basename'],
+			'post_mime_type' => $filetype['type'],
+			'guid' => $image_info['url'],
+			'post_type' => $post_type,
+			'post_content' => '',
+			'post_status' => 'inherit'
+		);
+		$pid = wp_insert_attachment( $data, $filename, 1 );
+		if ( !function_exists( 'wp_generate_attachment_metadata' ) ) {
+			require_once( ABSPATH . 'wp-admin/includes/image.php' );
+		}
+		$metadata = wp_generate_attachment_metadata( $pid, $image_info['file'] );
+		wp_update_attachment_metadata( $pid, $metadata );
+		return $pid;
+	}
+
+  /**
+   * uploadImage function adapted from Mesh for performance
+   */
+	protected static function uploadImage( $url ) {
+		$location = self::getSideloadedFileLocation( $url );
+		if ( !function_exists( 'download_url' ) ) {
+			require_once ABSPATH . '/wp-admin/includes/file.php';
+		}
+		$tmp = download_url( $url );
+		$file_array = array();
+		$file_array['tmp_name'] = $tmp;
+		// If error storing temporarily, unlink
+		if ( is_wp_error( $tmp ) ) {
+			@unlink( $file_array['tmp_name'] );
+			$file_array['tmp_name'] = '';
+		}
+		// do the validation and storage stuff
+		$locinfo = pathinfo( $location );
+		return wp_upload_bits( $locinfo['basename'], null, file_get_contents( $file_array['tmp_name'] ) );
+	}
+
+	/**
+   * Image utils adapted from Mesh for performance
+   */
+	public static function getSideloadedFileLocation( $url ) {
+		$upload = wp_upload_dir();
+		$dir = $upload['path'];
+		$file = parse_url( $url );
+		$path_parts = pathinfo( $file['path'] );
+		$basename = md5( $url );
+		$ext = 'jpg';
+		if ( isset( $path_parts['extension'] ) ) {
+			$ext = $path_parts['extension'];
+		}
+		return $dir . '/' . $basename . '.' . $ext;
+	}
+
+  /**
+   * checkIfImageExists utils adapted from Mesh for performance
+   */
+	protected static function checkIfImageExists( $url ) {
+		$file_name_in_fs = self::getSideloadedFileLocation( $url );
+		if ( file_exists( $file_name_in_fs ) ) {
+			return true;
+		}
+		return false;
+	}
+
+  /**
+   * getImageData utils adapted from Mesh for performance
+   */
+  protected static function getImageData( $url ) {
+		$location = self::getSideloadedFileLocation( $url );
+		$new_url = str_replace(ABSPATH, '', $location);
+		$new_url = get_site_url().'/'.$new_url;
+		$data = array('file' => $location, 'url' => $new_url);
+		return $data;
+	}
 
   /**
    * A small helper for setting post metadata

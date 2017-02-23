@@ -100,7 +100,7 @@ class Post {
     // Attach Categories to Post
     Category::attachCategories($object->article->section, $postUrl, $wpPostId);
 
-    // Attach
+    // Attach Tags to Post
     $postTags = array();
     foreach($object->article->tags as $tag) {
       if ($tag->type !== 'System') {
