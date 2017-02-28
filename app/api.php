@@ -42,3 +42,7 @@ function catfishimporter_api_response($response) {
   header('Content-type: Application/json');
   echo json_encode($response); exit;
 }
+
+add_action('wp_ajax_catfishimporter_testqueue', function() {
+  Sync::testQueue();
+});

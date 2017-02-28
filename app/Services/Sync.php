@@ -4,6 +4,8 @@ namespace AgreableCatfishImporterPlugin\Services;
 use \stdClass;
 use \WP_Query;
 use AgreableCatfishImporterPlugin\Services\Post;
+use AgreableCatfishImporterPlugin\Services\Queue;
+new Queue; // Setup Queue connection
 
 class Sync {
 
@@ -88,5 +90,23 @@ class Sync {
     }
 
     return $totalStatus;
+  }
+
+  /**
+   * Queue functions
+   * NOTE: Does this need a Queue class?
+   */
+
+   /**
+    * Testing queue function - try connection
+    */
+  public static function testQueue() {
+
+    $message = array('test' => true);
+
+    // Push item into Queue
+    Queue::push('SendEmail', array('message' => $message));
+
+    die('testQueue');
   }
 }

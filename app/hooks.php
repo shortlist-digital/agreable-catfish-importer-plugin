@@ -31,4 +31,3 @@ class ImporterHooks {
 }
 
 new ImporterHooks;
-
