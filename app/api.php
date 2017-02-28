@@ -29,6 +29,12 @@ add_action('wp_ajax_catfishimporter_get_status', function() {
   catfishimporter_api_response($response);
 });
 
+// Speedtest API endpoint
+add_action('wp_ajax_catfishimporter_speedtest', function() {
+  $response = Sync::runSpeedtest();
+  catfishimporter_api_response($response);
+});
+
 add_action('wp_ajax_catfishimporter_get_category_status', function() {
   if (!isset($_GET['sitemapUrl']) || !$_GET['sitemapUrl']) {
     throw new Exception('sitemapUrl is missing from query');

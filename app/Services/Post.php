@@ -19,8 +19,14 @@ class Post {
     $notifier->error($message);
   }
 
-  public static function getPostFromUrl($postUrl) {
-    $fail = false;
+  public static function getPostFromUrl($postUrl, $speedtest = false) {
+
+    // Start speedtest timer
+    if($speedtest) {
+      $speedtestData = array();
+      $speedtestData['startTime'] = microtime(true);
+    }
+
     $postJsonUrl = $postUrl . '.json';
     try {
       $postString = file_get_contents($postJsonUrl);
@@ -124,6 +130,13 @@ class Post {
 
     // Envoke any actions hooked to the 'catfish_importer_post' tag
     do_action('catfish_importer_post', $post->ID);
+
+    // End speedtest timer
+    if($speedtest) {
+      $speedtestData['endTime'] = microtime(true);
+      $speedtestData['time'] = $speedtestData['endTime'] - $speedtestData['startTime'] ;
+      $post->speedtest = $speedtestData;
+    }
 
     return $post;
   }

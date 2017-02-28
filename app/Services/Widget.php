@@ -166,7 +166,8 @@ class Widget {
 
     foreach($postDom->find('.article__content .widget__wrapper') as $widgetWrapper) {
 
-      if (isset($widgetWrapper->find('.widget')[0])) {
+      // Catch html widgets being passed boolean with is_object($widgetWrapper->find('.widget')[0])
+      if (isset($widgetWrapper->find('.widget')[0]) && is_object($widgetWrapper->find('.widget')[0])) {
         $widget = $widgetWrapper->find('.widget')[0];
 
         // Get class name
@@ -181,6 +182,7 @@ class Widget {
 
         switch ($widgetName) {
           case 'html':
+            // This
             $widgetData = Html::getFromWidgetDom($widget);
             break;
           case 'inline-image':

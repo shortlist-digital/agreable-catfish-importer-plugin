@@ -12,7 +12,10 @@ class Sync {
     return Sitemap::getCategoriesFromIndex($site_url . 'sitemap-index.xml');
   }
 
-  public static function importCategory($categorySitemap, $limit = 10, $mostRecent = true) {
+  /**
+   * Import multiple posts from category
+   */
+  public static function importCategory($categorySitemap, $limit = 10, $mostRecent = true, $speedtest = false) {
     $postUrls = Sitemap::getPostUrlsFromCategory($categorySitemap);
     $response = new stdClass();
     $response->posts = [];
@@ -21,10 +24,15 @@ class Sync {
     }
 
     foreach($postUrls as $postUrl) {
-      if ($post = Post::getPostFromUrl($postUrl)) {
+      if ($post = Post::getPostFromUrl($postUrl, $speedtest)) {
         $postResponse = new stdClass();
         $postResponse->id = $post->ID;
         $postResponse->url = $postUrl;
+        // If running speedtest then return the entire post object including the speedtest data
+        if($speedtest) {
+          $postResponse->post_type = $post->post_type;
+          $postResponse->speedtest = $post->speedtest;
+        }
         $response->posts[] = $postResponse;
       }
     }
@@ -73,6 +81,9 @@ class Sync {
     return $status;
   }
 
+  /**
+   * Return stats on total posts imported
+   */
   public static function getImportStatus() {
 
     $totalStatus = new stdClass();
@@ -88,5 +99,79 @@ class Sync {
     }
 
     return $totalStatus;
+  }
+
+  /**
+   * Runs a speedtest on a subset of imports
+   */
+  // Surfaced two errors:
+  // Undefined index: file in mesh-image
+  // Widget recursion bug in Html
+  // Widget DOM not pased as an object
+  // $image_info['file'] not set
+  public static function runSpeedtest() {
+
+    // Set variables for speedtest
+    $categoriesToTest = 5;
+    $postsToTest = 5;
+    $randomiseTest = true;
+    $clockPostTotal = 23245;
+    // The follow variables repeat the Widget recursion bug:
+    // $categoriesToTest = 2;
+    // $postsToTest = 2;
+    // $randomiseTest = false;
+
+    // Setup response object
+    $speedTest = new stdClass();
+    $speedTest->data = [];
+    $speedTest->total = 0;
+
+    $speedAverage = array();
+    $speedTypeAverage = array();
+
+    // Get list of categories
+    $categories = self::getCategories();
+
+    // limit categories
+    if($randomiseTest) {
+      shuffle($categories);
+    }
+    $categories = array_slice($categories, 0, $categoriesToTest);
+
+    foreach($categories as $categoryUrl) {
+
+      // Import a subset of posts using importCategory enabling speedtest logging
+      // -1 to get all categories
+      $categoryPosts = self::importCategory($categoryUrl, $postsToTest, false, true);
+
+      // Check if category has posts associated with it.
+      if(!empty($categoryPosts->posts)) {
+        // Loop through each article
+        foreach ($categoryPosts->posts as $post) {
+          // Foreach article speed to array for overall average and array for average by post type
+          $speedAverage[] = $post->speedtest['time'];
+          $speedTypeAverage[$post->post_type][] = $post->speedtest['time'];
+
+          // Add to the post count
+          $speedTest->total = $speedTest->total + 1;
+        }
+      }
+
+    }
+
+    // die(var_dump($speedAverage, $speedTypeAverage));
+    $speedTest->data['speedData'] = $speedAverage;
+    $speedTest->data['speedAverageData'] = $speedTypeAverage;
+
+    $speedTest->totalLoadTime = array_sum($speedAverage);
+    $speedTest->averageLoad = array_sum($speedAverage) / count($speedAverage);
+
+    $speedTest->estimatedImportTime = $speedTest->averageLoad * $clockPostTotal;
+
+    foreach ($speedTypeAverage as $type => $testData) {
+      $speedTest->averageLoadByType[$type] = array_sum($testData) / count($testData);
+    }
+
+    return $speedTest;
   }
 }
