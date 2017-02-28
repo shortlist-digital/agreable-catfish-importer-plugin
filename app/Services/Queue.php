@@ -5,7 +5,7 @@ use \Illuminate\Queue\Capsule\Manager;
 
 class Queue extends Manager {
   /**
-   * Testing queue function - try connection
+   * Setup queue connection variables on class instansiation
    */
    public function __construct() {
 
