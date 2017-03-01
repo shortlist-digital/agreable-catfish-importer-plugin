@@ -15,7 +15,8 @@
     "shortlist-digital/agreable-base-theme": "~2.1",
     "illuminate/queue": "5.2.*",
     "illuminate/encryption": "5.2.*",
-    "aws/aws-sdk-php": "dev-master"
+    "aws/aws-sdk-php": "dev-master",
+    "wp-cli/wp-cli": "dev-master"
   },
   "config": {
     "preferred-install": "dist"

@@ -102,11 +102,31 @@ class Sync {
     */
   public static function testQueue() {
 
+    self::registerCli();
+
     $message = array('test' => true);
 
     // Push item into Queue
     Queue::push('SendEmail', array('message' => $message));
 
     die('testQueue');
+  }
+
+  private static function registerCli() {
+    // /**
+    //  * My awesome closure command
+    //  *
+    //  * <message>
+    //  * : An awesome message to display
+    //  *
+    //  * @when before_wp_load
+    //  */
+    // $foo = function( $args ) {
+    //     WP_CLI::success( $args[0] );
+    // };
+    // WP_CLI::add_command( 'foo', $foo );
+
+    die('registerCli');
+
   }
 }

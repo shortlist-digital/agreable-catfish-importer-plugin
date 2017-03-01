@@ -9,3 +9,18 @@
 /** @var  \Herbert\Framework\Widget $widget */
 
 flush_rewrite_rules();
+
+// Create commands?
+
+/**
+ * My awesome closure command
+ *
+ * <message>
+ * : An awesome message to display
+ *
+ * @when before_wp_load
+ */
+$foo = function( $args ) {
+    WP_CLI::success( $args[0] );
+};
+WP_CLI::add_command( 'foo', $foo );
