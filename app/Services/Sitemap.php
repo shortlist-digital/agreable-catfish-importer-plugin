@@ -27,6 +27,6 @@ class Sitemap {
       }
       return $urls;
     }
-    return null;
+    return [];
   }
 }

@@ -159,7 +159,6 @@ class Sync {
 
     }
 
-    // die(var_dump($speedAverage, $speedTypeAverage));
     $speedTest->data['speedData'] = $speedAverage;
     $speedTest->data['speedAverageData'] = $speedTypeAverage;
 
