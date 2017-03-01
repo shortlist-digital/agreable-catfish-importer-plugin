@@ -1,4 +1,4 @@
 Agreable Catfish Importer Plugin
 ===============
 
-TBC
+For importing Catfish content in to Croissant

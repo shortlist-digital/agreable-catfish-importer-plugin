@@ -12,6 +12,7 @@ jQuery(function() {
   var $syncUrlButton = $('input[name=sync-url]')
   var $syncUrl = $('input[name=url]')
   var $status = $('.import-status')
+  var $speedtest = $('.speedtest-status')
   var ajaxUrl = $('.ajax-url').html()
 
   $syncCategoryButton.click(onSyncCategoryClick)
@@ -19,6 +20,7 @@ jQuery(function() {
 
   listSections()
   getCurrentStatus()
+  runSpeedtest()
 
   function listSections() {
     $.getJSON(ajaxUrl + '?action=catfishimporter_list_categories', function onListSections(response) {
@@ -110,7 +112,7 @@ jQuery(function() {
     $.get(
       ajaxUrl + '?action=catfishimporter_get_status',
       function onResponse(response) {
-        console.log(response)
+        console.log(response);
         $status.html('Current status: imported ' +
           response.importedCount + ' out of ' + response.total +
           ' (' + Math.round((response.importedCount/response.total)*100) + '%)\r\n')
@@ -122,5 +124,32 @@ jQuery(function() {
     })
   }
 
+  /**
+   * Run a speedtest on the importer and show results
+   */
+  function runSpeedtest() {
+    $speedtest.html('Running speedtest, this may take some time&hellip;')
+    $.get(
+      ajaxUrl + '?action=catfishimporter_speedtest',
+      function onResponse(response) {
+        // Show the results/averages
+        try {
+          jQuery.parseJSON(response);
+          console.log('Speedtest Successful');
+          console.log(response);
+          $speedtest.html('Speedtest tested ' +
+            response.total + ' article imports with an average load time of ' + response.averageLoad +
+            '. Based on this average the estimated time to import all posts is ' + response.estimatedImportTime/60/60 + ' hours. \r\n' )
+        } catch(error) {
+          // Catch error output
+          $speedtest.html('Error running speedtest&hellip;')
+          console.log(error)
+        }
+      }
+    ).fail(function onSyncError(error) {
+      $speedtest.html('Error running speedtest&hellip;')
+      console.log(error)
+    })
+  }
 
 })

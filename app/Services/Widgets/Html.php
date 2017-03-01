@@ -102,7 +102,7 @@ class Html {
           $carry->type = $item->type;
           $carry->html .= $item->html;
 
-        // Collection doesn't error so catch any Exceptions hee
+        // Collection doesn't error so catch any Exceptions here
         } catch (\Exception $e) {
           print_r($e);
         }
