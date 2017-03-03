@@ -9,7 +9,6 @@ jQuery(function() {
   var $categoryOnExistAction = $('select[id=categoryOnExistAction]')
   var $categorySelect = $('select[name=category]')
   var $urlSelect = $('select[name=url]')
-  var $limitSelect = $('select[name=limit]')
   var $syncCategoryButton = $('input[name=sync-category]')
   var $syncUrlButton = $('input[name=sync-url]')
   // Single Sync URL Elements
@@ -25,7 +24,7 @@ jQuery(function() {
   getCurrentStatus()
 
   /**
-   * Get all categories from master sitemap
+   * Get all categories from master sitemap and populate form field with them
    */
   function listSections() {
     $.getJSON(ajaxUrl + '?action=catfishimporter_list_categories', function onListSections(response) {
@@ -45,6 +44,7 @@ jQuery(function() {
 
   /**
    * Handle category URL sync submission
+   * TODO: Link to queue in AWS
    */
   function onSyncCategoryClick(event) {
     event.preventDefault()
@@ -54,13 +54,12 @@ jQuery(function() {
       ajaxUrl + '?action=catfishimporter_start_sync-category',
       {
         catfishimporter_onExistAction: $categoryOnExistAction.val(),
-        catfishimporter_category_sitemap: $categorySelect.val(),
-        catfishimporter_limit: $limitSelect.val(),
+        catfishimporter_category_sitemap: $categorySelect.val()
       },
       function onSyncResponse(response) {
-        $status.html($status.html() + 'Sync complete, imported: ' + response.posts.length + '\r\n')
-        response.posts.forEach(function onPost(post) {
-          $status.html($status.html() + 'ID: ' + post.id + ', ' + post.url + '\r\n')
+        $status.html($status.html() + 'Sync queued. \r\n')
+        response.forEach(function onPost(post) {
+          $status.html($status.html() + 'Post: ' + post.url + '\r\n')
         })
         $syncCategoryButton.removeAttr('disabled')
         console.log(response);
@@ -77,19 +76,24 @@ jQuery(function() {
    */
   function getCategoryStatus(sitemapUrl) {
     $status.html('Fetching stats for category&hellip;')
-    $.get(
-      ajaxUrl + '?action=catfishimporter_get_category_status&sitemapUrl=' + sitemapUrl,
-      function onResponse(response) {
-        console.log(response)
-        $status.html('Current status for category: imported ' +
-          response.importedCount + ' out of ' + response.categoryTotal +
-          ' (' + Math.round((response.importedCount/response.categoryTotal)*100) + '%)\r\n')
-      }
-    ).fail(function onSyncError(error) {
-      $status.html($status.html() + 'Get category status for ' + sitemapUrl + ' failed\r\n')
-      $syncCategoryButton.removeAttr('disabled')
-      console.log(error)
-    })
+    if(sitemapUrl == 'all' ||  sitemapUrl == 'Select one...') {
+      // If selected all then show the total import status
+      getCurrentStatus()
+    } else {
+      $.get(
+        ajaxUrl + '?action=catfishimporter_get_category_status&sitemapUrl=' + sitemapUrl,
+        function onResponse(response) {
+          console.log(response)
+          $status.html('Current status for category: imported ' +
+            response.importedCount + ' out of ' + response.categoryTotal +
+            ' (' + Math.round((response.importedCount/response.categoryTotal)*100) + '%)\r\n')
+        }
+      ).fail(function onSyncError(error) {
+        $status.html($status.html() + 'Get category status for ' + sitemapUrl + ' failed\r\n')
+        $syncCategoryButton.removeAttr('disabled')
+        console.log(error)
+      })
+    }
   }
 
   /**
@@ -108,10 +112,10 @@ jQuery(function() {
       function onSyncResponse(response) {
         // If ID string is return show success
         if (typeof response === 'string' || response instanceof String) {
-          $status.html($status.html() + 'Sync URL success'  + '\r\n')
+          $status.html($status.html() + 'Sync URL queued.'  + '\r\n')
           // $status.html($status.html() + 'ID: ' + response.post.id + ', ' + response.post.url + '\r\n')
         } else {
-          $status.html($status.html() + 'Sync URL failed'  + '\r\n')
+          $status.html($status.html() + 'Sync URL failed. '  + '\r\n')
         }
         $syncUrlButton.removeAttr('disabled')
         console.log(response);

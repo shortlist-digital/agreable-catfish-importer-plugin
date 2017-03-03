@@ -10,9 +10,8 @@ set_time_limit(0);
  */
 add_action('wp_ajax_catfishimporter_start_sync-category', function() {
   $response = Sync::queueCategory(
-    $_POST['catfishimporter_onExistAction'],
     $_POST['catfishimporter_category_sitemap'],
-    $_POST['catfishimporter_limit']
+    $_POST['catfishimporter_onExistAction']
   );
 
   catfishimporter_api_response($response);
