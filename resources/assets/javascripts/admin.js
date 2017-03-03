@@ -5,12 +5,16 @@ jQuery(function() {
   console.log('CatfishImporter init')
 
   var $ = jQuery
+  // Category and All Sync Elements
+  var $categoryOnExistAction = $('select[id=categoryOnExistAction]')
   var $categorySelect = $('select[name=category]')
   var $urlSelect = $('select[name=url]')
   var $limitSelect = $('select[name=limit]')
   var $syncCategoryButton = $('input[name=sync-category]')
   var $syncUrlButton = $('input[name=sync-url]')
+  // Single Sync URL Elements
   var $syncUrl = $('input[name=url]')
+  var $onExistAction = $('select[id=onExistAction]')
   var $status = $('.import-status')
   var ajaxUrl = $('.ajax-url').html()
 
@@ -20,6 +24,9 @@ jQuery(function() {
   listSections()
   getCurrentStatus()
 
+  /**
+   * Get all categories from master sitemap
+   */
   function listSections() {
     $.getJSON(ajaxUrl + '?action=catfishimporter_list_categories', function onListSections(response) {
       $categorySelect.html('')
@@ -36,6 +43,9 @@ jQuery(function() {
     });
   }
 
+  /**
+   * Handle category URL sync submission
+   */
   function onSyncCategoryClick(event) {
     event.preventDefault()
     $status.html('Syncing category\r\n')
@@ -43,9 +53,9 @@ jQuery(function() {
     $.post(
       ajaxUrl + '?action=catfishimporter_start_sync-category',
       {
+        catfishimporter_onExistAction: $categoryOnExistAction.val(),
         catfishimporter_category_sitemap: $categorySelect.val(),
         catfishimporter_limit: $limitSelect.val(),
-
       },
       function onSyncResponse(response) {
         $status.html($status.html() + 'Sync complete, imported: ' + response.posts.length + '\r\n')
@@ -62,6 +72,9 @@ jQuery(function() {
     })
   }
 
+  /**
+   * Get the total imported posts % from selected category
+   */
   function getCategoryStatus(sitemapUrl) {
     $status.html('Fetching stats for category&hellip;')
     $.get(
@@ -79,6 +92,9 @@ jQuery(function() {
     })
   }
 
+  /**
+   * Handle single URL sync submission
+   */
   function onSyncUrlClick(event) {
     event.preventDefault()
     $status.html('Syncing URL\r\n')
@@ -86,12 +102,14 @@ jQuery(function() {
     $.post(
       ajaxUrl + '?action=catfishimporter_start_sync-url',
       {
+        catfishimporter_onExistAction: $onExistAction.val(),
         catfishimporter_url: $syncUrl.val()
       },
       function onSyncResponse(response) {
-        if (response.success) {
+        // If ID string is return show success
+        if (typeof response === 'string' || response instanceof String) {
           $status.html($status.html() + 'Sync URL success'  + '\r\n')
-          $status.html($status.html() + 'ID: ' + response.post.id + ', ' + response.post.url + '\r\n')
+          // $status.html($status.html() + 'ID: ' + response.post.id + ', ' + response.post.url + '\r\n')
         } else {
           $status.html($status.html() + 'Sync URL failed'  + '\r\n')
         }
@@ -105,6 +123,9 @@ jQuery(function() {
     })
   }
 
+  /**
+   * Get the total imported posts %
+   */
   function getCurrentStatus() {
     $status.html('Fetching stats&hellip;')
     $.get(

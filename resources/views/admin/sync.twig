@@ -18,10 +18,17 @@
     <option>100</option>
     <option>250</option>
     <option>500</option>
-    <option value="-1">Bajillion</option>
+    <option value="-1">All</option>
   </select>
 
-  <input type='submit' name='sync-category' value='Sync category'>
+  <label for="categoryOnExistAction">If Post Exists:</label>
+  <select name='categoryOnExistAction' id='categoryOnExistAction'>
+    <option value="update">Update Existing</option>
+    <option value="delete-insert">Delete then Insert</option>
+    <option value="skip">Skip</option>
+  </select>
+
+  <input type='submit' name='sync-category' value='Sync'>
 
 </form>
 
@@ -29,6 +36,13 @@
 <form>
   <label for="url">URL:</label>
   <input id='url' name='url' placeholder='http://www.stylist.co.uk/life/the-top-15-most-retweeted-posts-by-women-of-2015'/>
+
+  <label for="onExistAction">If Post Exists:</label>
+  <select name='onExistAction' id='onExistAction'>
+    <option value="update">Update Existing</option>
+    <option value="delete-insert">Delete then Insert</option>
+    <option value="skip">Skip</option>
+  </select>
 
   <input type='submit' name='sync-url' value='Sync URL'>
 </form>

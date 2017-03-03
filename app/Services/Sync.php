@@ -11,28 +11,56 @@ class Sync {
 
   public static function getCategories() {
     $site_url = get_field('catfish_website_url', 'option');
-    return Sitemap::getCategoriesFromIndex($site_url . 'sitemap-index.xml');
+    return array_merge(array('all'), Sitemap::getCategoriesFromIndex($site_url . 'sitemap-index.xml'));
   }
 
-  public static function importCategory($categorySitemap, $limit = 10, $mostRecent = true) {
-    $postUrls = Sitemap::getPostUrlsFromCategory($categorySitemap);
-    $response = new stdClass();
-    $response->posts = [];
-    if ($limit !== -1) {
-      $postUrls = array_slice($postUrls, 0, $limit);
-    }
+  /**
+   *
+   */
+  public static function queueCategory($categorySitemap, $onExistAction = 'update', $limit = 10, $mostRecent = true) {
+     $postUrls = Sitemap::getPostUrlsFromCategory($categorySitemap);
+     $response = new stdClass();
+     $response->posts = [];
+     if ($limit !== -1) {
+       $postUrls = array_slice($postUrls, 0, $limit);
+     }
 
-    foreach($postUrls as $postUrl) {
-      if ($post = Post::getPostFromUrl($postUrl)) {
-        $postResponse = new stdClass();
-        $postResponse->id = $post->ID;
-        $postResponse->url = $postUrl;
-        $response->posts[] = $postResponse;
-      }
-    }
+     foreach($postUrls as $postUrl) {
+        self::queueUrl($postUrl);
+     }
 
-    return $response;
-  }
+     return $response;
+   }
+
+   public static function queueUrl($url, $onExistAction = 'update') {
+     // Push item into Queue
+     return Queue::push('ImportPost', array('url' => $url, 'onExistAction' => $onExistAction));
+   }
+
+  /**
+   * importCategory
+   *
+   * No longer needed as each category is stored in the queue system as an individual task
+   */
+  // public static function importCategory($categorySitemap, $limit = 10, $mostRecent = true) {
+  //   $postUrls = Sitemap::getPostUrlsFromCategory($categorySitemap);
+  //   $response = new stdClass();
+  //   $response->posts = [];
+  //   if ($limit !== -1) {
+  //     $postUrls = array_slice($postUrls, 0, $limit);
+  //   }
+  //
+  //   foreach($postUrls as $postUrl) {
+  //     if ($post = Post::getPostFromUrl($postUrl)) {
+  //       $postResponse = new stdClass();
+  //       $postResponse->id = $post->ID;
+  //       $postResponse->url = $postUrl;
+  //       $response->posts[] = $postResponse;
+  //     }
+  //   }
+  //
+  //   return $response;
+  // }
 
   public static function importUrl($url) {
     $response = new stdClass();
