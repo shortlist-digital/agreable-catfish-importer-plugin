@@ -59,22 +59,29 @@ register_field_group(array (
 
 endif;
 
-$panel->add([
-  'type'   => 'panel',
-  'as'     => 'mainPanel',
-  'title'  => 'Catfish Importer',
-  'rename' => 'Recent imports',
-  'slug'   => 'catfish-importer-index',
-  'icon'   => 'dashicons-download',
-  'uses'   => __NAMESPACE__ . '\Controllers\AdminController@index'
-]);
+\add_action('plugins_loaded', function() use ($panel) {
 
-$panel->add([
-  'type'   => 'sub-panel',
-  'parent' => 'mainPanel',
-  'as'     => 'syncPanel',
-  'title'  => 'Sync',
-  'slug'   => 'sync',
-  'uses'   => __NAMESPACE__ . '\Controllers\AdminController@sync'
-]);
+  $user = wp_get_current_user();
+  $user_roles = $user->roles;
 
+  if (in_array('catfish_editor', $user_roles) || in_array('administrator',$user_roles)) {
+    $panel->add([
+      'type'   => 'panel',
+      'as'     => 'mainPanel',
+      'title'  => 'Catfish Importer',
+      'rename' => 'Recent imports',
+      'slug'   => 'catfish-importer-index',
+      'icon'   => 'dashicons-download',
+      'uses'   => __NAMESPACE__ . '\Controllers\AdminController@index'
+    ]);
+
+    $panel->add([
+      'type'   => 'sub-panel',
+      'parent' => 'mainPanel',
+      'as'     => 'syncPanel',
+      'title'  => 'Sync',
+      'slug'   => 'sync',
+      'uses'   => __NAMESPACE__ . '\Controllers\AdminController@sync'
+    ]);
+  }
+});

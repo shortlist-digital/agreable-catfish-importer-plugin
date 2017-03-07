@@ -85,6 +85,11 @@ acf_add_local_field_group(array (
         'operator' => '==',
         'value' => 'administrator',
       ),
+      array (
+        'param' => 'current_user_role',
+        'operator' => '==',
+        'value' => 'catfish_editor',
+      ),
     ),
   ),
   'menu_order' => 100,

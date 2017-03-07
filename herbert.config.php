@@ -13,6 +13,7 @@ return [
      */
     'requires' => [
       __DIR__ . '/app/custom-fields/acf.php',
+      __DIR__ . '/app/CustomRoles/roles.php',
       __DIR__ . '/app/hooks.php'
     ],
 
