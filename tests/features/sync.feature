@@ -23,13 +23,13 @@ Feature: Sync
 
   Scenario: Push category import to queue
     Given I process the queue action json '{"job":"importCategory","data":{"url":"http:\/\/www.shortlist.com\/sitemap\/food-drink.xml","onExistAction":"update"}}'
-    Then I should have an array or queue IDs
+    Then I should have an array of queue IDs
 
 
   Scenario: Get the full import status
-    Given I retrive the full import status
+    Given I retrieve the full import status
     Then I should see a couple of imported out of at least 10000
 
   Scenario: Get a category import status
-    Given I retrive the "news" category import status
+    Given I retrieve the "news" category import status
     Then I should see a several of imported out of at least 100
