@@ -72,13 +72,8 @@ function actionQueue(array $args) {
   set_time_limit(0);
 
   WP_CLI::line('Listening to queue...');
-  // while (true) {}
 
   Sync::actionQueue();
-
-  var_dump('listening', Queue::getNextJob());
-
-  flush(); // Show output
 }
 
 // Register command with WP_CLI
@@ -99,12 +94,14 @@ WP_CLI::add_command('catfish listen', 'actionQueue');
  *     wp catfish work
  *
  */
-function actionOneQueueItem(array $args) {
+function actionSingleQueueItem(array $args) {
+  // Let the queue run FOREVER
+  set_time_limit(0);
+
   WP_CLI::line('Working on queue...');
 
-  var_dump('test');
-
+  Sync::actionSingleQueueItem();
 }
 
 // Register command with WP_CLI
-WP_CLI::add_command('catfish work', 'actionOneQueueItem');
+WP_CLI::add_command('catfish work', 'actionSingleQueueItem');

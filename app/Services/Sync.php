@@ -25,7 +25,7 @@ class Sync {
    */
   public static function queueCategory($categorySitemap = 'all', $onExistAction = 'update') {
    // Push item into Queue
-   if(is_string(Queue::push('ImportCategory', array('url' => $categorySitemap, 'onExistAction' => $onExistAction)))) {
+   if(is_string(Queue::push('importCategory', array('url' => $categorySitemap, 'onExistAction' => $onExistAction)))) {
      // Return post url
      return $categorySitemap;
    }
@@ -38,7 +38,7 @@ class Sync {
    */
   public static function queueUrl($url, $onExistAction = 'update') {
    // Push item into Queue
-   if(is_string(Queue::push('QueueTest', array('url' => $url, 'onExistAction' => $onExistAction)))) {
+   if(is_string(Queue::push('importUrl', array('url' => $url, 'onExistAction' => $onExistAction)))) {
      // Return post url
      return $url;
    }
@@ -46,15 +46,54 @@ class Sync {
    return false;
   }
 
-  public static function TestQueueAction($payload) {
-    echo var_dump($payload);
-    return $payload;
+  /**
+   * Worker Functions (Run by worker to consume queue items)
+   */
+
+  /**
+   * Function for testing queue
+   */
+  public static function queueTest($payload) {
+    var_dump('queueTest ran successfully', $payload);
   }
 
-  public static function actionQueue() {
-    // Push a new test post
-    // Queue::push('QueueTest', array('url' => 'http://example.com', 'onExistAction' => 'update'));
+  /**
+   * Push a Test Item to Queue
+   */
+  public static function pushTestItemToQueue($payload) {
+    // Push a new test post into queue
+    Queue::push('queueTest', array('url' => 'http://example.com', 'onExistAction' => 'update'));
+  }
 
+  /**
+   * Consume single queue item
+   */
+  public static function actionSingleQueueItem() {
+    // Get queue object
+    $queue = new Queue;
+
+    // Connect to the AWS SQS Queue
+    $worker = new Worker($queue->getQueueManager());
+
+    try {
+      // Parameters:
+      // 'default' - connection name
+      // getenv('AWS_SQS_QUEUE') - queue name
+      // delay
+      // time before retries
+      // max number of tries
+
+      $worker->pop('default', getenv('AWS_SQS_QUEUE'), 0, 3, 0);
+    } catch (Exception $e) {
+      throw new Exception("Error processing single queue item.", 1); // $e
+    }
+
+  }
+
+  /**
+   * Consume queue items by worker
+   */
+  public static function actionQueue() {
 
     // Get queue object
     $queue = new Queue;
@@ -63,31 +102,24 @@ class Sync {
     $worker = new Worker($queue->getQueueManager());
 
     // Run indefinitely
-    // while (true) {
-      // Parameters:
-      // 'default' - connection name
-      // getenv('AWS_SQS_QUEUE') - queue name
-      // delay
-      // time before retries
-      // max number of tries
+    while (true) {
 
-      // $testfire = new QueueTest;
-      // $testfire->fire('test', array('url' => 'example.com'));
-
-      var_dump($worker->pop('default', getenv('AWS_SQS_QUEUE'), 0, 3, 0));
-      // var_dump(debug_backtrace());
-
-      // var_dump($worker->popNextJob('default', getenv('AWS_SQS_QUEUE')));
-
-      die('going into worker loop...');
       try {
-        var_dump($worker->pop('default', getenv('AWS_SQS_QUEUE'), 0, 3, 0));
+        // Parameters:
+        // 'default' - connection name
+        // getenv('AWS_SQS_QUEUE') - queue name
+        // delay
+        // time before retries
+        // max number of tries
+
+        $worker->pop('default', getenv('AWS_SQS_QUEUE'), 0, 3, 0);
       } catch (Exception $e) {
-        die(var_dump($e));
+        throw new Exception("Error processing next queue item.", 1); // $e
       }
 
+      // Flush to show output
       flush();
-    // }
+    }
   }
 
   /**
@@ -97,37 +129,46 @@ class Sync {
   /**
    * Take import category queue item and split into ImportPost Queue items
    */
-  public static function importCategory($categorySitemap, $onExistAction = 'update', $limit = 10, $mostRecent = true) {
+  public static function importCategory($payload) {
 
-   if($categorySitemap == 'all') {
+    // Extract attributes from payload.
+    $categorySitemap = $payload['url'];
+    $onExistAction = $payload['onExistAction'];
+
+    if($categorySitemap == 'all') {
      // Handle adding all to queue
      $postUrls = array();
      foreach (Sitemap::getCategoriesFromIndex() as $categorySitemap) {
        $postUrls = array_merge($postUrls, Sitemap::getPostUrlsFromCategory($categorySitemap));
      }
 
-   } else {
+    } else {
      $postUrls = Sitemap::getPostUrlsFromCategory($categorySitemap);
-   }
+    }
 
-   // Limit posts based on argument
-   if ($limit !== -1) {
+    // Limit posts based on argument
+    if ($limit !== -1) {
      $postUrls = array_slice($postUrls, 0, $limit);
-   }
+    }
 
-   // Queue all posts
-   foreach($postUrls as $postUrl) {
+    // Queue all posts
+    foreach($postUrls as $postUrl) {
      self::queueUrl($postUrl, $onExistAction);
-   }
+    }
 
-   // Return list of post Urls
-   return $postUrls;
+    // Return list of post Urls
+    return $postUrls;
   }
 
   /**
    * Import a single post from given URL
    */
-  public static function importUrl($url, $onExistAction = 'update') {
+  public static function importUrl($payload) {
+
+    // Extract attributes from payload.
+    $categorySitemap = $payload['url'];
+    $onExistAction = $payload['onExistAction'];
+
     $response = new stdClass();
     $response->success = false;
     if ($post = Post::getPostFromUrl($url)) {

@@ -1,10 +1,22 @@
 Feature: Sync
   Test the Catfish Importer sync
 
+  Scenario: Queue a test queue item
+    Given I push one test queue item into the queue
+    Then I should have a queue ID
+
+  Scenario: Action a test queue item
+    Given I pull an item from the queue
+    Then I should run the queue function without Exception
+
   Scenario: Queue a single post for import
-    Given I push 2 most recent posts from the category sitemap "http://www.shortlist.com/sitemap/food-drink.xml" to the queue
+    Given I push most recent posts from the category sitemap "http://www.shortlist.com/sitemap/food-drink.xml" to the queue
     And I specify the update method as "delete-insert"
-    Then I should have 2 items in the queue
+    Then I should have a queue ID
+
+  Scenario: Action a single post import
+    Given I pull an item from the queue
+    Then I should run the queue function without Exception
 
   Scenario: Queue an entire category of posts for import
     Given I push all posts from the category sitemap "http://www.shortlist.com/sitemap/food-drink.xml" to the queue

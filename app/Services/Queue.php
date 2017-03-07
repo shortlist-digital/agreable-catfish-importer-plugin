@@ -36,16 +36,4 @@ class Queue extends Manager {
 
   }
 
-  public function pop() {
-    die('catch pop');
-  }
-  /**
-   * Directly access the next
-   */
-  // public static function popNextJob() {
-  //   // die('hello');
-  //   die(var_dump('pop next job', Worker::getNextJob()));
-  //
-  // }
-
 }
