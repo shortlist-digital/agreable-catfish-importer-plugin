@@ -66,6 +66,6 @@ add_action('wp_ajax_catfishimporter_testqueue', function() {
   // die('test');
   Sync::pushTestItemToQueue();
   Sync::pushTestItemToQueue();
-  Sync::actionSingleQueueItem();
+  // Sync::actionSingleQueueItem();
   // Sync::testQueue();
 });

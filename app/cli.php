@@ -1,9 +1,7 @@
 <?php
 
-// namespace AgreableCatfishImporterPlugin;
 use AgreableCatfishImporterPlugin\Services\Sync;
 use AgreableCatfishImporterPlugin\Services\Queue;
-// use \WP_CLI;
 
 /**
  * Add Items to Catfish Queue.
@@ -73,7 +71,7 @@ function actionQueue(array $args) {
 
   WP_CLI::line('Listening to queue...');
 
-  Sync::actionQueue();
+  Sync::actionQueue(true);
 }
 
 // Register command with WP_CLI
@@ -100,8 +98,36 @@ function actionSingleQueueItem(array $args) {
 
   WP_CLI::line('Working on queue...');
 
-  Sync::actionSingleQueueItem();
+  Sync::actionSingleQueueItem(true);
 }
 
 // Register command with WP_CLI
 WP_CLI::add_command('catfish work', 'actionSingleQueueItem');
+
+/**
+ * Action to clear all items from the Catfish Queue.
+ *
+ * ## DESCRIPTION
+ *
+ * Allows all items to be cleared from queue
+ *
+ * ## OPTIONS
+ *
+ * ## EXAMPLES
+ *
+ *     # Delete all items from queue
+ *     wp catfish purge
+ *
+ */
+function purgeQueue(array $args) {
+  // Let the queue run FOREVER
+  set_time_limit(0);
+  WP_CLI::confirm( "Are you sure you want to DELETE ALL ITEMS from the queue?", $args );
+
+  WP_CLI::line('Purging the queue...');
+
+  Sync::purgeQueue(true);
+}
+
+// Register command with WP_CLI
+WP_CLI::add_command('catfish purge', 'purgeQueue');

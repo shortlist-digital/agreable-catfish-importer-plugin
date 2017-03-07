@@ -18,7 +18,10 @@ class Post {
     $notifier = new Notification;
     $notifier->error($message);
   }
-
+  /**
+   * Get single post from Clock URL and import into the Pages CMS
+   *
+   */
   public static function getPostFromUrl($postUrl) {
     $fail = false;
     $postJsonUrl = $postUrl . '.json';

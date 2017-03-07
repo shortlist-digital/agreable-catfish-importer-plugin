@@ -18,16 +18,38 @@ cd /vagrant/web/app/plugins/agreable-catfish-importer-plugin
 
 When running ```wp``` in the command line from this directory a couple of new commands will be added.
 
-Queue commands:
+### Queue commands
+
+The queue commands offer direct access to pushing single or multiple posts into queue.
 
 ```
 wp catfish queue http://www.shortlist.com/entertainment/the-toughest-world-record-ever-has-been-broken --debug
-wp catfish queue all
+wp catfish queue all --debug
 wp catfish queue http://www.shortlist.com/sitemap/entertainment/48-hours-to.xml --debug
 ```
 
-Listen command:
+### Work command
+
+The work command actions one single item in the queue.
 
 ```
-wp catfish listen
+wp catfish listen --debug
 ```
+
+### Listen command
+
+The listen command works through all items in the queue and continues watching for more queue items to be added.
+
+```
+wp catfish listen --debug
+```
+### Purge command
+
+The purge command **deletes all queue items**. Used to give tests a clean environment to work with.
+
+```
+wp catfish listen --debug
+```
+### --debug
+
+To get any output from the wp command, event success/failure messages and info messages you need to have the

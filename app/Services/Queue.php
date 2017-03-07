@@ -2,8 +2,6 @@
 namespace AgreableCatfishImporterPlugin\Services;
 
 use \Illuminate\Queue\Capsule\Manager;
-// use \Illuminate\Queue\Capsule\Manager;
-// use \Illuminate\Queue\Worker;
 
 class Queue extends Manager {
   /**

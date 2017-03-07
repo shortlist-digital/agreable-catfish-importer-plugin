@@ -58,9 +58,6 @@ jQuery(function() {
       },
       function onSyncResponse(response) {
         $status.html($status.html() + 'Sync queued. \r\n')
-        response.forEach(function onPost(post) {
-          $status.html($status.html() + 'Post: ' + post.url + '\r\n')
-        })
         $syncCategoryButton.removeAttr('disabled')
         console.log(response);
       }
