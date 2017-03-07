@@ -44,23 +44,8 @@ class Sync {
   }
 
   /**
-   * Push a Test Item to Queue
-   */
-  public static function pushTestItemToQueue($data, $payload) {
-    // Push a new test post into queue
-    Queue::push('queueTest', array('url' => 'http://example.com', 'onExistAction' => 'update'));
-  }
-
-  /**
    * Worker Functions (Run by worker to consume queue items)
    */
-
-  /**
-   * Function for testing queue
-   */
-  public static function queueTest($data, $payload) {
-    var_dump('queueTest ran successfully', $payload);
-  }
 
   /**
    * Consume single queue item

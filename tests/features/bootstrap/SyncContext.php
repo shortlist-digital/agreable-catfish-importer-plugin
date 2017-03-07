@@ -18,8 +18,10 @@ use \PHPUnit_Framework_Assert as Assert;
 
 class SyncContext extends BehatContext {
 
-  // Queue function ids
+  // Protected variables for the tests to use
   protected static $queueID;
+  protected static $categorySitemap;
+  protected static $totalStatus;
 
   /**
    * @Given /^I purge the queue$/
@@ -30,19 +32,11 @@ class SyncContext extends BehatContext {
   }
 
   /**
-   * @Given /^I push one test queue item into the queue$/
-   */
-  public function iPushOneTestQueueItemIntoTheQueue()
-  {
-      self::$queueID = false;
-      self::$queueID = Sync::pushTestItemToQueue();
-  }
-
-  /**
    * @Then /^I should have a valid queue ID$/
    */
   public function iShouldHaveAValidQueueId()
   {
+      throw new PendingException();
       Assert::assertStringMatchesFormat('([a-z,0-9,-])+', self::$queueID);
   }
 
@@ -114,17 +108,16 @@ class SyncContext extends BehatContext {
   /**
    * @Given /^I retrive the full import status$/
    */
-  public function iRetriveTheFullImportStatus()
-  {
-      throw new PendingException();
+  public function iRetriveTheFullImportStatus() {
+    self::$totalStatus = Sync::getImportStatus();
   }
 
   /**
    * @Then /^I should see a couple of imported out of at least (\d+)$/
    */
-  public function iShouldSeeACoupleOfImportedOutOfAtLeast($arg1)
-  {
-      throw new PendingException();
+  public function iShouldSeeACoupleOfImportedOutOfAtLeast($arg) {
+    // Assert::assertGreaterThan(0, self::$totalStatus->importedCount);
+    Assert::assertGreaterThan(10000, self::$totalStatus->total);
   }
 
   /**

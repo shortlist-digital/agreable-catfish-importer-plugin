@@ -1,15 +1,6 @@
 Feature: Sync
   Test the Catfish Importer sync
 
-  Scenario: Queue a test queue item
-    Given I purge the queue
-    And I push one test queue item into the queue
-    Then I should have a valid queue ID
-
-  Scenario: Action a test queue item
-    Given I pull an item from the queue
-    Then I should run the queue function without Exception
-
   Scenario: Queue a single post for import
     Given I purge the queue
     And I push the post "http://www.shortlist.com/food-drink/the-definitive-power-ranking-of-all-the-stuff-you-can-put-on-chips" with the update method as "delete-insert" to the queue

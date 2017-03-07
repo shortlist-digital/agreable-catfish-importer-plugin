@@ -60,12 +60,3 @@ function catfishimporter_api_response($response) {
   header('Content-type: Application/json');
   echo json_encode($response); exit;
 }
-
-// TODO: Delete this testing api endpoint
-add_action('wp_ajax_catfishimporter_testqueue', function() {
-  // die('test');
-  Sync::pushTestItemToQueue();
-  Sync::pushTestItemToQueue();
-  // Sync::actionSingleQueueItem();
-  // Sync::testQueue();
-});
