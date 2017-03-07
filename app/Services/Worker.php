@@ -56,6 +56,7 @@ class Worker extends QueueWorker {
       return ['job' => $job, 'failed' => false];
     } catch (Exception $e) {
       $this->handleJobException($connection, $job, $delay, $e);
+      // TODO: Attach $e or $job and $connection to properties to help diagnose in BugSnag.
       if($this->cli) {
         var_dump($e);
         WP_CLI::error('Exception Completing Action');

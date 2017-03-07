@@ -11,15 +11,21 @@ use Illuminate\Queue\Jobs\SqsJob as Job;
 // new Queue; // Setup Queue connection
 
 use Behat\Behat\Context\BehatContext,
-  Behat\Behat\Exception\PendingException;
+Behat\Behat\Exception\PendingException;
 use Behat\Gherkin\Node\PyStringNode,
-    Behat\Gherkin\Node\TableNode;
+  Behat\Gherkin\Node\TableNode;
 use \PHPUnit_Framework_Assert as Assert;
+
+// Ignore Notices
+// Runtime Notice: Declaration of AgreableCatfishImporterPlugin\Services\Worker::process() should be compatible with Illuminate\Queue\Worker::process($connection, Illuminate\Contracts\Queue\Job $job, $maxTries = 0, $delay = 0) in app/Services/Worker.php line 10
+define('BEHAT_ERROR_REPORTING', E_ERROR | E_WARNING | E_PARSE);
 
 class SyncContext extends BehatContext {
 
   // Protected variables for the tests to use
   protected static $queueID;
+  protected static $queueItem;
+  protected static $queueActionResponse;
   protected static $categorySitemap;
   protected static $totalStatus;
 
@@ -32,83 +38,95 @@ class SyncContext extends BehatContext {
   }
 
   /**
+   * @Given /^I push the post "([^"]*)" with the update method as "([^"]*)" to the queue$/
+   */
+  public function iPushThePostWithTheUpdateMethodAsToTheQueue($url, $onExistAction)
+  {
+      self::$queueID = false;
+      self::$queueID = Sync::queueUrl($url, $onExistAction);
+  }
+
+  /**
    * @Then /^I should have a valid queue ID$/
    */
   public function iShouldHaveAValidQueueId()
   {
-      throw new PendingException();
-      Assert::assertStringMatchesFormat('([a-z,0-9,-])+', self::$queueID);
+    Assert::assertRegExp('/[a-z0-9-]+/', self::$queueID);
   }
 
   /**
-   * @Given /^I pull an item from the queue$/
+   * @Given /^I pull an item from the queue and run it$/
    */
-  public function iPullAnItemFromTheQueue()
+  public function iPullAnItemFromTheQueueAndRunIt()
   {
-      throw new PendingException();
+      self::$queueActionResponse = Sync::actionSingleQueueItem();
   }
 
-  /**
-   * @Then /^I should run the queue function without Exception$/
-   */
-  public function iShouldRunTheQueueFunctionWithoutException()
-  {
-      throw new PendingException();
-  }
 
+  // TODO: Need a clean environment to truly run
   /**
-   * @Given /^I push the post "([^"]*)" with the update method as "([^"]*)" to the queue$/
+   * @Then /^I should have imported the "([^"]*)" post$/
    */
-  public function iPushThePostWithTheUpdateMethodAsToTheQueue($arg1, $arg2)
+  public function iShouldHaveImportedThePost($slug)
   {
-      self::$queueID = false;
-      self::$queueID = Sync::queueUrl($arg1, $arg2);
+    $query = array(
+      'post_type' => 'post',
+      'pagename' => $slug.'-2', // TODO: clear all automated_testing posts before testing
+      'meta_query' => array(
+        array(
+          'key' => 'automated_testing',
+          'value' => true
+        )
+      )
+    );
+
+    $query = new WP_Query($query);
+    $posts = $query->get_posts();
+    var_export($posts);
+    Assert::assertEquals(1, count($posts));
+
+    // $post = new TimberPost($posts[0]);
+    // Assert::assertTrue($post->has_term($categorySlug, 'category'));
   }
 
   /**
    * @Given /^I push all posts from the category sitemap "([^"]*)" with the update method as "([^"]*)" to the queue$/
    */
-  public function iPushAllPostsFromTheCategorySitemapWithTheUpdateMethodAsToTheQueue($arg1, $arg2)
+  public function iPushAllPostsFromTheCategorySitemapWithTheUpdateMethodAsToTheQueue($url, $onExistAction)
   {
-      throw new PendingException();
+    self::$queueID = false;
+    self::$queueID = Sync::queueUrl($url, $onExistAction);
   }
 
-  /**
-   * @Given /^I push all posts from the category sitemap "([^"]*)" to the queue$/
-   */
-  public function iPushAllPostsFromTheCategorySitemapToTheQueue($arg1)
-  {
-      throw new PendingException();
-  }
+  // XXX Up to here......
 
   /**
-   * @Given /^I have the queue action json$/
+   * @Given /^I process the queue action json \'([^\']*)\'$/
    */
-  public function iHaveTheQueueActionJson(PyStringNode $string)
+  public function iProcessTheQueueActionJson($payload)
   {
-      throw new PendingException();
+    // From Worker
+    $data = json_decode($payload);
+    $function = $data->job;
+    $payload = (array) $data->data;
+
+    // Call the queued function in the Sync Class
+    self::$queueActionResponse = Sync::$function($data, $payload);
   }
 
-  /**
-   * @Then /^I should have imported the "([^"]*)" post$/
-   */
-  public function iShouldHaveImportedThePost($arg1)
-  {
-      throw new PendingException();
-  }
 
   /**
    * @Then /^I should have a list of urls$/
    */
   public function iShouldHaveAListOfUrls()
   {
-      throw new PendingException();
+    Assert::assertTrue(is_array(self::$queueActionResponse));
   }
 
   /**
-   * @Given /^I retrive the full import status$/
+   * @Given /^I retrieve the full import status$/
    */
-  public function iRetriveTheFullImportStatus() {
+  public function iRetrieveTheFullImportStatus() {
     self::$totalStatus = Sync::getImportStatus();
   }
 
@@ -121,11 +139,11 @@ class SyncContext extends BehatContext {
   }
 
   /**
-   * @Given /^I retrive the "([^"]*)" category import status$/
+   * @Given /^I retrieve the "([^"]*)" category import status$/
    */
-  public function iRetriveTheCategoryImportStatus($arg1)
+  public function iRetrieveTheCategoryImportStatus($arg1)
   {
-      throw new PendingException();
+    throw new PendingException();
   }
 
   /**
@@ -133,6 +151,7 @@ class SyncContext extends BehatContext {
    */
   public function iShouldSeeASeveralOfImportedOutOfAtLeast($arg1)
   {
-      throw new PendingException();
+    throw new PendingException();
   }
+
 }

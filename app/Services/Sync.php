@@ -21,26 +21,26 @@ class Sync {
    * Queue Category / All
    */
   public static function queueCategory($categorySitemap = 'all', $onExistAction = 'update') {
-   // Push item into Queue
-   if(is_string(Queue::push('importCategory', array('url' => $categorySitemap, 'onExistAction' => $onExistAction)))) {
-     // Return post url
-     return $categorySitemap;
-   }
-   // If it failed return false
-   return false;
+    try {
+      // Push item into Queue
+      return Queue::push('importCategory', array('url' => $categorySitemap, 'onExistAction' => $onExistAction));
+    } catch (Exception $e) {
+      // Catch errors for easy debugging in BugSnag
+      throw new Exception("Error in queueUrl adding inportUrl to queue.", 1);
+    }
   }
 
   /**
    * Queue Single URL
    */
   public static function queueUrl($url, $onExistAction = 'update') {
-   // Push item into Queue
-   if(is_string(Queue::push('importUrl', array('url' => $url, 'onExistAction' => $onExistAction)))) {
-     // Return post url
-     return $url;
-   }
-   // If it failed return false
-   return false;
+    try {
+      // Push item into Queue
+      return Queue::push('importUrl', array('url' => $url, 'onExistAction' => $onExistAction));
+    } catch (Exception $e) {
+      // Catch errors for easy debugging in BugSnag
+      throw new Exception("Error in queueUrl adding inportUrl to queue.", 1);
+    }
   }
 
   /**
