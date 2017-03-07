@@ -4,7 +4,14 @@ namespace AgreableCatfishImporterPlugin\Services;
 use \stdClass;
 use \WP_Query;
 use AgreableCatfishImporterPlugin\Services\Post;
+
 use AgreableCatfishImporterPlugin\Services\Queue;
+use AgreableCatfishImporterPlugin\Services\Worker;
+
+use AgreableCatfishImporterPlugin\Services\QueueTest; // Actions for the Queue Worker to fire...
+
+// use \Illuminate\Queue\Worker;
+
 new Queue; // Setup Queue connection
 
 class Sync {
@@ -13,65 +20,109 @@ class Sync {
    * Queue Functions (Called from admin)
    */
 
-   /**
-    * Queue Category / All
-    */
-   public static function queueCategory($categorySitemap = 'all', $onExistAction = 'update') {
-     // Push item into Queue
-     if(is_string(Queue::push('ImportCategory', array('url' => $categorySitemap, 'onExistAction' => $onExistAction)))) {
-       // Return post url
-       return $categorySitemap;
-     }
-     // If it failed return false
-     return false;
+  /**
+   * Queue Category / All
+   */
+  public static function queueCategory($categorySitemap = 'all', $onExistAction = 'update') {
+   // Push item into Queue
+   if(is_string(Queue::push('ImportCategory', array('url' => $categorySitemap, 'onExistAction' => $onExistAction)))) {
+     // Return post url
+     return $categorySitemap;
    }
+   // If it failed return false
+   return false;
+  }
 
-   /**
-    * Queue Single URL
-    */
-   public static function queueUrl($url, $onExistAction = 'update') {
-     // Push item into Queue
-     if(is_string(Queue::push('ImportPost', array('url' => $url, 'onExistAction' => $onExistAction)))) {
-       // Return post url
-       return $url;
-     }
-     // If it failed return false
-     return false;
+  /**
+   * Queue Single URL
+   */
+  public static function queueUrl($url, $onExistAction = 'update') {
+   // Push item into Queue
+   if(is_string(Queue::push('QueueTest', array('url' => $url, 'onExistAction' => $onExistAction)))) {
+     // Return post url
+     return $url;
    }
+   // If it failed return false
+   return false;
+  }
+
+  public static function TestQueueAction($payload) {
+    echo var_dump($payload);
+    return $payload;
+  }
+
+  public static function actionQueue() {
+    // Push a new test post
+    // Queue::push('QueueTest', array('url' => 'http://example.com', 'onExistAction' => 'update'));
+
+
+    // Get queue object
+    $queue = new Queue;
+
+    // Connect to the AWS SQS Queue
+    $worker = new Worker($queue->getQueueManager());
+
+    // Run indefinitely
+    // while (true) {
+      // Parameters:
+      // 'default' - connection name
+      // getenv('AWS_SQS_QUEUE') - queue name
+      // delay
+      // time before retries
+      // max number of tries
+
+      // $testfire = new QueueTest;
+      // $testfire->fire('test', array('url' => 'example.com'));
+
+      var_dump($worker->pop('default', getenv('AWS_SQS_QUEUE'), 0, 3, 0));
+      // var_dump(debug_backtrace());
+
+      // var_dump($worker->popNextJob('default', getenv('AWS_SQS_QUEUE')));
+
+      die('going into worker loop...');
+      try {
+        var_dump($worker->pop('default', getenv('AWS_SQS_QUEUE'), 0, 3, 0));
+      } catch (Exception $e) {
+        die(var_dump($e));
+      }
+
+      flush();
+    // }
+  }
 
   /**
    * Import Functions (Consumed by queue worker)
    */
 
-   /**
-    * Take import category queue item and split into ImportPost Queue items
-    */
-   public static function importCategory($categorySitemap, $onExistAction = 'update', $limit = 10, $mostRecent = true) {
+  /**
+   * Take import category queue item and split into ImportPost Queue items
+   */
+  public static function importCategory($categorySitemap, $onExistAction = 'update', $limit = 10, $mostRecent = true) {
 
-     if($categorySitemap == 'all') {
-       // Handle adding all to queue
-       $postUrls = array();
-       foreach (Sitemap::getCategoriesFromIndex() as $categorySitemap) {
-         $postUrls = array_merge($postUrls, Sitemap::getPostUrlsFromCategory($categorySitemap));
-       }
-
-     } else {
-       $postUrls = Sitemap::getPostUrlsFromCategory($categorySitemap);
+   if($categorySitemap == 'all') {
+     // Handle adding all to queue
+     $postUrls = array();
+     foreach (Sitemap::getCategoriesFromIndex() as $categorySitemap) {
+       $postUrls = array_merge($postUrls, Sitemap::getPostUrlsFromCategory($categorySitemap));
      }
 
-     // Limit posts based on argument
-     if ($limit !== -1) {
-       $postUrls = array_slice($postUrls, 0, $limit);
-     }
+   } else {
+     $postUrls = Sitemap::getPostUrlsFromCategory($categorySitemap);
+   }
 
-     // Queue all posts
-     foreach($postUrls as $postUrl) {
-       self::queueUrl($postUrl, $onExistAction);
-     }
+   // Limit posts based on argument
+   if ($limit !== -1) {
+     $postUrls = array_slice($postUrls, 0, $limit);
+   }
 
-     // Return list of post Urls
-     return $postUrls;
-    }
+   // Queue all posts
+   foreach($postUrls as $postUrl) {
+     self::queueUrl($postUrl, $onExistAction);
+   }
+
+   // Return list of post Urls
+   return $postUrls;
+  }
 
   /**
    * Import a single post from given URL
