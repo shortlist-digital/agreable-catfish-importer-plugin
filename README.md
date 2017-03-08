@@ -72,3 +72,18 @@ wp catfish listen --debug
 ### --debug
 
 To get any output from the wp command, event success/failure messages and info messages you need to have the
+
+# Queues
+
+The following queues are setup in AWS for use in development, staging and production:
+
+```
+sh-catfish-importer-production
+sh-catfish-importer-staging
+sh-catfish-importer-develop
+st-catfish-importer-production
+st-catfish-importer-staging
+st-catfish-importer-develop
+```
+
+`sh` is Shortlist and `st` Stylist.
