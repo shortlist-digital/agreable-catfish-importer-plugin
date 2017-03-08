@@ -185,13 +185,15 @@ class Sync {
         $postUrls = Sitemap::getPostUrlsFromCategory($categorySitemap);
       }
 
+      $queueIDs = array();
+
       // Queue all posts
       foreach($postUrls as $postUrl) {
-        self::queueUrl($postUrl, $onExistAction);
+        $queueIDs[] = self::queueUrl($postUrl, $onExistAction);
       }
 
       // Return list of post Urls
-      return $postUrls;
+      return $queueIDs;
 
     } catch (Exception $e) {
 

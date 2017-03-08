@@ -3,6 +3,7 @@ Feature: Sync
 
   Scenario: Queue a single post for import
     Given I purge the queue
+    And I delete all automated_testing posts
     And I push the post "http://www.shortlist.com/food-drink/the-chicken-connoisseur-is-in-new-york-rating-jay-z-old-chicken-spot-asap-bari-vlone" with the update method as "delete-insert" to the queue
     Then I should have a valid queue ID
 
@@ -22,7 +23,7 @@ Feature: Sync
     Then I should have imported the "michelin-star-restaurants-odd-unusual-world-uk-guide-food" post
 
   Scenario: Push category import to queue
-    Given I process the queue action json '{"job":"importCategory","data":{"url":"http:\/\/www.shortlist.com\/sitemap\/48-hours-to.xml","onExistAction":"update"}}'
+    Given I process the queue action json '{"job":"importCategory","data":{"url":"http:\/\/www.shortlist.com\/sitemap\/entertainment\/48-hours-to.xml","onExistAction":"update"}}'
     Then I should have an array of queue IDs
 
 

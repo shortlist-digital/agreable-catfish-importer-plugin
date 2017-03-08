@@ -12,10 +12,10 @@ class Queue extends Manager {
    parent::__construct();
 
    // Warn devs to setup encryption key and environment vars for AWS
-   if(!isset(getenv('ILLUMINATE_ENCRYPTOR_KEY'))) {
+   if( !getenv('ILLUMINATE_ENCRYPTOR_KEY') ) {
      throw new Exception("You need to set a AES-256-CBC compatible encryption key for you ILLUMINATE_ENCRYPTOR_KEY environment variable.", 9);
    }
-   if( !isset(getenv('AWS_KEY')) || !isset(getenv('AWS_SECRET')) || !isset(getenv('AWS_SQS_CATFISH_IMPORTER_QUEUE')) || !isset(getenv('AWS_SQS_CATFISH_IMPORTER_REGION')) ) {
+   if( !getenv('AWS_KEY') || !getenv('AWS_SECRET') || !getenv('AWS_SQS_CATFISH_IMPORTER_QUEUE') || !getenv('AWS_SQS_CATFISH_IMPORTER_REGION') ) {
      throw new Exception("You need to set your AWS environment variables in .env.", 10);
    }
 

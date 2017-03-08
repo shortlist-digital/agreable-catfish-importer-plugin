@@ -38,6 +38,29 @@ class SyncContext extends BehatContext {
   }
 
   /**
+   * @Given /^I delete all automated_testing posts$/
+   */
+  public function iDeleteAllAutomatedTestingPosts() {
+    // TODO: Clear all posts with automated_testing meta
+    $query = array(
+      'post_type' => 'post',
+      'meta_query' => array(
+        array(
+          'key' => 'automated_testing',
+          'value' => true
+        )
+      )
+    );
+
+    $query = new WP_Query($query);
+    $posts = $query->get_posts();
+
+    print_r(var_dump('posts', $posts));
+
+    throw new PendingException();
+  }
+
+  /**
    * @Given /^I push the post "([^"]*)" with the update method as "([^"]*)" to the queue$/
    */
   public function iPushThePostWithTheUpdateMethodAsToTheQueue($url, $onExistAction) {
@@ -68,7 +91,7 @@ class SyncContext extends BehatContext {
   public function iShouldHaveImportedThePost($slug) {
     $query = array(
       'post_type' => 'post',
-      'pagename' => $slug.'-2', // TODO: clear all automated_testing posts before testing
+      'pagename' => $slug, // TODO: clear all automated_testing posts before testing
       'meta_query' => array(
         array(
           'key' => 'automated_testing',
@@ -79,8 +102,6 @@ class SyncContext extends BehatContext {
 
     $query = new WP_Query($query);
     $posts = $query->get_posts();
-
-    // var_export($posts); XXX ?????????
 
     Assert::assertEquals(1, count($posts));
 
@@ -95,8 +116,6 @@ class SyncContext extends BehatContext {
     self::$queueID = false;
     self::$queueID = Sync::queueUrl($url, $onExistAction);
   }
-
-  // XXX Up to here......
 
   /**
    * @Given /^I process the queue action json \'([^\']*)\'$/
@@ -123,31 +142,12 @@ class SyncContext extends BehatContext {
    * @Then /^I should have an array of queue IDs$/
    */
   public function iShouldHaveAnArrayOfQueueIds() {
-    print_r(var_dump(self::$queueActionResponse));
-    throw new PendingException();
-  }
-
-  /**
-   * @Given /^I delete all automated_testing posts$/
-   */
-  public function iDeleteAllAutomatedTestingPosts() {
-    // TODO: Clear all posts with automated_testing meta
-    $query = array(
-      'post_type' => 'post',
-      'meta_query' => array(
-        array(
-          'key' => 'automated_testing',
-          'value' => true
-        )
-      )
-    );
-
-    $query = new WP_Query($query);
-    $posts = $query->get_posts();
-
-    print_r(var_dump('posts', $posts));
-
-    throw new PendingException();
+    // print_r(var_dump(self::$queueActionResponse));
+    Assert::assertTrue(is_array(self::$queueActionResponse));
+    // Check all ids are valid
+    foreach (self::$queueActionResponse as $item) {
+      Assert::assertRegExp('/[a-z0-9-]+/', $item);
+    }
   }
 
   /**
