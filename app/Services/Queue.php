@@ -11,10 +11,18 @@ class Queue extends Manager {
 
    parent::__construct();
 
+   // Warn devs to setup encryption key and environment vars for AWS
+   if(!isset(getenv('ILLUMINATE_ENCRYPTOR_KEY'))) {
+     throw new Exception("You need to set a AES-256-CBC compatible encryption key for you ILLUMINATE_ENCRYPTOR_KEY environment variable.", 9);
+   }
+   if( !isset(getenv('AWS_KEY')) || !isset(getenv('AWS_SECRET')) || !isset(getenv('AWS_SQS_CATFISH_IMPORTER_QUEUE')) || !isset(getenv('AWS_SQS_CATFISH_IMPORTER_REGION')) ) {
+     throw new Exception("You need to set your AWS environment variables in .env.", 10);
+   }
+
    // Connect to the AWS SQS Queue
    // Bind required subclasses
    self::getContainer()->bind('encrypter', function() {
-   	return new \Illuminate\Encryption\Encrypter(getenv('APP_KEY'), 'AES-256-CBC');
+   	return new \Illuminate\Encryption\Encrypter(getenv('ILLUMINATE_ENCRYPTOR_KEY'), 'AES-256-CBC');
    });
    self::getContainer()->bind('request', function() {
    	return new Illuminate\Http\Request();
@@ -25,8 +33,8 @@ class Queue extends Manager {
        'driver' => 'sqs',
        'key'    => getenv('AWS_KEY'),
        'secret' => getenv('AWS_SECRET'),
-       'queue'  => getenv('AWS_SQS_QUEUE'),
-       'region' => getenv('AWS_SQS_REGION')
+       'queue'  => getenv('AWS_SQS_CATFISH_IMPORTER_QUEUE'),
+       'region' => getenv('AWS_SQS_CATFISH_IMPORTER_REGION')
    ]);
 
    // Set class to be globally accessable via Queue::

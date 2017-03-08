@@ -26,7 +26,7 @@ class Sync {
       return Queue::push('importCategory', array('url' => $categorySitemap, 'onExistAction' => $onExistAction));
     } catch (Exception $e) {
       // Catch errors for easy debugging in BugSnag
-      throw new Exception("Error in queueUrl adding inportUrl to queue.", 1);
+      throw new Exception("Error in queueUrl adding inportCategory to queue. " . $e->getMessage(), 1);
     }
   }
 
@@ -39,7 +39,7 @@ class Sync {
       return Queue::push('importUrl', array('url' => $url, 'onExistAction' => $onExistAction));
     } catch (Exception $e) {
       // Catch errors for easy debugging in BugSnag
-      throw new Exception("Error in queueUrl adding inportUrl to queue.", 1);
+      throw new Exception("Error in queueUrl adding inportUrl to queue. " . $e->getMessage(), 2);
     }
   }
 
@@ -70,14 +70,14 @@ class Sync {
     try {
       // Parameters:
       // 'default' - connection name
-      // getenv('AWS_SQS_QUEUE') - queue name
+      // getenv('AWS_SQS_CATFISH_IMPORTER_QUEUE') - queue name
       // delay
       // time before retries
       // max number of tries
 
-      $worker->pop('default', getenv('AWS_SQS_QUEUE'), 0, 3, 0);
+      $worker->pop('default', getenv('AWS_SQS_CATFISH_IMPORTER_QUEUE'), 0, 3, 0);
     } catch (Exception $e) {
-      throw new Exception("Error processing single queue item.", 1); // $e
+      throw new Exception("Unhandled error in the Worker library while actioning single queue item. Queue item may have exceeded maxTries " . $e->getMessage(), 1); //3$e
     }
 
   }
@@ -108,17 +108,17 @@ class Sync {
       try {
         // Parameters:
         // 'default' - connection name
-        // getenv('AWS_SQS_QUEUE') - queue name
+        // getenv('AWS_SQS_CATFISH_IMPORTER_QUEUE') - queue name
         // delay
         // time before retries
         // max number of tries
 
-        $worker->pop('default', getenv('AWS_SQS_QUEUE'), 0, 3, 0);
+        $worker->pop('default', getenv('AWS_SQS_CATFISH_IMPORTER_QUEUE'), 0, 3, 0);
       } catch (Exception $e) {
         if($cli) {
-          WP_CLI::error('Error processing next queue item.');
+          WP_CLI::error("Error processing next queue item. " . $e->getMessage());
         }
-        throw new Exception("Error processing next queue item.", 1); // $e
+        throw new Exception("Error processing next queue item. " . $e->getMessage(), 1); //4$e
       }
 
       // Flush to show output
@@ -144,14 +144,14 @@ class Sync {
     try {
       // Parameters:
       // 'default' - connection name
-      // getenv('AWS_SQS_QUEUE') - queue name
+      // getenv('AWS_SQS_CATFISH_IMPORTER_QUEUE') - queue name
 
-      $worker->purge('default', getenv('AWS_SQS_QUEUE'));
+      $worker->purge('default', getenv('AWS_SQS_CATFISH_IMPORTER_QUEUE'));
     } catch (Exception $e) {
       if($cli) {
-        WP_CLI::error('Error processing next queue item.');
+        WP_CLI::error("Error processing next queue item.");
       }
-      throw new Exception("Error processing next queue item.", 1); // $e
+      throw new Exception("Error processing next queue item.", 1); //5$e
     }
 
     if($cli) {
@@ -168,28 +168,40 @@ class Sync {
    */
   public static function importCategory($data, $payload) {
 
-    // Extract attributes from payload.
-    $categorySitemap = $payload['url'];
-    $onExistAction = $payload['onExistAction'];
+    try {
 
-    if($categorySitemap == 'all') {
-      // Handle adding all to queue
-      $postUrls = array();
-      foreach (Sitemap::getCategoriesFromIndex() as $categorySitemap) {
-        $postUrls = array_merge($postUrls, Sitemap::getPostUrlsFromCategory($categorySitemap));
+      // Extract attributes from payload.
+      $categorySitemap = $payload['url'];
+      $onExistAction = $payload['onExistAction'];
+
+      if($categorySitemap == 'all') {
+        // Handle adding all to queue
+        $postUrls = array();
+        foreach (Sitemap::getCategoriesFromIndex() as $categorySitemap) {
+          $postUrls = array_merge($postUrls, Sitemap::getPostUrlsFromCategory($categorySitemap));
+        }
+
+      } else {
+        $postUrls = Sitemap::getPostUrlsFromCategory($categorySitemap);
       }
 
-    } else {
-      $postUrls = Sitemap::getPostUrlsFromCategory($categorySitemap);
+      // Queue all posts
+      foreach($postUrls as $postUrl) {
+        self::queueUrl($postUrl, $onExistAction);
+      }
+
+      // Return list of post Urls
+      return $postUrls;
+
+    } catch (Exception $e) {
+
+      if($cli) {
+        WP_CLI::error("Error adding multiple importQueue queue items based on the category sitemap. " . $e->getMessage());
+      }
+      throw new Exception("Error adding multiple importQueue queue items based on the category sitemap. " . $e->getMessage(), 6);
+
     }
 
-    // Queue all posts
-    foreach($postUrls as $postUrl) {
-      self::queueUrl($postUrl, $onExistAction);
-    }
-
-    // Return list of post Urls
-    return $postUrls;
   }
 
   /**
@@ -197,24 +209,31 @@ class Sync {
    */
   public static function importUrl($data, $payload) {
 
-    // Extract attributes from payload.
-    $url = $payload['url'];
-    $onExistAction = $payload['onExistAction'];
+    try {
 
-    $response = new stdClass();
-    $response->success = false;
+      // Extract attributes from payload.
+      $url = $payload['url'];
+      $onExistAction = $payload['onExistAction'];
 
-    $post = Post::getPostFromUrl($url);
+      $post = Post::getPostFromUrl($url);
 
-    if ($post) {
-      $postResponse = new stdClass();
-      $postResponse->id = $post->ID;
-      $postResponse->url = $url;
-      $response->post = $postResponse;
-      $response->success = true;
+      if(!is_object($post)) {
+        if($cli) {
+          WP_CLI::error("Post returned is not an object. " . $post);
+        }
+        throw new Exception("Post returned is not an object. " . $post, 7);
+      }
+
+      return $url;
+
+    } catch (Exception $e) {
+
+      if($cli) {
+        WP_CLI::error("Error importing post from url using Posts class. " . $e->getMessage());
+      }
+      throw new Exception("Error importing post from url using Posts class. " . $e->getMessage(), 8);
+
     }
-
-    return $response;
   }
 
   /**

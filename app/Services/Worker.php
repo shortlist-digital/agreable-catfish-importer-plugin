@@ -54,19 +54,29 @@ class Worker extends QueueWorker {
       $job->delete();
 
       return ['job' => $job, 'failed' => false];
+
     } catch (Exception $e) {
+
+      // Try to release the job back into the queue to try again later
       $this->handleJobException($connection, $job, $delay, $e);
-      // TODO: Attach $e or $job and $connection to properties to help diagnose in BugSnag.
+
+      // then handle the error
       if($this->cli) {
-        var_dump($e);
-        WP_CLI::error('Exception Completing Action');
+        WP_CLI::error("Exception completing queue item within the Illuminate code. " . $e->getMessage());
       }
+      throw new Exception("Exception completing queue item within the Illuminate code. " . $e->getMessage(), 1);
+
     } catch (Throwable $e) {
+
+      // Try to release the job back into the queue to try again later
       $this->handleJobException($connection, $job, $delay, $e);
+
+      // then handle the error
       if($this->cli) {
-        var_dump($e);
-        WP_CLI::error('Exception Completing Action');
+        WP_CLI::error("Throwable Exception completing queue item within the Illuminate code. " . $e->getMessage());
       }
+      throw new Exception("Throwable Exception completing queue item within the Illuminate code. " . $e->getMessage(), 1);
+
     }
   }
 
@@ -86,8 +96,6 @@ class Worker extends QueueWorker {
   //         // method on the job. Otherwise, we will just keep on running our jobs.
   //         $job->fire();
   //
-  //         die(var_dump('final', $job));
-  //
   //         $this->raiseAfterJobEvent($connection, $job);
   //
   //         return ['job' => $job, 'failed' => false];
@@ -101,8 +109,7 @@ class Worker extends QueueWorker {
   /**
    * Purge queue function for tests primarily
    */
-  public function purge($connection, $queue)
-  {
+  public function purge($connection, $queue) {
     $count = 0;
     $connection = $this->manager->connection($connection);
     while ($job = $connection->pop($queue)) {

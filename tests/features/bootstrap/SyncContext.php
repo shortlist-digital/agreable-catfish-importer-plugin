@@ -49,6 +49,7 @@ class SyncContext extends BehatContext {
    * @Then /^I should have a valid queue ID$/
    */
   public function iShouldHaveAValidQueueId() {
+    // print_r(var_dump(self::$queueID));
     Assert::assertRegExp('/[a-z0-9-]+/', self::$queueID);
   }
 
@@ -78,7 +79,9 @@ class SyncContext extends BehatContext {
 
     $query = new WP_Query($query);
     $posts = $query->get_posts();
-    var_export($posts);
+
+    // var_export($posts); XXX ?????????
+
     Assert::assertEquals(1, count($posts));
 
     // $post = new TimberPost($posts[0]);
@@ -105,6 +108,7 @@ class SyncContext extends BehatContext {
     $payload = (array) $data->data;
 
     // Call the queued function in the Sync Class
+    self::$queueActionResponse = false;
     self::$queueActionResponse = Sync::$function($data, $payload);
   }
 
@@ -116,10 +120,33 @@ class SyncContext extends BehatContext {
   }
 
   /**
+   * @Then /^I should have an array of queue IDs$/
+   */
+  public function iShouldHaveAnArrayOfQueueIds() {
+    print_r(var_dump(self::$queueActionResponse));
+    throw new PendingException();
+  }
+
+  /**
    * @Given /^I delete all automated_testing posts$/
    */
   public function iDeleteAllAutomatedTestingPosts() {
     // TODO: Clear all posts with automated_testing meta
+    $query = array(
+      'post_type' => 'post',
+      'meta_query' => array(
+        array(
+          'key' => 'automated_testing',
+          'value' => true
+        )
+      )
+    );
+
+    $query = new WP_Query($query);
+    $posts = $query->get_posts();
+
+    print_r(var_dump('posts', $posts));
+
     throw new PendingException();
   }
 
@@ -133,9 +160,9 @@ class SyncContext extends BehatContext {
   /**
    * @Then /^I should see a couple of imported out of at least (\d+)$/
    */
-  public function iShouldSeeACoupleOfImportedOutOfAtLeast($arg) {
+  public function iShouldSeeACoupleOfImportedOutOfAtLeast($targetTotal) {
     // Assert::assertGreaterThan(0, self::$totalStatus->importedCount);
-    Assert::assertGreaterThan(10000, self::$totalStatus->total);
+    Assert::assertGreaterThan($targetTotal, self::$totalStatus->total);
   }
 
   /**
@@ -143,13 +170,6 @@ class SyncContext extends BehatContext {
    */
   public function iRetrieveTheCategoryImportStatus($categorySitemap) {
     self::$totalCategoryStatus = Sync::getImportCategoryStatus($categorySitemap);
-  }
-
-  /**
-   * @Then /^I should see a several of imported out of at least (\d+)$/
-   */
-  public function iShouldSeeASeveralOfImportedOutOfAtLeast($arg1) {
-    Assert::assertGreaterThan(100, self::$totalCategoryStatus->total);
   }
 
 }

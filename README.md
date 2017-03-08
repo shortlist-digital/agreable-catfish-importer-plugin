@@ -3,6 +3,25 @@ Agreable Catfish Importer Plugin
 
 For importing Catfish content in to Croissant
 
+# Setup
+
+The Catfish importer uses Amazon SQS queues and requires some environment variables to be set before it will run. Make sure you set all of the following before attempting to run the command line actions:
+
+```
+ILLUMINATE_ENCRYPTOR_KEY=
+```
+
+The Illuminate key is the equivelent to the ```APP_KEY``` in Laravel and must be an AES-256-CBC compatible encryption key.
+
+```
+AWS_KEY=
+AWS_SECRET=
+AWS_SQS_CATFISH_IMPORTER_REGION=
+AWS_SQS_CATFISH_IMPORTER_QUEUE=
+```
+
+The rest can be filled from your AWS connection. Note: *the queue should be the fully qualified queue url including http.... _not_ just the name of the queue*.
+
 # Managing the Importer Queue
 
 Items can be added to the queue using the Wordpress interface or using the command line. To action items in the queue you can only use the command line interface.
@@ -33,7 +52,7 @@ wp catfish queue http://www.shortlist.com/sitemap/entertainment/48-hours-to.xml 
 The work command actions one single item in the queue.
 
 ```
-wp catfish listen --debug
+wp catfish work --debug
 ```
 
 ### Listen command

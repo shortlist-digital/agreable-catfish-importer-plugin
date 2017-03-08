@@ -22,7 +22,7 @@ Feature: Sync
     Then I should have imported the "michelin-star-restaurants-odd-unusual-world-uk-guide-food" post
 
   Scenario: Push category import to queue
-    Given I process the queue action json '{"job":"importCategory","data":{"url":"http:\/\/www.shortlist.com\/sitemap\/food-drink.xml","onExistAction":"update"}}'
+    Given I process the queue action json '{"job":"importCategory","data":{"url":"http:\/\/www.shortlist.com\/sitemap\/48-hours-to.xml","onExistAction":"update"}}'
     Then I should have an array of queue IDs
 
 
@@ -32,4 +32,4 @@ Feature: Sync
 
   Scenario: Get a category import status
     Given I retrieve the "news" category import status
-    Then I should see a several of imported out of at least 100
+    Then I should see a couple of imported out of at least 5
