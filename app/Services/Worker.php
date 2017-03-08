@@ -109,13 +109,31 @@ class Worker extends QueueWorker {
   /**
    * Purge queue function for tests primarily
    */
-  public function purge($connection, $queue) {
+  public function purge($connection, $queue, $cli) {
+
+    if($cli) {
+      $startTime = microtime(true);
+    }
+
     $count = 0;
     $connection = $this->manager->connection($connection);
+
     while ($job = $connection->pop($queue)) {
       $job->delete();
       $count++;
+      if($cli) {
+        // WP_CLI::line("Purged " . $wrongvar . " posts."); // TODO surface bugs like this to the command line?
+        WP_CLI::line("Purged " . $count . " queue items.");
+      }
     }
+
+    // Show how long it took to process the category to queue
+    if($cli) {
+      $endTime = microtime(true);
+      $time = $endTime - $startTime;
+      WP_CLI::line("Purge took " . $time . " seconds.");
+    }
+
     return $count;
   }
 

@@ -67,7 +67,7 @@ wp catfish listen --debug
 The purge command **deletes all queue items**. Used to give tests a clean environment to work with.
 
 ```
-wp catfish listen --debug
+wp catfish purge --debug
 ```
 ### --debug
 

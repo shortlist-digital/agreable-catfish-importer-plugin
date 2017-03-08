@@ -57,6 +57,10 @@ class SyncContext extends BehatContext {
 
     print_r(var_dump('posts', $posts));
 
+    foreach ($posts as $post) {
+      //wp_delete_post( $postid, $force_delete );
+    }
+
     throw new PendingException();
   }
 

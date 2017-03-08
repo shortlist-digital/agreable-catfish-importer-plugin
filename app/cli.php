@@ -68,6 +68,9 @@ WP_CLI::add_command('catfish queue', 'addToQueue');
 function actionQueue(array $args) {
   // Let the queue run FOREVER
   set_time_limit(0);
+  ini_set('display_errors', 1);
+  ini_set('display_startup_errors', 1);
+  error_reporting(E_ERROR | E_WARNING | E_PARSE);
 
   WP_CLI::line('Listening to queue...');
 
@@ -95,10 +98,17 @@ WP_CLI::add_command('catfish listen', 'actionQueue');
 function actionSingleQueueItem(array $args) {
   // Let the queue run FOREVER
   set_time_limit(0);
+  ini_set('display_errors', 1);
+  ini_set('display_startup_errors', 1);
+  error_reporting(E_ERROR | E_WARNING | E_PARSE);
 
   WP_CLI::line('Working on queue...');
 
-  Sync::actionSingleQueueItem(true);
+  try {
+    Sync::actionSingleQueueItem(true);
+  } catch (Exception $e) {
+    WP_CLI::error(var_dump($e));
+  }
 }
 
 // Register command with WP_CLI
@@ -122,11 +132,19 @@ WP_CLI::add_command('catfish work', 'actionSingleQueueItem');
 function purgeQueue(array $args) {
   // Let the queue run FOREVER
   set_time_limit(0);
+  ini_set('display_errors', 1);
+  ini_set('display_startup_errors', 1);
+  error_reporting(E_ERROR | E_WARNING | E_PARSE);
+
   WP_CLI::confirm( "Are you sure you want to DELETE ALL ITEMS from the queue?", $args );
 
   WP_CLI::line('Purging the queue...');
+  try {
+    Sync::purgeQueue(true);
+  } catch (Exception $e) {
+    WP_CLI::error(var_dump($e));
+  }
 
-  Sync::purgeQueue(true);
 }
 
 // Register command with WP_CLI

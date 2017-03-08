@@ -15,7 +15,7 @@ class Queue extends Manager {
    if( !getenv('ILLUMINATE_ENCRYPTOR_KEY') ) {
      throw new Exception("You need to set a AES-256-CBC compatible encryption key for you ILLUMINATE_ENCRYPTOR_KEY environment variable.", 9);
    }
-   if( !getenv('AWS_KEY') || !getenv('AWS_SECRET') || !getenv('AWS_SQS_CATFISH_IMPORTER_QUEUE') || !getenv('AWS_SQS_CATFISH_IMPORTER_REGION') ) {
+   if( !getenv('AWS_SQS_KEY') || !getenv('AWS_SQS_SECRET') || !getenv('AWS_SQS_CATFISH_IMPORTER_QUEUE') || !getenv('AWS_SQS_CATFISH_IMPORTER_REGION') ) {
      throw new Exception("You need to set your AWS environment variables in .env.", 10);
    }
 
@@ -31,8 +31,8 @@ class Queue extends Manager {
    // Connect with credentials from .env
    self::addConnection([
        'driver' => 'sqs',
-       'key'    => getenv('AWS_KEY'),
-       'secret' => getenv('AWS_SECRET'),
+       'key'    => getenv('AWS_SQS_KEY'),
+       'secret' => getenv('AWS_SQS_SECRET'),
        'queue'  => getenv('AWS_SQS_CATFISH_IMPORTER_QUEUE'),
        'region' => getenv('AWS_SQS_CATFISH_IMPORTER_REGION')
    ]);
