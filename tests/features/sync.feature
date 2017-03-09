@@ -1,15 +1,36 @@
 Feature: Sync
   Test the Catfish Importer sync
 
-  Scenario: Sync just the last 2 posts of a single category
-    Given I sync 2 most recent posts from the category sitemap "http://www.stylist.co.uk/sitemap/books.xml"
-    Then I should have 2 imported "books" posts
+  Scenario: Queue a single post for import
+    Given I purge the queue
+    And I delete all automated_testing posts
+    And I push the post "http://www.shortlist.com/food-drink/the-chicken-connoisseur-is-in-new-york-rating-jay-z-old-chicken-spot-asap-bari-vlone" with the update method as "delete-insert" to the queue
+    Then I should have a valid queue ID
 
-  Scenario: Get the status of a category import
-    Given I sync 2 most recent posts from the category sitemap "http://www.stylist.co.uk/sitemap/ad-section-1.xml"
-    Then I should have 2 imported "ad-section-1" posts
-    And I should have the category import status of 2 out of 3 imported
+  Scenario: Action a single post import
+    Given I pull an item from the queue and run it
+    Then I should have imported the "the-chicken-connoisseur-is-in-new-york-rating-jay-z-old-chicken-spot-asap-bari-vlone" post
+    And I delete all automated_testing posts
+
+  Scenario: Queue an entire category of posts for import
+    Given I push all posts from the category sitemap "http://www.shortlist.com/sitemap/food-drink.xml" with the update method as "delete-insert" to the queue
+    Then I should have a valid queue ID
+    Then I purge the queue
+
+
+  Scenario: Sync a post from url
+    Given I process the queue action json '{"job":"importUrl","data":{"url":"http:\/\/www.shortlist.com\/food-drink\/michelin-star-restaurants-odd-unusual-world-uk-guide-food","onExistAction":"update"}}'
+    Then I should have imported the "michelin-star-restaurants-odd-unusual-world-uk-guide-food" post
+
+  Scenario: Push category import to queue
+    Given I process the queue action json '{"job":"importCategory","data":{"url":"http:\/\/www.shortlist.com\/sitemap\/entertainment\/48-hours-to.xml","onExistAction":"update"}}'
+    Then I should have an array of queue IDs
+
 
   Scenario: Get the full import status
-    Given I retrive the full import status
+    Given I retrieve the full import status
     Then I should see a couple of imported out of at least 10000
+
+  Scenario: Get a category import status
+    Given I retrieve the "news" category import status
+    Then I should see a couple of imported out of at least 5
