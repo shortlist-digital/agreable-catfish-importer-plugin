@@ -44,7 +44,11 @@ class Worker extends QueueWorker {
       }
 
       // Call the queued function in the Sync Class
-      Sync::$function($data, $payload);
+      // Parameters:
+      // $data  the full json object from the queue including the function name and payload
+      // $payload  the spefic payload data for this action
+      // $cli  should WP_CLI console output be shown
+      Sync::$function($data, $payload, true);
 
       if($this->cli) {
         WP_CLI::success('Action complete');

@@ -141,8 +141,6 @@ class Sync {
     // Connect to the AWS SQS Queue
     $worker = new Worker($queue->getQueueManager());
 
-    var_dump('here');
-
     try {
       // Parameters:
       // 'default' - connection name
@@ -168,9 +166,7 @@ class Sync {
   /**
    * Take import category queue item and split into ImportPost Queue items
    */
-  public static function importCategory($data, $payload, $cli = true) {
-
-    var_dump('importCategory', $data, $payload);
+  public static function importCategory($data, $payload, $cli = false) {
 
     try {
 
@@ -178,10 +174,7 @@ class Sync {
       $categorySitemap = $payload['url'];
       $onExistAction = $payload['onExistAction'];
 
-      var_dump('importCategory');
       if($categorySitemap == 'all') {
-
-        var_dump('all');
 
         // Handle adding all to queue
         $postUrls = array();
@@ -190,18 +183,13 @@ class Sync {
         $site_url = get_field('catfish_website_url', 'option');
         $allSitemaps = Sitemap::getCategoriesFromIndex($site_url . 'sitemap-index.xml');
 
-        var_dump($allSitemaps);
-
         foreach ($allSitemaps as $categorySitemap) {
-          var_dump($categorySitemap);
           $postUrls = array_merge($postUrls, Sitemap::getPostUrlsFromCategory($categorySitemap));
         }
 
       } else {
         $postUrls = Sitemap::getPostUrlsFromCategory($categorySitemap);
       }
-
-      var_dump($postUrls);
 
       $queueIDs = array();
 
@@ -218,16 +206,11 @@ class Sync {
         $queueIDs[] = self::queueUrl($postUrl, $onExistAction);
         // Show progress to the command line
         if($cli) {
-
-          // var_dump('currentPost');
-
           $currentPost++;
           WP_CLI::line("Pushed " . $currentPost . " out of " . $totalToQueue . " into the queue.");
-          // flush();
         }
       }
 
-          // var_dump('importCategory');
       // Show how long it took to process the category to queue
       if($cli) {
         $endTime = microtime(true);
@@ -239,8 +222,6 @@ class Sync {
       return $queueIDs;
 
     } catch (Exception $e) {
-
-      // var_dump($e);
 
       if($cli) {
         WP_CLI::error("Error adding multiple importQueue queue items based on the category sitemap. " . $e->getMessage());
@@ -254,7 +235,7 @@ class Sync {
   /**
    * Import a single post from given URL
    */
-  public static function importUrl($data, $payload, $cli = true) {
+  public static function importUrl($data, $payload, $cli = false) {
 
     try {
 
@@ -290,10 +271,17 @@ class Sync {
   /**
    * Return a list of categories to import in admin
    */
-   public static function getCategories() {
+   public static function getCategories($forFrontEnd = true) {
      $site_url = get_field('catfish_website_url', 'option');
+     if($forFrontEnd) {
+       // If this is called for the admin user interface
+       $categories = array_merge(array('all'), Sitemap::getCategoriesFromIndex($site_url . 'sitemap-index.xml'));
+     } else {
+       $categories = Sitemap::getCategoriesFromIndex($site_url . 'sitemap-index.xml');
+     }
+
      // Add and option for all categories
-     return array_merge(array('all'), Sitemap::getCategoriesFromIndex($site_url . 'sitemap-index.xml'));
+     return $categories;
    }
 
   /**
@@ -335,7 +323,7 @@ class Sync {
     $totalStatus->importedCount = 0;
     $totalStatus->total = 0;
 
-    $categories = self::getCategories();
+    $categories = self::getCategories(false);
     foreach($categories as $categoryUrl) {
       $categoryStatus = self::getImportCategoryStatus($categoryUrl);
 

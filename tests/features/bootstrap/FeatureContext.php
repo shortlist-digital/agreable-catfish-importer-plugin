@@ -1,6 +1,7 @@
 <?php
 include __DIR__ . '/bootstrap.php';
 
+use AgreableCatfishImporterPlugin\Services\Post;
 use Behat\Behat\Context\BehatContext;
 use Behat\Behat\Event\FeatureEvent;
 
@@ -10,11 +11,10 @@ class FeatureContext extends BehatContext {
    * @BeforeFeature
    */
   public static function prepare(FeatureEvent $scope) {
-    self::deleteAllTestArticles();
+    Post::deleteAllAutomatedTestingPosts();
   }
 
   public function __construct(array $parameters) {
-
     $this->useContext('subcontext_sitemap', new SitemapContext());
     $this->useContext('subcontext_post', new PostContext());
     $this->useContext('subcontext_sync', new SyncContext());
@@ -24,18 +24,7 @@ class FeatureContext extends BehatContext {
    * @AfterFeature
    */
   public static function after(FeatureEvent $scope) {
-    self::deleteAllTestArticles();
+    Post::deleteAllAutomatedTestingPosts();
   }
 
-  protected static function deleteAllTestArticles() {
-    $query = new WP_Query([
-      'post_type' => 'post',
-      'meta_key'  => 'automated_testing',
-      'meta_value'  => true,
-    ]);
-    $posts = $query->get_posts();
-    foreach($posts as $post) {
-      wp_delete_post($post->ID, true);
-    }
-  }
 }

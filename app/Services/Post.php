@@ -3,6 +3,8 @@ namespace AgreableCatfishImporterPlugin\Services;
 
 use \stdClass;
 use \WP_Post;
+use \WP_Query;
+use \WP_CLI;
 use \TimberPost;
 use Sunra\PhpSimple\HtmlDomParser;
 use AgreableCatfishImporterPlugin\Services\Notification;
@@ -213,5 +215,37 @@ class Post {
   public static function getCategory(TimberPost $post) {
     $postCategories = wp_get_post_categories($post->id);
     return get_category($postCategories[0]);
+  }
+
+  /**
+   * Get and return posts with matching slug
+   */
+  public static function getPostsWithSlug($slug) {
+    $args = array(
+      'name'        => $slug,
+      'post_type'   => 'post',
+      'post_status' => 'publish',
+      'numberposts' => 1
+    );
+    $posts = get_posts($args);
+    if( $posts ) {
+      echo 'ID on the first post found ' . $posts[0]->ID;
+    }
+    return $posts;
+  }
+
+  /**
+   * Delete all post with the automated_testing metadata
+   */
+  public static function deleteAllAutomatedTestingPosts($cli = false) {
+    $query = new WP_Query([
+      'post_type' => 'post',
+      'meta_key'  => 'automated_testing',
+      'meta_value'  => true,
+    ]);
+    $posts = $query->get_posts();
+    foreach($posts as $post) {
+      wp_delete_post($post->ID, true);
+    }
   }
 }
