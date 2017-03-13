@@ -222,15 +222,10 @@ class Post {
    */
   public static function getPostsWithSlug($slug) {
     $args = array(
-      'name'        => $slug,
-      'post_type'   => 'post',
-      'post_status' => 'publish',
-      'numberposts' => 1
+      'post_name' => $slug,
+      'post_type' => 'post'
     );
     $posts = get_posts($args);
-    if( $posts ) {
-      echo 'ID on the first post found ' . $posts[0]->ID;
-    }
     return $posts;
   }
 

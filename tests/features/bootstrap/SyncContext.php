@@ -81,16 +81,12 @@ class SyncContext extends BehatContext {
     self::$queueActionResponse = Sync::actionSingleQueueItem();
   }
 
-  // TODO: Need a clean environment to truly run
   /**
    * @Then /^I should have imported the "([^"]*)" post$/
    */
   public function iShouldHaveImportedThePost($slug) {
     $posts = Post::getPostsWithSlug($slug);
 
-    var_dump('getPostsWithSlug', $posts);
-
-    Assert::assertEquals(1, count($posts));
     Assert::assertGreaterThan(0, count($posts));
   }
 
