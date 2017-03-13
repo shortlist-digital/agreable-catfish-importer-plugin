@@ -7,7 +7,6 @@ use \WP_Query;
 use \WP_CLI;
 use \TimberPost;
 use Sunra\PhpSimple\HtmlDomParser;
-use AgreableCatfishImporterPlugin\Services\Notification;
 
 use AgreableCatfishImporterPlugin\Services\User;
 use AgreableCatfishImporterPlugin\Services\Category;
@@ -16,38 +15,88 @@ use Exception;
 
 class Post {
 
-  public static function notifyError($message) {
-    $notifier = new Notification;
-    $notifier->error($message);
-  }
   /**
    * Get single post from Clock URL and import into the Pages CMS
    *
    */
-  public static function getPostFromUrl($postUrl) {
+  public static function getPostFromUrl($postUrl, $onExistAction = 'skip') {
     $fail = false;
     $postJsonUrl = $postUrl . '.json';
     try {
       $postString = file_get_contents($postJsonUrl);
     } catch (Exception $e) {
-      self::notifyError('Unable to retrieve JSON from URL ' . $postJsonUrl);
-      return false;
+      throw new Exception('Unable to retrieve JSON from URL ' . $postJsonUrl);
     }
 
     if (!$object = json_decode($postString)) {
-      self::notifyError('Unable to retrieve JSON from URL ' . $postJsonUrl);
-      return false;
+      throw new Exception('Unable to retrieve JSON from URL ' . $postJsonUrl);
     }
 
     if (!isset($object->article)) {
-      self::notifyError('"Article" property does not exist in JSON, might be a full page embed or microsite');
-      return false;
+      throw new Exception('"Article" property does not exist in JSON, might be a full page embed or microsite');
     }
 
     // XXX: Create master post array to save into Wordpress
 
     $postObject = $object->article; // The article in object from as retrieved from Clock CMS API
     $postDom = HtmlDomParser::str_get_html($object->content); // A parsed object of the post content to be split into ACF widgets as a later point
+
+    // Check if article exists and handle onExistAction
+    $existingPost = self::getPostsWithSlug($postObject->slug);
+
+    // var_dump('$postObject->slug', $postObject->slug);
+    // var_dump('$existingPost', $existingPost);
+
+    // Mark if the post already exists
+    // This is used later on to decide if we should update or insert the post
+    if(empty($existingPost)) {
+
+      // If there's no existing post go ahead and import it fresh
+      // var_dump('No existing post adding a new one');
+
+      // Make $existingPost clearer to use in future if statements by setting as false
+      $existingPost = false;
+
+    } else {
+
+      // var_dump('onExistAction', $onExistAction);
+
+      // If the post exists respect the onExistAction attribute
+      switch ($onExistAction) {
+        case 'update':
+
+          // Update the existing post in place
+          // NOTE what is the difference functionally between update and delete-insert
+          // NOTE what is actually updated on update?
+
+          // Use the post object as the base of the post to update
+          $postArrayForWordpress = $existingPost[0];
+
+          var_dump('$postArrayForWordpress', $postArrayForWordpress);
+
+          break;
+        case 'delete-insert':
+
+          // Delete existing post and add a new one below
+          // var_dump('wp_delete_post($post[0]->ID)', $existingPost);
+          try {
+            wp_delete_post($existingPost[0]->ID);
+          } catch (Exception $e) {
+            throw new Exception("Error deleting original post.", 4);
+          }
+
+          break;
+        case 'skip':
+        default:
+
+          // Default, skip any post that already exists
+          // return the existing post object as is
+          return $existingPost[0];
+
+          break;
+      }
+
+    }
 
     // Set post published date
     $displayDate = strtotime($postObject->displayDate);
@@ -63,7 +112,8 @@ class Post {
       'post_date' => $displayDate,
       'post_date_gmt' => $displayDate,
       'post_modified' => $displayDate,
-      'post_modified_gmt' => $displayDate
+      'post_modified_gmt' => $displayDate,
+      'post_status' => 'publish' // Publish the post on import
     );
 
     // Create or select Author ID
@@ -90,13 +140,33 @@ class Post {
       'catfish_importer_date_updated' => time()
     );
 
-    // If automated testing, set some metadata
-    if (isset($_SERVER['is-automated-testing'])) {
-      $postMetaArrayForWordpress['automated_testing'] = true;
+    // Log the created time if this is the first time this post was imported
+    if($existingPost == false || $existingPost && $onExistAction == 'delete-insert') {
+      $postMetaArrayForWordpress['catfish_importer_date_created'] = time();
     }
 
-    // Save post and return ID of newly created post for updating Categories, tags and Widgets
-    $wpPostId = wp_insert_post($postArrayForWordpress);
+    // If automated testing, set the automated_testing meta field
+    if (isset($_SERVER['is-automated-testing'])) {
+      $postMetaArrayForWordpress['automated_testing'] = true;
+
+      // var_dump('check for exists custom var to check this ', $existingPost);
+
+      // Do not mark delete-insert or update posts as automated_testing if they
+      // weren't already otherwise tests will delete existing posts
+      if($onExistAction == 'delete-insert' || $onExistAction == 'update') {
+        unset($postMetaArrayForWordpress['automated_testing']);
+      }
+    }
+
+    // Insert or update the post
+    if($existingPost && $onExistAction == 'update') {
+      // Save post and return ID of newly created post for updating Categories, tags and Widgets
+      $wpPostId = wp_update_post($postArrayForWordpress);
+    } else {
+      // Save post and return ID of newly created post for updating Categories, tags and Widgets
+      $wpPostId = wp_insert_post($postArrayForWordpress);
+    }
+
     // Save the post meta data (Any field that's not post_)
     self::setPostMetadata($wpPostId, $postMetaArrayForWordpress);
 
@@ -116,7 +186,7 @@ class Post {
 
     // Catch failure to create TimberPost object
     if (!$post = new TimberPost($wpPostId)) {
-      self::notifyError('Unexpected exception where Mesh did not create/fetch a post');
+      throw new Exception('Unexpected exception where Mesh did not create/fetch a post');
     }
 
     // Create the ACF Widgets from DOM content
@@ -207,7 +277,7 @@ class Post {
       set_post_thumbnail($post->id, $heroImageIds[0]);
     } else {
       $message = "$post->title has no hero images";
-      self::notifyError($message);
+      throw new Exception($message);
     }
     return $show_header;
   }
@@ -222,10 +292,13 @@ class Post {
    */
   public static function getPostsWithSlug($slug) {
     $args = array(
-      'post_name' => $slug,
-      'post_type' => 'post'
+      'name' => $slug,
+      // 'post_name' => $slug,
+      'post_type' => 'post',
+      'post_status' => array('publish', 'pending', 'draft', 'auto-draft', 'future', 'private', 'inherit', 'trash')
     );
     $posts = get_posts($args);
+    // var_dump('$posts', $slug, $posts);
     return $posts;
   }
 
@@ -237,10 +310,23 @@ class Post {
       'post_type' => 'post',
       'meta_key'  => 'automated_testing',
       'meta_value'  => true,
+      'post_status' => array('publish', 'pending', 'draft', 'auto-draft', 'future', 'private', 'inherit', 'trash'),
+      'posts_per_page' => -1 // Return all posts at once.
     ]);
-    $posts = $query->get_posts();
-    foreach($posts as $post) {
-      wp_delete_post($post->ID, true);
+
+    if ( $query->have_posts() ) {
+      $posts = $query->get_posts();
+      // die(var_dump($posts));
+      foreach($posts as $post) {
+
+        if($post->ID) {
+          if($cli) {
+            WP_CLI::success('Deleting post ' . $post->ID);
+          }
+          wp_delete_post($post->ID, true);
+        }
+      }
     }
+
   }
 }

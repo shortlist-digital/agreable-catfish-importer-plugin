@@ -243,8 +243,9 @@ class Sync {
       $url = $payload['url'];
       $onExistAction = $payload['onExistAction'];
 
-      $post = Post::getPostFromUrl($url);
+      $post = Post::getPostFromUrl($url, $onExistAction);
 
+      // Catch uncaught failure in the Post class
       if(!is_object($post)) {
         if($cli) {
           WP_CLI::error("Post returned is not an object. " . $post);
@@ -252,7 +253,8 @@ class Sync {
         throw new Exception("Post returned is not an object. " . $post, 7);
       }
 
-      return $url;
+      // Return the post object if successfull
+      return $post;
 
     } catch (Exception $e) {
 

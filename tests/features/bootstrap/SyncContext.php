@@ -110,6 +110,7 @@ class SyncContext extends BehatContext {
     // Call the queued function in the Sync Class
     self::$queueActionResponse = false;
     self::$queueActionResponse = Sync::$function($data, $payload);
+    // self::$queueActionResponse = Sync::$function($data, $payload);
   }
 
   /**
@@ -131,26 +132,49 @@ class SyncContext extends BehatContext {
     }
   }
 
-  // TODO:
   /**
-   * @Given /^I should have updated the post updated time$/
+   * @Given /^I should have \'([^\']*)\' the post in the last (\d+) seconds$/
    */
-  public function iShouldHaveUpdatedThePostUpdatedTime() {
-      throw new PendingException();
+  // Function that checks for the catfish_importer_date_created or catfish_importer_date_updated
+  // values to check importer function.
+
+  // Parameters:
+  // $timeType  created/updated
+  // $seconds  maximum time window for the post to have been updated or created
+
+  public function iShouldHaveThePostInTheLastSeconds($timeType, $seconds) {
+    // When updated an existing post you should
+    if($timeType !== 'created' && $timeType !== 'updated') {
+      throw new Exception("You must specify either created or updated time to check.", 30);
+    }
+
+    $postTime = self::$queueActionResponse->custom["catfish_importer_date_$timeType"];
+    // Seconds since modified
+    $timeDifference = time() - $postTime;
+
+    // Assert modified in the last 10 seconds
+    Assert::assertLessThan($seconds, $timeDifference);
   }
 
   /**
-   * @Given /^I should have updated the post created time$/
+   * @Given /^I should have not updated the post created or updated time$/
    */
-  public function iShouldHaveUpdatedThePostCreatedTime() {
-      throw new PendingException();
-  }
+  public function iShouldHaveNotUpdatedThePostCreatedOrUpdatedTime() {
+    // When skipping posts that exists you should have and insert and update
+    // time over a day old.
 
-  /**
-   * @Given /^I should have the identical the post created and updated time$/
-   */
-  public function iShouldHaveTheIdenticalThePostCreatedAndUpdatedTime() {
-      throw new PendingException();
+    // TODO: use above to build assertations for these tests.
+    $postCreatedTime = strtotime(self::$queueActionResponse->post_created);
+    // Seconds since created
+    $secondsSinceCreation = time() - $postCreatedTime;
+
+    $postModifiedTime = strtotime(self::$queueActionResponse->post_created);
+    // Seconds since modified
+    $secondsSinceCreation = time() - $postModifiedTime;
+
+    // Assert created or modified over 1 day ago
+    Assert::assertGreaterThan(14 * 60 * 60, $secondsSinceCreation);
+    Assert::assertGreaterThan(14 * 60 * 60, $secondsSinceCreation);
   }
 
   /**
