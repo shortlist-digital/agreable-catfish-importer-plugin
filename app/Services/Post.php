@@ -38,47 +38,41 @@ class Post {
 
     // XXX: Create master post array to save into Wordpress
 
+    // Create an empty wordpress post array to build up over the course of the
+    // function and to insert or update using wp_insert_post or wp_update_post
+    $postArrayForWordpress = array();
+
     $postObject = $object->article; // The article in object from as retrieved from Clock CMS API
     $postDom = HtmlDomParser::str_get_html($object->content); // A parsed object of the post content to be split into ACF widgets as a later point
 
     // Check if article exists and handle onExistAction
     $existingPost = self::getPostsWithSlug($postObject->slug);
 
-    // var_dump('$postObject->slug', $postObject->slug);
-    // var_dump('$existingPost', $existingPost);
 
     // Mark if the post already exists
     // This is used later on to decide if we should update or insert the post
     if(empty($existingPost)) {
 
       // If there's no existing post go ahead and import it fresh
-      // var_dump('No existing post adding a new one');
-
       // Make $existingPost clearer to use in future if statements by setting as false
       $existingPost = false;
 
     } else {
-
-      // var_dump('onExistAction', $onExistAction);
 
       // If the post exists respect the onExistAction attribute
       switch ($onExistAction) {
         case 'update':
 
           // Update the existing post in place
-          // NOTE what is the difference functionally between update and delete-insert
-          // NOTE what is actually updated on update?
 
           // Use the post object as the base of the post to update
-          $postArrayForWordpress = $existingPost[0];
-
-          var_dump('$postArrayForWordpress', $postArrayForWordpress);
+          // Transmute object to array for the wp_update_post functon
+          $postArrayForWordpress = (array) $existingPost[0];
 
           break;
         case 'delete-insert':
 
           // Delete existing post and add a new one below
-          // var_dump('wp_delete_post($post[0]->ID)', $existingPost);
           try {
             wp_delete_post($existingPost[0]->ID);
           } catch (Exception $e) {
@@ -105,8 +99,8 @@ class Post {
     // If no sell exists on this post then create it from the headline
     $sell = empty($postObject->sell) ? $postObject->headline : $postObject->sell;
 
-    // Create the base array for the new Wordpress post
-    $postArrayForWordpress = array(
+    // Create the base array for the new Wordpress post or merge with existing post if updating
+    $postArrayForWordpress = array_merge(array(
       'post_name' => $postObject->slug,
       'post_title' => $postObject->headline,
       'post_date' => $displayDate,
@@ -114,7 +108,7 @@ class Post {
       'post_modified' => $displayDate,
       'post_modified_gmt' => $displayDate,
       'post_status' => 'publish' // Publish the post on import
-    );
+    ), $postArrayForWordpress); // Clock data from api take presidence over local data from Wordpress
 
     // Create or select Author ID
     if (isset($object->article->__author) &&
@@ -147,9 +141,9 @@ class Post {
 
     // If automated testing, set the automated_testing meta field
     if (isset($_SERVER['is-automated-testing'])) {
+
       $postMetaArrayForWordpress['automated_testing'] = true;
 
-      // var_dump('check for exists custom var to check this ', $existingPost);
 
       // Do not mark delete-insert or update posts as automated_testing if they
       // weren't already otherwise tests will delete existing posts
@@ -298,7 +292,6 @@ class Post {
       'post_status' => array('publish', 'pending', 'draft', 'auto-draft', 'future', 'private', 'inherit', 'trash')
     );
     $posts = get_posts($args);
-    // var_dump('$posts', $slug, $posts);
     return $posts;
   }
 
@@ -316,7 +309,6 @@ class Post {
 
     if ( $query->have_posts() ) {
       $posts = $query->get_posts();
-      // die(var_dump($posts));
       foreach($posts as $post) {
 
         if($post->ID) {
