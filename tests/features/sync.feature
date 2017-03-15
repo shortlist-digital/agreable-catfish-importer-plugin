@@ -32,7 +32,7 @@ Feature: Sync
 
 
   Scenario: Sync a post from url using update
-    Given I process the queue action json '{"job":"importUrl","data":{"url":"http:\/\/www.shortlist.com\/food-drink\/michelin-star-restaurants-odd-unusual-world-uk-guide-food","onExistAction":"update"}}'
+    Given I process the queue action json '{"job":"importUrl","data":{"url":"http:\/\/www.shortlist.com\/entertainment\/sport\/blind-footballer-scores-incredible-messi-style-goal-in-paralympics","onExistAction":"update"}}'
     Then I should have imported the "blind-footballer-scores-incredible-messi-style-goal-in-paralympics" post
     And I should have 'updated' the post in the last 10 seconds
 

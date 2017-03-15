@@ -48,7 +48,6 @@ class Post {
     // Check if article exists and handle onExistAction
     $existingPost = self::getPostsWithSlug($postObject->slug);
 
-
     // Mark if the post already exists
     // This is used later on to decide if we should update or insert the post
     if(empty($existingPost)) {
@@ -76,7 +75,7 @@ class Post {
           try {
             wp_delete_post($existingPost[0]->ID);
           } catch (Exception $e) {
-            throw new Exception("Error deleting original post.", 4);
+            throw new Exception("Error deleting original post.");
           }
 
           break;
@@ -144,9 +143,9 @@ class Post {
 
       $postMetaArrayForWordpress['automated_testing'] = true;
 
-
       // Do not mark delete-insert or update posts as automated_testing if they
-      // weren't already otherwise tests will delete existing posts
+      // weren't already marked automated_testing. This prevents tests from
+      // deleteing existing posts
       if($onExistAction == 'delete-insert' || $onExistAction == 'update') {
         unset($postMetaArrayForWordpress['automated_testing']);
       }
@@ -154,10 +153,12 @@ class Post {
 
     // Insert or update the post
     if($existingPost && $onExistAction == 'update') {
-      // Save post and return ID of newly created post for updating Categories, tags and Widgets
+      // Save post and return ID of newly created post for updating Categories,
+      // tags and Widgets
       $wpPostId = wp_update_post($postArrayForWordpress);
     } else {
-      // Save post and return ID of newly created post for updating Categories, tags and Widgets
+      // Save post and return ID of newly created post for updating Categories,
+      //  tags and Widgets
       $wpPostId = wp_insert_post($postArrayForWordpress);
     }
 
@@ -169,7 +170,7 @@ class Post {
     // Attach Categories to Post
     Category::attachCategories($object->article->section, $postUrl, $wpPostId);
 
-    // Attach
+    // Add tags to post
     $postTags = array();
     foreach($object->article->tags as $tag) {
       if ($tag->type !== 'System') {
@@ -182,6 +183,8 @@ class Post {
     if (!$post = new TimberPost($wpPostId)) {
       throw new Exception('Unexpected exception where Mesh did not create/fetch a post');
     }
+
+    var_dump('doing widgety stuff');
 
     // Create the ACF Widgets from DOM content
     $widgets = Widget::getWidgetsFromDom($postDom);

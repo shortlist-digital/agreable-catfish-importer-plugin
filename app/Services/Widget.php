@@ -25,6 +25,7 @@ class Widget {
    * Attach widgets to the $post via WP metadata
    */
   public static function setPostWidgets(TimberPost $post, array $widgets, stdClass $catfishPostObject) {
+
     $widgetNames = [];
     foreach ($widgets as $key => $widget) {
 
