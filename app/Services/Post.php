@@ -184,8 +184,6 @@ class Post {
       throw new Exception('Unexpected exception where Mesh did not create/fetch a post');
     }
 
-    var_dump('doing widgety stuff');
-
     // Create the ACF Widgets from DOM content
     $widgets = Widget::getWidgetsFromDom($postDom);
     Widget::setPostWidgets($post, $widgets, $postObject);
