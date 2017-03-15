@@ -53,7 +53,7 @@ class Sync {
   public static function actionSingleQueueItem($cli = false) {
 
     if($cli) {
-      WP_CLI::line('Poping one item from queue.');
+      WP_CLI::line('Poping item from queue.');
     }
 
     // Get queue object
@@ -80,50 +80,6 @@ class Sync {
       throw new Exception("Unhandled error in the Worker library while actioning single queue item. Queue item may have exceeded maxTries " . $e->getMessage());
     }
 
-  }
-
-  /**
-   * Consume queue items by worker
-   */
-  public static function actionQueue($cli = false) {
-
-    if($cli) {
-      WP_CLI::line('Running the queue continuously.');
-    }
-
-    // Get queue object
-    $queue = new Queue;
-
-    // Connect to the AWS SQS Queue
-    $worker = new Worker($queue->getQueueManager());
-
-    // Pass cli status to worker class
-    if($cli) {
-      $worker->cli = true;
-    }
-
-    // Run indefinitely
-    while (true) {
-
-      try {
-        // Parameters:
-        // 'default' - connection name
-        // getenv('AWS_SQS_CATFISH_IMPORTER_QUEUE') - queue name
-        // delay
-        // time before retries
-        // max number of tries
-
-        $worker->pop('default', getenv('AWS_SQS_CATFISH_IMPORTER_QUEUE'), 0, 3, 0);
-      } catch (Exception $e) {
-        if($cli) {
-          WP_CLI::error("Error processing next queue item. " . $e->getMessage());
-        }
-        throw new Exception("Error processing next queue item. " . $e->getMessage());
-      }
-
-      // Flush to show output
-      flush();
-    }
   }
 
   /**
