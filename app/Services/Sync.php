@@ -53,7 +53,7 @@ class Sync {
   public static function actionSingleQueueItem($cli = false) {
 
     if($cli) {
-      WP_CLI::line('actionSingleQueueItem');
+      WP_CLI::line('Poping one item from queue.');
     }
 
     // Get queue object
@@ -88,7 +88,7 @@ class Sync {
   public static function actionQueue($cli = false) {
 
     if($cli) {
-      WP_CLI::line('actionQueue');
+      WP_CLI::line('Running the queue continuously.');
     }
 
     // Get queue object
@@ -132,7 +132,7 @@ class Sync {
   public static function purgeQueue($cli = false) {
 
     if($cli) {
-      WP_CLI::line('purgeQueue');
+      WP_CLI::line('Purging the queue.');
     }
 
     // Get queue object
@@ -173,6 +173,10 @@ class Sync {
       // Extract attributes from payload.
       $categorySitemap = $payload['url'];
       $onExistAction = $payload['onExistAction'];
+
+      if($cli) {
+        WP_CLI::line('Splitting category to separate queue items: ' . $categorySitemap);
+      }
 
       if($categorySitemap == 'all') {
 
@@ -242,6 +246,10 @@ class Sync {
       // Extract attributes from payload.
       $url = $payload['url'];
       $onExistAction = $payload['onExistAction'];
+
+      if($cli) {
+        WP_CLI::line('Importing url: ' . $url);
+      }
 
       $post = Post::getPostFromUrl($url, $onExistAction);
 

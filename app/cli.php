@@ -29,8 +29,16 @@ use AgreableCatfishImporterPlugin\Services\Queue;
  *
  */
 function addToQueue(array $args) {
+
+  // Catch incorrect useage of command which could lead to adding plain text to queue
+  if(in_array($args[0], array('work', 'listen', 'clear', 'purge'))) {
+    WP_CLI::error('Commands aren\'t nested. You should use "wp catfish '.$args[0].'" instead of "wp catfish queue '.$args[0].'".');
+    return;
+  }
+
   if(!isset($args[0])) {
     WP_CLI::error("You must pass a post or sitemap url to the catfish queue command. eg. http://www.shortlist.com/entertainment/the-toughest-world-record-ever-has-been-broken");
+    return;
   }
 
   if($args[0] == 'all' || strstr($args[0], '.xml')) {
