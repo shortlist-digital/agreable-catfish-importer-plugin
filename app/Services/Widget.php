@@ -74,6 +74,11 @@ class Widget {
         case 'horizontal-rule':
           $widgetNames[] = $widget->acf_fc_layout;
           break;
+        case 'promo':
+          // Throw exception if promo widget found
+          // To help decide if we need Promo widgets in the new pages CMS, throw an exception if a promo widget is found
+          throw new Exception("Importer found a promo widget. Someone call Elliot.", 30);
+          break;
       }
 
     }
