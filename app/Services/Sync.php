@@ -26,7 +26,7 @@ class Sync {
       return Queue::push('importCategory', array('url' => $categorySitemap, 'onExistAction' => $onExistAction));
     } catch (Exception $e) {
       // Catch errors for easy debugging in BugSnag
-      throw new Exception("Error in queueUrl adding inportCategory to queue. " . $e->getMessage(), 1);
+      throw new Exception("Error in queueUrl adding inportCategory to queue. " . $e->getMessage());
     }
   }
 
@@ -39,7 +39,7 @@ class Sync {
       return Queue::push('importUrl', array('url' => $url, 'onExistAction' => $onExistAction));
     } catch (Exception $e) {
       // Catch errors for easy debugging in BugSnag
-      throw new Exception("Error in queueUrl adding inportUrl to queue. " . $e->getMessage(), 2);
+      throw new Exception("Error in queueUrl adding inportUrl to queue. " . $e->getMessage());
     }
   }
 
@@ -77,7 +77,7 @@ class Sync {
 
       $worker->pop('default', getenv('AWS_SQS_CATFISH_IMPORTER_QUEUE'), 0, 3, 0);
     } catch (Exception $e) {
-      throw new Exception("Unhandled error in the Worker library while actioning single queue item. Queue item may have exceeded maxTries " . $e->getMessage(), 1); //3$e
+      throw new Exception("Unhandled error in the Worker library while actioning single queue item. Queue item may have exceeded maxTries " . $e->getMessage());
     }
 
   }
@@ -118,7 +118,7 @@ class Sync {
         if($cli) {
           WP_CLI::error("Error processing next queue item. " . $e->getMessage());
         }
-        throw new Exception("Error processing next queue item. " . $e->getMessage(), 1); //4$e
+        throw new Exception("Error processing next queue item. " . $e->getMessage());
       }
 
       // Flush to show output
@@ -141,8 +141,6 @@ class Sync {
     // Connect to the AWS SQS Queue
     $worker = new Worker($queue->getQueueManager());
 
-    var_dump('here');
-
     try {
       // Parameters:
       // 'default' - connection name
@@ -153,7 +151,7 @@ class Sync {
       if($cli) {
         WP_CLI::error("Error processing next queue item.");
       }
-      throw new Exception("Error processing next queue item.", 1); // $e
+      throw new Exception("Error processing next queue item.");
     }
 
     if($cli) {
@@ -168,9 +166,7 @@ class Sync {
   /**
    * Take import category queue item and split into ImportPost Queue items
    */
-  public static function importCategory($data, $payload, $cli = true) {
-
-    var_dump('importCategory', $data, $payload);
+  public static function importCategory($data, $payload, $cli = false) {
 
     try {
 
@@ -178,10 +174,7 @@ class Sync {
       $categorySitemap = $payload['url'];
       $onExistAction = $payload['onExistAction'];
 
-      var_dump('importCategory');
       if($categorySitemap == 'all') {
-
-        var_dump('all');
 
         // Handle adding all to queue
         $postUrls = array();
@@ -190,18 +183,13 @@ class Sync {
         $site_url = get_field('catfish_website_url', 'option');
         $allSitemaps = Sitemap::getCategoriesFromIndex($site_url . 'sitemap-index.xml');
 
-        var_dump($allSitemaps);
-
         foreach ($allSitemaps as $categorySitemap) {
-          var_dump($categorySitemap);
           $postUrls = array_merge($postUrls, Sitemap::getPostUrlsFromCategory($categorySitemap));
         }
 
       } else {
         $postUrls = Sitemap::getPostUrlsFromCategory($categorySitemap);
       }
-
-      var_dump($postUrls);
 
       $queueIDs = array();
 
@@ -218,16 +206,11 @@ class Sync {
         $queueIDs[] = self::queueUrl($postUrl, $onExistAction);
         // Show progress to the command line
         if($cli) {
-
-          // var_dump('currentPost');
-
           $currentPost++;
           WP_CLI::line("Pushed " . $currentPost . " out of " . $totalToQueue . " into the queue.");
-          // flush();
         }
       }
 
-          // var_dump('importCategory');
       // Show how long it took to process the category to queue
       if($cli) {
         $endTime = microtime(true);
@@ -240,12 +223,10 @@ class Sync {
 
     } catch (Exception $e) {
 
-      // var_dump($e);
-
       if($cli) {
         WP_CLI::error("Error adding multiple importQueue queue items based on the category sitemap. " . $e->getMessage());
       }
-      throw new Exception("Error adding multiple importQueue queue items based on the category sitemap. " . $e->getMessage(), 6);
+      throw new Exception("Error adding multiple importQueue queue items based on the category sitemap. " . $e->getMessage());
 
     }
 
@@ -254,7 +235,7 @@ class Sync {
   /**
    * Import a single post from given URL
    */
-  public static function importUrl($data, $payload, $cli = true) {
+  public static function importUrl($data, $payload, $cli = false) {
 
     try {
 
@@ -262,23 +243,25 @@ class Sync {
       $url = $payload['url'];
       $onExistAction = $payload['onExistAction'];
 
-      $post = Post::getPostFromUrl($url);
+      $post = Post::getPostFromUrl($url, $onExistAction);
 
+      // Catch uncaught failure in the Post class
       if(!is_object($post)) {
         if($cli) {
           WP_CLI::error("Post returned is not an object. " . $post);
         }
-        throw new Exception("Post returned is not an object. " . $post, 7);
+        throw new Exception("Post returned is not an object. " . $post);
       }
 
-      return $url;
+      // Return the post object if successfull
+      return $post;
 
     } catch (Exception $e) {
 
       if($cli) {
         WP_CLI::error("Error importing post from url using Posts class. " . $e->getMessage());
       }
-      throw new Exception("Error importing post from url using Posts class. " . $e->getMessage(), 8);
+      throw new Exception("Error importing post from url using Posts class. " . $e->getMessage());
 
     }
   }
@@ -290,10 +273,17 @@ class Sync {
   /**
    * Return a list of categories to import in admin
    */
-   public static function getCategories() {
+   public static function getCategories($forFrontEnd = true) {
      $site_url = get_field('catfish_website_url', 'option');
+     if($forFrontEnd) {
+       // If this is called for the admin user interface
+       $categories = array_merge(array('all'), Sitemap::getCategoriesFromIndex($site_url . 'sitemap-index.xml'));
+     } else {
+       $categories = Sitemap::getCategoriesFromIndex($site_url . 'sitemap-index.xml');
+     }
+
      // Add and option for all categories
-     return array_merge(array('all'), Sitemap::getCategoriesFromIndex($site_url . 'sitemap-index.xml'));
+     return $categories;
    }
 
   /**
@@ -335,7 +325,7 @@ class Sync {
     $totalStatus->importedCount = 0;
     $totalStatus->total = 0;
 
-    $categories = self::getCategories();
+    $categories = self::getCategories(false);
     foreach($categories as $categoryUrl) {
       $categoryStatus = self::getImportCategoryStatus($categoryUrl);
 

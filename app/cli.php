@@ -1,5 +1,6 @@
 <?php
 
+use AgreableCatfishImporterPlugin\Services\Post;
 use AgreableCatfishImporterPlugin\Services\Sync;
 use AgreableCatfishImporterPlugin\Services\Queue;
 
@@ -149,3 +150,39 @@ function purgeQueue(array $args) {
 
 // Register command with WP_CLI
 WP_CLI::add_command('catfish purge', 'purgeQueue');
+
+/**
+ * Action to delete all automated_testing posts from
+ *
+ * ## DESCRIPTION
+ *
+ * Delete all posts with the automated_testing meta tag
+ *
+ * ## OPTIONS
+ *
+ * ## EXAMPLES
+ *
+ *     # Delete all posts with the automated_testing meta tag
+ *     wp catfish clear automated_testing
+ *
+ */
+function deleteAllAutomatedTestingPosts(array $args) {
+  // Let the queue run FOREVER
+  set_time_limit(0);
+  ini_set('display_errors', 1);
+  ini_set('display_startup_errors', 1);
+  error_reporting(E_ERROR | E_WARNING | E_PARSE);
+
+  // WP_CLI::confirm( "Are you sure you want to DELETE ALL POSTS marked as automated_testing?", $args );
+
+  WP_CLI::line('Clearing automated_testing post from the queue...');
+  try {
+    Post::deleteAllAutomatedTestingPosts(true);
+  } catch (Exception $e) {
+    WP_CLI::error(var_dump($e));
+  }
+
+}
+
+// Register command with WP_CLI
+WP_CLI::add_command('catfish clear automated_testing', 'deleteAllAutomatedTestingPosts');

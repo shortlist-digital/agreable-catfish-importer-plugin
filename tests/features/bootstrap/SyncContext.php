@@ -7,8 +7,7 @@ use AgreableCatfishImporterPlugin\Services\Queue;
 use AgreableCatfishImporterPlugin\Services\Worker;
 
 use Illuminate\Queue\Jobs\SqsJob as Job;
-
-// new Queue; // Setup Queue connection
+// use WP_CLI;
 
 use Behat\Behat\Context\BehatContext,
 Behat\Behat\Exception\PendingException;
@@ -27,8 +26,7 @@ class SyncContext extends BehatContext {
   protected static $queueItem;
   protected static $queueActionResponse;
   protected static $categorySitemap;
-  protected static $totalStatus;
-  protected static $totalCategoryStatus;
+  protected static $statusData;
 
   /**
    * @Given /^I purge the queue$/
@@ -41,27 +39,23 @@ class SyncContext extends BehatContext {
    * @Given /^I delete all automated_testing posts$/
    */
   public function iDeleteAllAutomatedTestingPosts() {
-    // TODO: Clear all posts with automated_testing meta
+    Post::deleteAllAutomatedTestingPosts();
+  }
+
+  /**
+   * @Then /^I should have no automated_testing posts$/
+   */
+  public function iShouldHaveNoAutomatedTestingPosts() {
     $query = array(
       'post_type' => 'post',
-      'meta_query' => array(
-        array(
-          'key' => 'automated_testing',
-          'value' => true
-        )
-      )
+      'meta_key' => 'automated_testing',
+      'meta_value'  => true
     );
 
     $query = new WP_Query($query);
     $posts = $query->get_posts();
 
-    print_r(var_dump('posts', $posts));
-
-    foreach ($posts as $post) {
-      //wp_delete_post( $postid, $force_delete );
-    }
-
-    throw new PendingException();
+    Assert::assertEquals(0, count($posts));
   }
 
   /**
@@ -84,33 +78,16 @@ class SyncContext extends BehatContext {
    * @Given /^I pull an item from the queue and run it$/
    */
   public function iPullAnItemFromTheQueueAndRunIt() {
-      self::$queueActionResponse = Sync::actionSingleQueueItem();
+    self::$queueActionResponse = Sync::actionSingleQueueItem();
   }
 
-
-  // TODO: Need a clean environment to truly run
   /**
    * @Then /^I should have imported the "([^"]*)" post$/
    */
   public function iShouldHaveImportedThePost($slug) {
-    $query = array(
-      'post_type' => 'post',
-      'pagename' => $slug, // TODO: clear all automated_testing posts before testing
-      'meta_query' => array(
-        array(
-          'key' => 'automated_testing',
-          'value' => true
-        )
-      )
-    );
+    $posts = Post::getPostsWithSlug($slug);
 
-    $query = new WP_Query($query);
-    $posts = $query->get_posts();
-
-    Assert::assertEquals(1, count($posts));
-
-    // $post = new TimberPost($posts[0]);
-    // Assert::assertTrue($post->has_term($categorySlug, 'category'));
+    Assert::assertGreaterThan(0, count($posts));
   }
 
   /**
@@ -133,6 +110,7 @@ class SyncContext extends BehatContext {
     // Call the queued function in the Sync Class
     self::$queueActionResponse = false;
     self::$queueActionResponse = Sync::$function($data, $payload);
+    // self::$queueActionResponse = Sync::$function($data, $payload);
   }
 
   /**
@@ -155,25 +133,74 @@ class SyncContext extends BehatContext {
   }
 
   /**
-   * @Given /^I retrieve the full import status$/
+   * @Given /^I should have \'([^\']*)\' the post in the last (\d+) seconds$/
    */
-  public function iRetrieveTheFullImportStatus() {
-    self::$totalStatus = Sync::getImportStatus();
+  // Function that checks for the catfish_importer_date_created or catfish_importer_date_updated
+  // values to check importer function.
+
+  // Parameters:
+  // $timeType  created/updated
+  // $seconds  maximum time window for the post to have been updated or created
+
+  public function iShouldHaveThePostInTheLastSeconds($timeType, $seconds) {
+    // When updated an existing post you should
+    if($timeType !== 'created' && $timeType !== 'updated') {
+      throw new Exception("You must specify either created or updated time to check.", 30);
+    }
+
+    $postTime = self::$queueActionResponse->custom["catfish_importer_date_$timeType"];
+    // Seconds since modified
+    $timeDifference = time() - $postTime;
+
+    // Assert modified in the last 10 seconds
+    Assert::assertLessThan($seconds, $timeDifference);
   }
 
   /**
-   * @Then /^I should see a couple of imported out of at least (\d+)$/
+   * @Given /^I should have not updated the post created or updated time$/
    */
-  public function iShouldSeeACoupleOfImportedOutOfAtLeast($targetTotal) {
-    // Assert::assertGreaterThan(0, self::$totalStatus->importedCount);
-    Assert::assertGreaterThan($targetTotal, self::$totalStatus->total);
+  public function iShouldHaveNotUpdatedThePostCreatedOrUpdatedTime() {
+    // When skipping posts that exists you should have and insert and update
+    // time over a day old.
+
+    // TODO: use above to build assertations for these tests.
+    $postCreatedTime = strtotime(self::$queueActionResponse->post_created);
+    // Seconds since created
+    $secondsSinceCreation = time() - $postCreatedTime;
+
+    $postModifiedTime = strtotime(self::$queueActionResponse->post_created);
+    // Seconds since modified
+    $secondsSinceCreation = time() - $postModifiedTime;
+
+    // Assert created or modified over 1 day ago
+    Assert::assertGreaterThan(14 * 60 * 60, $secondsSinceCreation);
+    Assert::assertGreaterThan(14 * 60 * 60, $secondsSinceCreation);
+  }
+
+  /**
+   * @Given /^I retrieve the full import status$/
+   */
+  public function iRetrieveTheFullImportStatus() {
+    self::$statusData = Sync::getImportStatus();
+  }
+
+  /**
+   * @Then /^I should see (\d+) imported out of at least (\d+)$/
+   */
+  public function iShouldSeeImportedOutOfAtLeast($importedTarget, $targetTotal) {
+    Assert::assertGreaterThan($importedTarget, self::$statusData->importedCount);
+    if(isset(self::$statusData->categoryTotal)) {
+      Assert::assertGreaterThan($targetTotal, self::$statusData->categoryTotal);
+    } else {
+      Assert::assertGreaterThan($targetTotal, self::$statusData->total);
+    }
   }
 
   /**
    * @Given /^I retrieve the "([^"]*)" category import status$/
    */
   public function iRetrieveTheCategoryImportStatus($categorySitemap) {
-    self::$totalCategoryStatus = Sync::getImportCategoryStatus($categorySitemap);
+    self::$statusData = Sync::getImportCategoryStatus($categorySitemap);
   }
 
 }

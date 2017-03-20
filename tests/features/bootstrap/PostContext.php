@@ -15,6 +15,11 @@ class PostContext extends BehatContext {
   private static $post;
 
   /**
+   * NOTE: The FeatureContext clears all posts with the automated_testing data
+   * from the database on BeforeFeature and AfterFeature events.
+   */
+
+  /**
    * @Given /^the post "([^"]*)"$/
    */
   public function thePost($url) {
