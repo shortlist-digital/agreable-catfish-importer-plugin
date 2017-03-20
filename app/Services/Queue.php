@@ -3,6 +3,8 @@ namespace AgreableCatfishImporterPlugin\Services;
 
 use \Illuminate\Queue\Capsule\Manager;
 
+use Exception;
+
 class Queue extends Manager {
   /**
    * Setup queue connection variables on class instantiation
@@ -13,10 +15,10 @@ class Queue extends Manager {
 
    // Warn devs to setup encryption key and environment vars for AWS
    if( !getenv('ILLUMINATE_ENCRYPTOR_KEY') ) {
-     throw new Exception("You need to set a AES-256-CBC compatible encryption key for you ILLUMINATE_ENCRYPTOR_KEY environment variable.", 9);
+     throw new Exception("You need to set a AES-256-CBC compatible encryption key for you ILLUMINATE_ENCRYPTOR_KEY environment variable.");
    }
    if( !getenv('AWS_SQS_KEY') || !getenv('AWS_SQS_SECRET') || !getenv('AWS_SQS_CATFISH_IMPORTER_QUEUE') || !getenv('AWS_SQS_CATFISH_IMPORTER_REGION') ) {
-     throw new Exception("You need to set your AWS environment variables in .env.", 10);
+     throw new Exception("You need to set your AWS environment variables in .env.");
    }
 
    // Connect to the AWS SQS Queue

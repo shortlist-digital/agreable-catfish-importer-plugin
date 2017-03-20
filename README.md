@@ -11,16 +11,23 @@ The Catfish importer uses Amazon SQS queues and requires some environment variab
 ILLUMINATE_ENCRYPTOR_KEY=
 ```
 
-The Illuminate key is the equivelent to the ```APP_KEY``` in Laravel and must be an AES-256-CBC compatible encryption key.
+The Illuminate key is the equivalent to the ```APP_KEY``` in Laravel and must be an AES-256-CBC compatible encryption key. To generate a key use the following command:
 
 ```
-AWS_KEY=
-AWS_SECRET=
+cd /vagrant/web/app/plugins/agreable-catfish-importer-plugin
+wp catfish generatekey
+```
+
+You also need to fill out the following details:
+
+```
+AWS_SQS_KEY=
+AWS_SQS_SECRET=
 AWS_SQS_CATFISH_IMPORTER_REGION=
 AWS_SQS_CATFISH_IMPORTER_QUEUE=
 ```
 
-The rest can be filled from your AWS connection. Note: *the queue should be the fully qualified queue url including http.... _not_ just the name of the queue*.
+These can be filled from your AWS connection. Note: *the queue should be the fully qualified queue url including http.... _not_ just the name of the queue*.
 
 # Managing the Importer Queue
 

@@ -8,6 +8,8 @@ use AgreableCatfishImporterPlugin\Services\Widgets\Paragraph;
 use AgreableCatfishImporterPlugin\Services\Widgets\Heading;
 use AgreableCatfishImporterPlugin\Services\Widgets\Embed;
 
+use Exception;
+
 class Html {
   public static function checkIfValidParagraph($html_string) {
     $allowable_tags = '<a><b><i><br><em><sup><sub><strong><p><h3><ul><ol><li><span><center>';
@@ -103,7 +105,7 @@ class Html {
           $carry->html .= $item->html;
 
         // Collection doesn't error so catch any Exceptions hee
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
           print_r($e);
         }
         return $carry;

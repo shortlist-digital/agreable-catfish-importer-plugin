@@ -15,7 +15,7 @@
     "shortlist-digital/agreable-base-theme": "~2.1",
     "illuminate/queue": "5.2.*",
     "illuminate/encryption": "5.2.*",
-    "aws/aws-sdk-php": "3.23.*",
+    "aws/aws-sdk-php": "3.*",
     "wp-cli/wp-cli": "1.1.*"
   },
   "config": {

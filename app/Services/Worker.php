@@ -7,6 +7,8 @@ use AgreableCatfishImporterPlugin\Services\Sync;
 use Illuminate\Queue\Jobs\SqsJob as Job;
 use \Illuminate\Queue\Worker as QueueWorker;
 
+use Exception;
+
 class Worker extends QueueWorker {
 
   /**
@@ -122,7 +124,6 @@ class Worker extends QueueWorker {
       $job->delete();
       $count++;
       if($cli) {
-        // WP_CLI::line("Purged " . $wrongvar . " posts."); // TODO surface bugs like this to the command line?
         WP_CLI::line("Purged " . $count . " queue items.");
       }
     }
