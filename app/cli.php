@@ -20,7 +20,7 @@ use AgreableCatfishImporterPlugin\Services\Queue;
  */
 function generateRandomKey() {
   WP_CLI::line('Update the ILLUMINATE_ENCRYPTOR_KEY= environment variable in .env:');
-  WP_CLI::success( 'base64:'.base64_encode(random_bytes(16)) );
+  WP_CLI::success( substr(base64_encode(sha1(mt_rand())), 0, 32) );
 }
 
 // Register command with WP_CLI
