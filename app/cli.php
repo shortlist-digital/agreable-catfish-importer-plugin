@@ -29,8 +29,16 @@ use AgreableCatfishImporterPlugin\Services\Queue;
  *
  */
 function addToQueue(array $args) {
+
+  // Catch incorrect useage of command which could lead to adding plain text to queue
+  if(in_array($args[0], array('work', 'listen', 'clear', 'purge'))) {
+    WP_CLI::error('Commands aren\'t nested. You should use "wp catfish '.$args[0].'" instead of "wp catfish queue '.$args[0].'".');
+    return;
+  }
+
   if(!isset($args[0])) {
     WP_CLI::error("You must pass a post or sitemap url to the catfish queue command. eg. http://www.shortlist.com/entertainment/the-toughest-world-record-ever-has-been-broken");
+    return;
   }
 
   if($args[0] == 'all' || strstr($args[0], '.xml')) {
@@ -72,10 +80,22 @@ function actionQueue(array $args) {
   ini_set('display_errors', 1);
   ini_set('display_startup_errors', 1);
   error_reporting(E_ERROR | E_WARNING | E_PARSE);
+  // Allow unlimited memory...
+  // ini_set('memory_limit', '-1');
 
   WP_CLI::line('Listening to queue...');
 
-  Sync::actionQueue(true);
+  // Run indefinitely
+  while (true) {
+    exec('wp catfish work', $output);
+
+    foreach($output as $line) {
+      WP_CLI::line($line);
+    }
+
+    WP_CLI::line('Memory usage: ' . (memory_get_usage(true) / 1024 / 1024) . ' MB');
+    WP_CLI::line('Peak memory usage: ' . (memory_get_peak_usage(true) / 1024 / 1024) . ' MB');
+  }
 }
 
 // Register command with WP_CLI
