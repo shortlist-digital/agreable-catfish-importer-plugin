@@ -32,7 +32,7 @@ class SyncContext extends BehatContext {
    * @Given /^I purge the queue$/
    */
   public function iPurgeTheQueue() {
-      Sync::purgeQueue();
+    // Sync::purgeQueue();
   }
 
   /**
