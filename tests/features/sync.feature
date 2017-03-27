@@ -24,7 +24,7 @@ Feature: Sync
 
   Scenario: Sync a new post from url
     Given I process the queue action json '{"job":"importUrl","data":{"url":"http:\/\/www.shortlist.com\/food-drink\/michelin-star-restaurants-odd-unusual-world-uk-guide-food","onExistAction":"update"}}'
-    Then I should have imported the "michelin-star-restaurants-odd-unusual-world-uk-guide-food-2" post
+    Then I should have imported the "michelin-star-restaurants-odd-unusual-world-uk-guide-food" post
 
   Scenario: Push category import to queue
     Given I process the queue action json '{"job":"importCategory","data":{"url":"http:\/\/www.shortlist.com\/sitemap\/entertainment\/48-hours-to.xml","onExistAction":"update"}}'

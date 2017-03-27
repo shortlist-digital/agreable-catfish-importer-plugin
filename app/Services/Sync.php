@@ -11,6 +11,8 @@ use AgreableCatfishImporterPlugin\Services\Worker;
 
 new Queue; // Setup Queue connection
 
+use Exception;
+
 class Sync {
 
   /**
@@ -144,7 +146,10 @@ class Sync {
         $allSitemaps = Sitemap::getCategoriesFromIndex($site_url . 'sitemap-index.xml');
 
         foreach ($allSitemaps as $categorySitemap) {
-          $postUrls = array_merge($postUrls, Sitemap::getPostUrlsFromCategory($categorySitemap));
+          $urlsToMerge = Sitemap::getPostUrlsFromCategory($categorySitemap);
+          if(is_array($urlsToMerge)) {
+            $postUrls = array_merge($postUrls, $urlsToMerge);
+          }
         }
 
       } else {
@@ -164,6 +169,7 @@ class Sync {
       // Queue all posts
       foreach($postUrls as $postUrl) {
         $queueIDs[] = self::queueUrl($postUrl, $onExistAction);
+
         // Show progress to the command line
         if($cli) {
           $currentPost++;
@@ -184,6 +190,7 @@ class Sync {
     } catch (Exception $e) {
 
       if($cli) {
+        var_dump(debug_backtrace()); // Show a backtrace here
         WP_CLI::error("Error adding multiple importQueue queue items based on the category sitemap. " . $e->getMessage());
       }
       throw new Exception("Error adding multiple importQueue queue items based on the category sitemap. " . $e->getMessage());

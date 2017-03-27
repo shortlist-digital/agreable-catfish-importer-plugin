@@ -5,6 +5,29 @@ use AgreableCatfishImporterPlugin\Services\Sync;
 use AgreableCatfishImporterPlugin\Services\Queue;
 
 /**
+ * Generate a random key for the application.
+ *
+ * ## DESCRIPTION
+ *
+ * Creates the AES-256-CBC access key for use with the Laravel encrypter and queue library.
+ *
+ * ## OPTIONS
+ *
+ * ## EXAMPLES
+ *
+ *     # Add all a specified post
+ *     wp catfish generatekey
+ *
+ */
+function generateRandomKey() {
+  WP_CLI::line('Add the following link to your .env:');
+  WP_CLI::line('ILLUMINATE_ENCRYPTOR_KEY=' . substr(base64_encode(sha1(mt_rand())), 0, 32) );
+}
+
+// Register command with WP_CLI
+WP_CLI::add_command('catfish generatekey', 'generateRandomKey');
+
+/**
  * Add Items to Catfish Queue.
  *
  * ## DESCRIPTION
@@ -127,7 +150,7 @@ function actionSingleQueueItem(array $args) {
 
   try {
     Sync::actionSingleQueueItem(true);
-  } catch (Exception $e) {
+  } catch (\Exception $e) {
     WP_CLI::error(var_dump($e));
   }
 }
@@ -162,7 +185,7 @@ function purgeQueue(array $args) {
   WP_CLI::line('Purging the queue...');
   try {
     Sync::purgeQueue(true);
-  } catch (Exception $e) {
+  } catch (\Exception $e) {
     WP_CLI::error(var_dump($e));
   }
 
