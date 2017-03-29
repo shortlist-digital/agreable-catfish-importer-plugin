@@ -18,7 +18,7 @@ class SitemapContext extends BehatContext {
    * @Given /^the sitemap index "([^"]*)"$/
    */
   public function theSitemapIndex($sitemapIndex) {
-    self::$categorys = Sitemap::getCategoriesFromIndex($sitemapIndex);
+    self::$categorys = Sitemap::getPostUrlsFromCategory($sitemapIndex);
   }
 
   /**

@@ -311,6 +311,7 @@ class Post {
     if ( $query->have_posts() ) {
       $posts = $query->get_posts();
       foreach($posts as $post) {
+        // TODO Delete all images associated with this post.
 
         if($post->ID) {
           if($cli) {

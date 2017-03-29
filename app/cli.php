@@ -103,8 +103,6 @@ function actionQueue(array $args) {
   ini_set('display_errors', 1);
   ini_set('display_startup_errors', 1);
   error_reporting(E_ERROR | E_WARNING | E_PARSE);
-  // Allow unlimited memory...
-  // ini_set('memory_limit', '-1');
 
   WP_CLI::line('Listening to queue...');
 
@@ -206,7 +204,7 @@ WP_CLI::add_command('catfish purge', 'purgeQueue');
  * ## EXAMPLES
  *
  *     # Delete all posts with the automated_testing meta tag
- *     wp catfish clear automated_testing
+ *     wp catfish clearautomatedtesting
  *
  */
 function deleteAllAutomatedTestingPosts(array $args) {
@@ -228,4 +226,40 @@ function deleteAllAutomatedTestingPosts(array $args) {
 }
 
 // Register command with WP_CLI
-WP_CLI::add_command('catfish clear automated_testing', 'deleteAllAutomatedTestingPosts');
+WP_CLI::add_command('catfish clearautomatedtesting', 'deleteAllAutomatedTestingPosts');
+
+
+/**
+ * Scan for updates in Clock CMS.
+ *
+ * ## DESCRIPTION
+ *
+ * Checks for changes in the Clock CMS and imports them automatically.
+ * To be run every minute via a cron.
+ *
+ * ## OPTIONS
+ *
+ * ## EXAMPLES
+ *
+ *     # Listen and action queue
+ *     wp catfish scanupdates
+ *
+ */
+function callUpdatedPostCan(array $args) {
+  // Let the queue run FOREVER
+  set_time_limit(0);
+  ini_set('display_errors', 1);
+  ini_set('display_startup_errors', 1);
+  error_reporting(E_ERROR | E_WARNING | E_PARSE);
+
+  WP_CLI::line('Scanning for new updates in Clock...');
+
+  try {
+    Sync::updatedPostScan(true);
+  } catch (Exception $e) {
+    WP_CLI::error(var_dump($e));
+  }
+}
+
+// Register command with WP_CLI
+WP_CLI::add_command('catfish scanupdates', 'callUpdatedPostCan');

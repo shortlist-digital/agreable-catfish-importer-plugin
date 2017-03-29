@@ -124,7 +124,7 @@ class Sync {
   /**
    * Take import category queue item and split into ImportPost Queue items
    */
-  public static function importCategory($data, $payload, $cli = false) {
+  public static function importCategory($data, $payload, $cli = false, $since = false) {
 
     try {
 
@@ -143,10 +143,11 @@ class Sync {
 
         // Get all sitemaps
         $site_url = get_field('catfish_website_url', 'option');
-        $allSitemaps = Sitemap::getCategoriesFromIndex($site_url . 'sitemap-index.xml');
+        $allSitemaps = Sitemap::getPostUrlsFromCategory($site_url . 'sitemap-index.xml');
 
         foreach ($allSitemaps as $categorySitemap) {
-          $urlsToMerge = Sitemap::getPostUrlsFromCategory($categorySitemap);
+          $urlsToMerge = Sitemap::getPostUrlsFromCategory($categorySitemap, $since);
+
           if(is_array($urlsToMerge)) {
             $postUrls = array_merge($postUrls, $urlsToMerge);
           }
@@ -155,6 +156,8 @@ class Sync {
       } else {
         $postUrls = Sitemap::getPostUrlsFromCategory($categorySitemap);
       }
+
+      die(var_dump('Choosing to import these urls: ', $postUrls));
 
       $queueIDs = array();
 
@@ -190,8 +193,8 @@ class Sync {
     } catch (Exception $e) {
 
       if($cli) {
-        var_dump(debug_backtrace()); // Show a backtrace here
         WP_CLI::error("Error adding multiple importQueue queue items based on the category sitemap. " . $e->getMessage());
+        var_dump(debug_backtrace()); // Show a backtrace here
       }
       throw new Exception("Error adding multiple importQueue queue items based on the category sitemap. " . $e->getMessage());
 
@@ -248,9 +251,9 @@ class Sync {
      $site_url = get_field('catfish_website_url', 'option');
      if($forFrontEnd) {
        // If this is called for the admin user interface
-       $categories = array_merge(array('all'), Sitemap::getCategoriesFromIndex($site_url . 'sitemap-index.xml'));
+       $categories = array_merge(array('all'), Sitemap::getPostUrlsFromCategory($site_url . 'sitemap-index.xml'));
      } else {
-       $categories = Sitemap::getCategoriesFromIndex($site_url . 'sitemap-index.xml');
+       $categories = Sitemap::getPostUrlsFromCategory($site_url . 'sitemap-index.xml');
      }
 
      // Add and option for all categories
@@ -305,6 +308,72 @@ class Sync {
     }
 
     return $totalStatus;
+  }
+
+  /**
+   * Updated Post functions
+   */
+
+  /**
+   * Updated Post Scan
+   *
+   * Checks Clock for any posts that have been updated since the function was last run and imports them
+   */
+  public static function updatedPostScan($cli = false) {
+
+    $since = self::getLastUpdatedRunDate();
+
+    // var_dump($since, time());
+
+    $test_run_file = fopen("cron_run_test.txt", "w") or die("Unable to open file!");
+    fwrite($test_run_file, "Last run: ".time());
+    fclose($test_run_file);
+
+    // die(var_dump('updatedPostScan'));
+
+    // Simulate SQS payload
+    $payload = array(
+      'url' => all,
+      'onExistAction' => 'update'
+    );
+    $data = $payload;
+
+    try {
+      // Queue up posts from each category since the last successfull import
+      return self::importCategory($data, $payload, $cli, $since);
+    } catch (Exception $e) {
+      // Catch errors for easy debugging in BugSnag
+      throw new Exception("Error scanning and importing new posts. " . $e->getMessage());
+    }
+  }
+
+  /**
+   * Get the last time the updater was run
+   *
+   * catfish_importer_date_updated
+   */
+  public function getLastUpdatedRunDate() {
+    $query = new WP_Query([
+      'post_type' => 'post',
+      'meta_key'  => 'catfish_importer_date_updated',
+      // 'meta_value'  => true,
+      'post_status' => array('publish', 'pending', 'draft', 'auto-draft', 'future', 'private', 'inherit', 'trash'),
+      'posts_per_page' => 1, // Return just 1 post.
+      'orderby' => 'modified'
+    ]);
+
+    if ( $query->have_posts() ) {
+      // You have imported posts with Catfish before so return the most recent import time
+      $posts = $query->get_posts();
+      $meta = get_post_meta($posts[0]->ID);
+
+      return $meta['catfish_importer_date_updated'][0];
+    } else {
+      // You are on a fresh install with 0 Catfish imported posts!
+      // Return a date far in the past so we always import all content in this case.
+      return strtotime('-5 years');
+    }
+
   }
 
 }
