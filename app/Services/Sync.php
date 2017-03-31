@@ -323,13 +323,10 @@ class Sync {
 
     $since = self::getLastUpdatedRunDate();
 
-    // var_dump($since, time());
-
-    $test_run_file = fopen("cron_run_test.txt", "w") or die("Unable to open file!");
-    fwrite($test_run_file, "Last run: ".time());
-    fclose($test_run_file);
-
-    // die(var_dump('updatedPostScan'));
+    // If you want to test if the cron is running regularaly then you can uncomment the following.
+    // $test_run_file = fopen("cron_run_test.txt", "w") or die("Unable to open file!");
+    // fwrite($test_run_file, "Last run: ".time());
+    // fclose($test_run_file);
 
     // Simulate SQS payload
     $payload = array(

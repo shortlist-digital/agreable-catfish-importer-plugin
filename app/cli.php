@@ -235,7 +235,8 @@ WP_CLI::add_command('catfish clearautomatedtesting', 'deleteAllAutomatedTestingP
  * ## DESCRIPTION
  *
  * Checks for changes in the Clock CMS and imports them automatically.
- * To be run every minute via a cron.
+ * To be run every minute via a cron like so:
+ * `* * * * * cd [DOCROOT]/pages/web/app/plugins/agreable-catfish-importer-plugin && wp catfish scanupdates > /dev/null 2>&1`
  *
  * ## OPTIONS
  *
@@ -256,8 +257,10 @@ function callUpdatedPostCan(array $args) {
 
   try {
     Sync::updatedPostScan(true);
+
+    WP_CLI::success('Scan complete');
   } catch (Exception $e) {
-    WP_CLI::error(var_dump($e));
+    WP_CLI::error($e->getMessage());
   }
 }
 
