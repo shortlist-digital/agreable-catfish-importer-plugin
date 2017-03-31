@@ -157,7 +157,7 @@ class Sync {
         $postUrls = Sitemap::getPostUrlsFromCategory($categorySitemap);
       }
 
-      die(var_dump('Choosing to import these urls: ', $postUrls));
+      // die(var_dump('Choosing to import these urls: ', $postUrls));
 
       $queueIDs = array();
 

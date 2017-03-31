@@ -312,6 +312,7 @@ class Post {
       $posts = $query->get_posts();
       foreach($posts as $post) {
         // TODO Delete all images associated with this post.
+        self::deletePostAttachements($post->ID);
 
         if($post->ID) {
           if($cli) {
@@ -321,6 +322,28 @@ class Post {
         }
       }
     }
+  }
 
+  /**
+   * Delete all post attachement records.
+   *
+   * This doesn't actually delete the files themseleves, just Wordpresss
+   * reference to the file in the database.
+   */
+  public static function deletePostAttachements($post_id) {
+    $media = get_children( array(
+        'post_parent' => $post_id,
+        'post_type'   => 'attachment'
+    ) );
+
+    if( empty( $media ) ) {
+        return;
+    }
+
+    var_dump('Deleting media for post '.$post_id, $media);
+
+    foreach( $media as $file ) {
+        wp_delete_attachment( $file->ID );
+    }
   }
 }
