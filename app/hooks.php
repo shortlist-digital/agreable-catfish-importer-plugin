@@ -5,6 +5,8 @@ namespace AgreableCatfishImporterPlugin\Hooks;
 use add_filter;
 use TimberPost;
 
+
+// Show the Reimport option in the posts listings
 class ImporterHooks {
   function __construct() {
     add_filter('post_row_actions', array($this, 'add_retry_button'), 10, 2);
@@ -55,5 +57,5 @@ if ( ! wp_next_scheduled( 'catfish_cron_every_minute' ) ) {
     wp_schedule_event( time(), 'every_minute', 'updatedPostScan' );
 }
 
-// Hook into that action that'll fire every three minutes
+// Hook into that action that'll fire every minute
 add_action( 'catfish_cron_every_minute', 'callUpdatedPostCan' );
