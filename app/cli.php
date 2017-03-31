@@ -228,7 +228,6 @@ function deleteAllAutomatedTestingPosts(array $args) {
 // Register command with WP_CLI
 WP_CLI::add_command('catfish clearautomatedtesting', 'deleteAllAutomatedTestingPosts');
 
-
 /**
  * Scan for updates in Clock CMS.
  *
