@@ -1,33 +1,23 @@
 <?php
 namespace AgreableCatfishImporterPlugin\Services;
+
+use \WP_CLI;
 use Sunra\PhpSimple\HtmlDomParser;
 
 class Sitemap {
 
   /**
-   * Get post urls from category sitemap
+   * Get urls from sitemap url
    *
    * $sitemapLocation  array  Url to sitemap.xml
    * $since  timestamp   Filter returned posts since dates
    */
-  public static function getPostUrlsFromCategory($categorySitemap, $since = false) {
-    return self::getUrlsFromSitemap($categorySitemap, $since);
-  }
-
-  /**
-   * Get and sort
-   *
-   * $sitemapLocation  array  Url to sitemap.xml
-   * $since  timestamp   Filter returned posts since dates
-   */
-  protected static function getUrlsFromSitemap($sitemapLocation, $since = false) {
+  public static function getUrlsFromSitemap($sitemapLocation, $since = false, $cli = false) {
     // Catch if sub sitemap doesn't exist - Clock strangeness
     $siteMapHeaders = get_headers($sitemapLocation, 1);
     if ( strstr($siteMapHeaders[0], '200') == false ) {
       return [];
     }
-
-    echo "Starting ". $sitemapLocation."\n";
 
     $sitemap = HtmlDomParser::file_get_html($sitemapLocation);
     $urls = [];
@@ -39,8 +29,6 @@ class Sitemap {
       if($sitemap->find('lastmod')) {
 
         foreach($sitemap->find('url') as $url) {
-
-          // TODO Deal with recent posts...
 
           // Get lastmod time from lasmod tag.
           $lastmod = array_pop(explode('<lastmod>', $url->innertext));
@@ -56,12 +44,17 @@ class Sitemap {
             if($since < $lastmod) {
               $urls[] = $innertext;
 
-              echo "Adding ". $innertext. " because ". $since ." < ". $lastmod . "\n";
+              if($cli) {
+                WP_CLI::line("Returning ". $innertext. " because ". $since ." < ". $lastmod);
+              }
             }
+
           } else {
             $urls[] = $url->find('loc')->innertext;
 
-            echo "Adding ". $url->find('loc')->innertext. " because there's no timestamp here??\n";
+            if($cli) {
+              WP_CLI::line("Returning ". $url->find('loc')->innertext);
+            }
           }
         }
 
@@ -70,8 +63,6 @@ class Sitemap {
 
         foreach($sitemap->find('loc') as $loc) {
           $urls[] = $loc->innertext;
-
-          echo "Adding ". $loc->innertext. " because it's supposed to be a top level??\n";
         }
       }
 

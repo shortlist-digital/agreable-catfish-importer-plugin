@@ -246,7 +246,7 @@ WP_CLI::add_command('catfish clearautomatedtesting', 'deleteAllAutomatedTestingP
  *
  */
 function callUpdatedPostCan(array $args) {
-  // Let the queue run FOREVER
+  // Let the scan run FOREVER
   set_time_limit(0);
   ini_set('display_errors', 1);
   ini_set('display_startup_errors', 1);

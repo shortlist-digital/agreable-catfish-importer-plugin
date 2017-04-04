@@ -130,6 +130,7 @@ class Post {
       'header_display_sell' => true,
       'catfish_importer_url' => $postUrl,
       'catfish_importer_imported' => true,
+      'catfish_importer_post_date' => $displayDate,
       'catfish_importer_date_updated' => time()
     );
 
