@@ -151,9 +151,9 @@ For more information on configuring and using Supervisor, consult the Supervisor
 
 The new posts scanner runs on an interval and imports any new posts that have been added since the last post was importer.
 
-Natively the Wordpress cron hijacks user page loads to run actions. We disable the nave Wordpres cron already.
+Natively the Wordpress cron hijacks user page loads to run actions. We disable the nave Wordpress cron already.
 
-To run the updates scan add the following line to your crontab;
+To run the updates scan add the following line to your crontab:
 
 ```
 */5 * * * * cd /var/www/pages-staging.shortlist.com/htdocs/current/web/app/dev/agreable-catfish-importer-plugin; wp catfish scanupdates > /dev/null 2>&1
