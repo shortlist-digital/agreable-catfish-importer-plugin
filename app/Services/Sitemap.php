@@ -45,15 +45,15 @@ class Sitemap {
               $urls[] = $innertext;
 
               if($cli) {
-                WP_CLI::line("Returning ". $innertext. " because ". $since ." < ". $lastmod);
+                WP_CLI::line("Scanning the sitemap: ". $innertext. " because ". $since ." < ". $lastmod);
               }
             }
 
           } else {
-            $urls[] = $url->find('loc')->innertext;
+            $urls[] = $innertext;
 
             if($cli) {
-              WP_CLI::line("Returning ". $url->find('loc')->innertext);
+              WP_CLI::line("Scanning the sitemap: ". $innertext);
             }
           }
         }

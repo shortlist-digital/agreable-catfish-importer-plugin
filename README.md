@@ -117,17 +117,17 @@ st-catfish-importer-develop
 
 The queueing system is run using supervisord worker processes. To setup the importer using supervisord follow these instructions:
 
-Supervisor configuration files are typically stored in the /etc/supervisor/conf.d directory. Within this directory, you may create any number of configuration files that instruct supervisor how your processes should be monitored. For example, let's create a catfish-worker.conf file that starts and monitors a queue:work process:
+Supervisor configuration files are typically stored in the `/etc/supervisor/conf.d` directory. Within this directory, you may create any number of configuration files that instruct supervisor how your processes should be monitored. For example, let's create a `/etc/supervisor/conf.d/catfish-worker.conf` file that starts and monitors a queue:work process:
 
 ```
 [program:catfish-worker]
 process_name=%(program_name)s_%(process_num)02d
 command=wp catfish listen
-directory=/var/www/pages-staging.shortlist.com/htdocs/current/web/app/dev/agreable-catfish-importer-plugin/
+directory=/[PLUGINDIR]/agreable-catfish-importer-plugin/
 autostart=true
 autorestart=true
 user=ubuntu
-numprocs=8
+numprocs=2
 redirect_stderr=true
 stdout_logfile=/var/log/supervisord/catfish-worker.log
 ```
