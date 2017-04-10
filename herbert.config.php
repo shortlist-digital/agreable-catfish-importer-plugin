@@ -22,7 +22,6 @@ return [
     'tables' => [
     ],
 
-
     /**
      * Activate
      */
@@ -67,10 +66,10 @@ return [
     ],
 
     /**
-     * The APIs to auto-load.
+     * The Cron to auto-load.
      */
-    'apis' => [
-        'AgreableCatfishImporterPlugin' => __DIR__ . '/app/api.php'
+    'cron' => [
+        'AgreableCatfishImporterPlugin' => __DIR__ . '/app/cron.php'
     ],
 
     /**

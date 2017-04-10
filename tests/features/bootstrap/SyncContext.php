@@ -203,4 +203,22 @@ class SyncContext extends BehatContext {
     self::$statusData = Sync::getImportCategoryStatus($categorySitemap);
   }
 
+  // Last Updated Post Import Date
+  protected static $lastUpdatedRunDate;
+
+  /**
+   * @Given /^I run the cron function$/
+   */
+  public function iRunTheCronFunction() {
+    Sync::updatedPostScan();
+  }
+
+  /**
+   * @Then /^I should have updated the cron last run time$/
+   */
+  public function iShouldHaveUpdatedTheCronLastRunTime() {
+    $last_run = strtotime(Sync::getLastUpdatedRunDate());
+    Assert::assertTrue(is_integer($last_run));
+  }
+
 }

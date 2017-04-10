@@ -5,6 +5,7 @@ namespace AgreableCatfishImporterPlugin\Hooks;
 use add_filter;
 use TimberPost;
 
+// Show the Reimport option in the posts listings
 class ImporterHooks {
   function __construct() {
     add_filter('post_row_actions', array($this, 'add_retry_button'), 10, 2);

@@ -25,4 +25,3 @@ $router->get([
   'uri'  => '/catfish-import/run',
   'uses' => __NAMESPACE__ . '\Controllers\CronController@tick'
 ]);
-

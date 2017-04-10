@@ -1,6 +1,8 @@
 Feature: Sync
   Test the Catfish Importer sync
 
+
+
   Scenario: Delete all automated testing posts
     Given I delete all automated_testing posts
     Then I should have no automated_testing posts
@@ -54,3 +56,8 @@ Feature: Sync
   Scenario: Get a category import status
     Given I retrieve the "http://www.shortlist.com/sitemap/news.xml" category import status
     Then I should see 3 imported out of at least 5
+
+
+  Scenario: Run the updated content scan cron function
+    Given I run the cron function
+    Then I should have updated the cron last run time

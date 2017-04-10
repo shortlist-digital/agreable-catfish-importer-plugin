@@ -66,3 +66,4 @@ composer.lock
 .workspace
 
 webpack-current-port.tmp
+cron_last_run.tmp

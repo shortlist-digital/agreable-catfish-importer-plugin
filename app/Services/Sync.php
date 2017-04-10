@@ -131,6 +131,8 @@ class Sync {
       // Extract attributes from payload.
       $categorySitemap = $payload['url'];
       $onExistAction = $payload['onExistAction'];
+      // Optional since param.
+      $since = ( isset($payload['since']) ) ? $payload['since'] : false ;
 
       if($cli) {
         WP_CLI::line('Splitting category to separate queue items: ' . $categorySitemap);
@@ -143,17 +145,18 @@ class Sync {
 
         // Get all sitemaps
         $site_url = get_field('catfish_website_url', 'option');
-        $allSitemaps = Sitemap::getCategoriesFromIndex($site_url . 'sitemap-index.xml');
+        $allSitemaps = Sitemap::getUrlsFromSitemap($site_url . 'sitemap-index.xml', false, $cli);
 
         foreach ($allSitemaps as $categorySitemap) {
-          $urlsToMerge = Sitemap::getPostUrlsFromCategory($categorySitemap);
+          $urlsToMerge = Sitemap::getUrlsFromSitemap($categorySitemap, $since, $cli);
+
           if(is_array($urlsToMerge)) {
             $postUrls = array_merge($postUrls, $urlsToMerge);
           }
         }
 
       } else {
-        $postUrls = Sitemap::getPostUrlsFromCategory($categorySitemap);
+        $postUrls = Sitemap::getUrlsFromSitemap($categorySitemap);
       }
 
       $queueIDs = array();
@@ -190,7 +193,6 @@ class Sync {
     } catch (Exception $e) {
 
       if($cli) {
-        var_dump(debug_backtrace()); // Show a backtrace here
         WP_CLI::error("Error adding multiple importQueue queue items based on the category sitemap. " . $e->getMessage());
       }
       throw new Exception("Error adding multiple importQueue queue items based on the category sitemap. " . $e->getMessage());
@@ -248,9 +250,9 @@ class Sync {
      $site_url = get_field('catfish_website_url', 'option');
      if($forFrontEnd) {
        // If this is called for the admin user interface
-       $categories = array_merge(array('all'), Sitemap::getCategoriesFromIndex($site_url . 'sitemap-index.xml'));
+       $categories = array_merge(array('all'), Sitemap::getUrlsFromSitemap($site_url . 'sitemap-index.xml'));
      } else {
-       $categories = Sitemap::getCategoriesFromIndex($site_url . 'sitemap-index.xml');
+       $categories = Sitemap::getUrlsFromSitemap($site_url . 'sitemap-index.xml');
      }
 
      // Add and option for all categories
@@ -261,7 +263,7 @@ class Sync {
    * Get % progress of posts imported from selected category
    */
   public static function getImportCategoryStatus($categorySitemap) {
-    $postUrls = Sitemap::getPostUrlsFromCategory($categorySitemap);
+    $postUrls = Sitemap::getUrlsFromSitemap($categorySitemap);
 
     // http://www.stylist.co.uk/sitemap/life.xml > life
     $categorySlug = substr($categorySitemap, strrpos($categorySitemap, '/') + 1);
@@ -305,6 +307,80 @@ class Sync {
     }
 
     return $totalStatus;
+  }
+
+  /**
+   * Updated Post functions
+   */
+
+  /**
+   * Updated Post Scan
+   *
+   * Checks Clock for any posts that have been updated since the function was last run and imports them
+   */
+  public static function updatedPostScan($cli = false) {
+
+    $since = self::getLastUpdatedRunDate();
+
+    if($cli) {
+      WP_CLI::line('Importing posts since last post on '.$since);
+    }
+
+    // Format as unix time
+    $since = strtotime($since);
+
+    // The following gitignored file let's you check when the last scan ran.
+    if(WP_ENV !== 'producton') {
+      $test_run_file = fopen("/tmp/cron_last_run.tmp", "w") or die("Unable to open file!");
+      fwrite($test_run_file, "Last run: ".time());
+      fclose($test_run_file);
+    }
+
+    // Simulate SQS payload
+    $payload = array(
+      'url' => all,
+      'onExistAction' => 'update',
+      'since' => $since
+    );
+    $data = $payload;
+
+    try {
+      // Queue up posts from each category since the last successfull import
+      // Import from all categories since...
+      return self::importCategory($data, $payload, $cli);
+    } catch (Exception $e) {
+      // Catch errors for easy debugging in BugSnag
+      throw new Exception("Error scanning and importing new posts. " . $e->getMessage());
+    }
+  }
+
+  /**
+   * Get the last time the updater was run
+   *
+   * catfish_importer_date_updated
+   */
+  public function getLastUpdatedRunDate() {
+    $query = new WP_Query([
+      'post_type' => 'post',
+      'meta_key'  => 'catfish_importer_post_date',
+      // 'meta_value'  => true,
+      'post_status' => array('publish', 'pending', 'draft', 'auto-draft', 'future', 'private', 'inherit', 'trash'),
+      'posts_per_page' => 1, // Return just 1 post.
+      'orderby' => 'modified'
+    ]);
+
+    if ( $query->have_posts() ) {
+      // You have imported posts with Catfish before so return the most recent import time
+      $posts = $query->get_posts();
+      $meta = get_post_meta($posts[0]->ID);
+
+      return $meta['catfish_importer_post_date'][0];
+    } else {
+      // You are on a fresh install with 0 Catfish imported posts!
+      // Return a date far in the past so we always import all content in this case.
+      return strtotime('-5 years');
+    }
+
   }
 
 }
