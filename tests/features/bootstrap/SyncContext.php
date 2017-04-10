@@ -210,7 +210,6 @@ class SyncContext extends BehatContext {
    * @Given /^I run the cron function$/
    */
   public function iRunTheCronFunction() {
-    self::$lastUpdatedRunDate = Sync::getLastUpdatedRunDate();
     Sync::updatedPostScan();
   }
 
@@ -218,14 +217,8 @@ class SyncContext extends BehatContext {
    * @Then /^I should have updated the cron last run time$/
    */
   public function iShouldHaveUpdatedTheCronLastRunTime() {
-    $before = self::$lastUpdatedRunDate;
-    $after = Sync::getLastUpdatedRunDate();
-    $difference = strtotime($after) - strtotime($before);
-
-    var_dump($before, $after, $difference);
-
-    // Time should have been updated
-    Assert::assertGreaterThan(0, $difference);
+    $last_run = strtotime(Sync::getLastUpdatedRunDate());
+    Assert::assertTrue(is_integer($last_run));
   }
 
 }

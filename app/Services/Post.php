@@ -95,6 +95,9 @@ class Post {
     $displayDate = strtotime($postObject->displayDate);
     $displayDate = date('o\-m\-d G\:i\:s', $displayDate);
 
+    // Set current date in nice format that wordpress likes
+    $currentDate = date('o\-m\-d G\:i\:s', time());
+
     // If no sell exists on this post then create it from the headline
     $sell = empty($postObject->sell) ? $postObject->headline : $postObject->sell;
 
@@ -130,12 +133,13 @@ class Post {
       'header_display_sell' => true,
       'catfish_importer_url' => $postUrl,
       'catfish_importer_imported' => true,
-      'catfish_importer_date_updated' => time()
+      'catfish_importer_post_date' => $displayDate,
+      'catfish_importer_date_updated' => $currentDate
     );
 
     // Log the created time if this is the first time this post was imported
     if($existingPost == false || $existingPost && $onExistAction == 'delete-insert') {
-      $postMetaArrayForWordpress['catfish_importer_date_created'] = time();
+      $postMetaArrayForWordpress['catfish_importer_date_created'] = $currentDate;
     }
 
     // If automated testing, set the automated_testing meta field
@@ -312,6 +316,7 @@ class Post {
       $posts = $query->get_posts();
       foreach($posts as $post) {
         // TODO Delete all images associated with this post.
+        self::deletePostAttachements($post->ID);
 
         if($post->ID) {
           if($cli) {
@@ -321,6 +326,28 @@ class Post {
         }
       }
     }
+  }
 
+  /**
+   * Delete all post attachement records.
+   *
+   * This doesn't actually delete the files themseleves, just Wordpresss
+   * reference to the file in the database.
+   */
+  public static function deletePostAttachements($post_id) {
+    $media = get_children( array(
+        'post_parent' => $post_id,
+        'post_type'   => 'attachment'
+    ) );
+
+    if( empty( $media ) ) {
+        return;
+    }
+
+    var_dump('Deleting media for post '.$post_id, $media);
+
+    foreach( $media as $file ) {
+        wp_delete_attachment( $file->ID );
+    }
   }
 }

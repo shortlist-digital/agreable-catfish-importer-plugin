@@ -76,6 +76,22 @@ The purge command **deletes all queue items**. Used to give tests a clean enviro
 ```
 wp catfish purge --debug
 ```
+
+### Clear Automated Testing posts command
+
+The clearautomatedtesting command **deletes all posts with the automated_testing meta tag**.
+
+```
+wp catfish clearautomatedtesting
+```
+### Clear Automated Testing posts command
+
+The scanupdates command finds any new posts since the last import ran and directly imports them.
+
+```
+wp catfish scanupdates
+```
+
 ### --debug
 
 To get any output from the wp command, event success/failure messages and info messages you need to have the
@@ -94,3 +110,53 @@ st-catfish-importer-develop
 ```
 
 `sh` is Shortlist and `st` Stylist.
+
+# Running the Importer on Staging and Production
+
+## Queues with supervisord
+
+The queueing system is run using supervisord worker processes. To setup the importer using supervisord follow these instructions:
+
+Supervisor configuration files are typically stored in the `/etc/supervisor/conf.d` directory. Within this directory, you may create any number of configuration files that instruct supervisor how your processes should be monitored. For example, let's create a `/etc/supervisor/conf.d/catfish-worker.conf` file that starts and monitors a queue:work process:
+
+```
+[program:catfish-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=wp catfish listen
+directory=/[PLUGINDIR]/agreable-catfish-importer-plugin/
+autostart=true
+autorestart=true
+user=ubuntu
+numprocs=2
+redirect_stderr=true
+stdout_logfile=/var/log/supervisord/catfish-worker.log
+```
+
+In this example, the numprocs directive will instruct Supervisor to run 8 queue:work processes and monitor all of them, automatically restarting them if they fail. Of course, you should change the  queue:work sqs portion of the command directive to reflect your chosen queue driver.
+
+Once the configuration file has been created, you may update the Supervisor configuration and start the processes using the following commands:
+
+```
+sudo supervisorctl reread
+
+sudo supervisorctl update
+
+sudo supervisorctl start catfish-worker:*
+
+```
+
+For more information on configuring and using Supervisor, consult the Supervisor documentation.
+
+## Scanner with crontab
+
+The new posts scanner runs on an interval and imports any new posts that have been added since the last post was importer.
+
+Natively the Wordpress cron hijacks user page loads to run actions. We disable the nave Wordpress cron already.
+
+To run the updates scan add the following line to your crontab:
+
+```
+*/5 * * * * cd /var/www/pages-staging.shortlist.com/htdocs/current/web/app/dev/agreable-catfish-importer-plugin; wp catfish scanupdates > /dev/null 2>&1
+```
+
+*Because the posts are added to the queue rather than imported directly I'd suggest running the scanner every 5 minutes, 2 minutes at the least to stop any duplicates being added to the queue.*

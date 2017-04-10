@@ -228,14 +228,14 @@ function deleteAllAutomatedTestingPosts(array $args) {
 // Register command with WP_CLI
 WP_CLI::add_command('catfish clearautomatedtesting', 'deleteAllAutomatedTestingPosts');
 
-
 /**
  * Scan for updates in Clock CMS.
  *
  * ## DESCRIPTION
  *
  * Checks for changes in the Clock CMS and imports them automatically.
- * To be run every minute via a cron.
+ * To be run every minute via a cron like so:
+ * `* * * * * cd [DOCROOT]/pages/web/app/plugins/agreable-catfish-importer-plugin && wp catfish scanupdates > /dev/null 2>&1`
  *
  * ## OPTIONS
  *
@@ -245,8 +245,8 @@ WP_CLI::add_command('catfish clearautomatedtesting', 'deleteAllAutomatedTestingP
  *     wp catfish scanupdates
  *
  */
-function callUpdatedPostCan(array $args) {
-  // Let the queue run FOREVER
+function callUpdatedPostScan(array $args) {
+  // Let the scan run FOREVER
   set_time_limit(0);
   ini_set('display_errors', 1);
   ini_set('display_startup_errors', 1);
@@ -256,10 +256,12 @@ function callUpdatedPostCan(array $args) {
 
   try {
     Sync::updatedPostScan(true);
+
+    WP_CLI::success('Scan complete');
   } catch (Exception $e) {
-    WP_CLI::error(var_dump($e));
+    WP_CLI::error($e->getMessage());
   }
 }
 
 // Register command with WP_CLI
-WP_CLI::add_command('catfish scanupdates', 'callUpdatedPostCan');
+WP_CLI::add_command('catfish scanupdates', 'callUpdatedPostScan');

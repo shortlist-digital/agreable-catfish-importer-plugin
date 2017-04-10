@@ -18,7 +18,7 @@ class SitemapContext extends BehatContext {
    * @Given /^the sitemap index "([^"]*)"$/
    */
   public function theSitemapIndex($sitemapIndex) {
-    self::$categorys = Sitemap::getPostUrlsFromCategory($sitemapIndex);
+    self::$categorys = Sitemap::getUrlsFromSitemap($sitemapIndex);
   }
 
   /**
@@ -32,7 +32,7 @@ class SitemapContext extends BehatContext {
    * @Given /^the category sitemap "([^"]*)"$/
    */
   public function theCategorySitemap($categorySitemap) {
-    self::$categoryPosts = Sitemap::getPostUrlsFromCategory($categorySitemap);
+    self::$categoryPosts = Sitemap::getUrlsFromSitemap($categorySitemap);
   }
 
   /**
