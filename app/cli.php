@@ -245,7 +245,7 @@ WP_CLI::add_command('catfish clearautomatedtesting', 'deleteAllAutomatedTestingP
  *     wp catfish scanupdates
  *
  */
-function callUpdatedPostCan(array $args) {
+function callUpdatedPostScan(array $args) {
   // Let the scan run FOREVER
   set_time_limit(0);
   ini_set('display_errors', 1);
@@ -264,4 +264,4 @@ function callUpdatedPostCan(array $args) {
 }
 
 // Register command with WP_CLI
-WP_CLI::add_command('catfish scanupdates', 'callUpdatedPostCan');
+WP_CLI::add_command('catfish scanupdates', 'callUpdatedPostScan');

@@ -331,7 +331,7 @@ class Sync {
 
     // The following gitignored file let's you check when the last scan ran.
     if(WP_ENV !== 'producton') {
-      $test_run_file = fopen("cron_last_run.tmp", "w") or die("Unable to open file!");
+      $test_run_file = fopen("/tmp/cron_last_run.tmp", "w") or die("Unable to open file!");
       fwrite($test_run_file, "Last run: ".time());
       fclose($test_run_file);
     }
