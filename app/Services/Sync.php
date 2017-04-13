@@ -28,7 +28,10 @@ class Sync {
       return Queue::push('importCategory', array('url' => $categorySitemap, 'onExistAction' => $onExistAction));
     } catch (Exception $e) {
       // Catch errors for easy debugging in BugSnag
-      throw new Exception("Error in queueUrl adding inportCategory to queue. " . $e->getMessage());
+      if($cli) {
+        WP_CLI::error("Error in queueUrl adding importCategory to queue. " . $e->getMessage());
+      }
+      trigger_error("Error in queueUrl adding importCategory to queue. " . $e->getMessage(), E_USER_ERROR);
     }
   }
 
@@ -41,7 +44,10 @@ class Sync {
       return Queue::push('importUrl', array('url' => $url, 'onExistAction' => $onExistAction));
     } catch (Exception $e) {
       // Catch errors for easy debugging in BugSnag
-      throw new Exception("Error in queueUrl adding inportUrl to queue. " . $e->getMessage());
+      if($cli) {
+        WP_CLI::error("Error in queueUrl adding importUrl to queue. " . $e->getMessage());
+      }
+      trigger_error("Error in queueUrl adding importUrl to queue. " . $e->getMessage(), E_USER_ERROR);
     }
   }
 
@@ -79,7 +85,10 @@ class Sync {
 
       $worker->pop('default', getenv('AWS_SQS_CATFISH_IMPORTER_QUEUE'), 0, 3, 0);
     } catch (Exception $e) {
-      throw new Exception("Unhandled error in the Worker library while actioning single queue item. Queue item may have exceeded maxTries " . $e->getMessage());
+      if($cli) {
+        WP_CLI::error("Error in the Worker library while actioning single queue item. Queue item may have exceeded maxTries. " . $e->getMessage());
+      }
+      trigger_error("Error in the Worker library while actioning single queue item. Queue item may have exceeded maxTries. " . $e->getMessage(), E_USER_ERROR);
     }
 
   }
@@ -106,10 +115,11 @@ class Sync {
 
       $worker->purge('default', getenv('AWS_SQS_CATFISH_IMPORTER_QUEUE'), $cli);
     } catch (Exception $e) {
+
       if($cli) {
-        WP_CLI::error("Error processing next queue item.");
+        WP_CLI::error("Error processing next queue item. " . $e->getMessage());
       }
-      throw new Exception("Error processing next queue item.");
+      trigger_error("Error processing next queue item. " . $e->getMessage(), E_USER_ERROR);
     }
 
     if($cli) {
@@ -195,7 +205,7 @@ class Sync {
       if($cli) {
         WP_CLI::error("Error adding multiple importQueue queue items based on the category sitemap. " . $e->getMessage());
       }
-      throw new Exception("Error adding multiple importQueue queue items based on the category sitemap. " . $e->getMessage());
+      trigger_error("Error adding multiple importQueue queue items based on the category sitemap. " . $e->getMessage(), E_USER_ERROR);
 
     }
 
@@ -212,19 +222,31 @@ class Sync {
       $url = $payload['url'];
       $onExistAction = $payload['onExistAction'];
 
+      // Get Slug to prefix log messages for tracking the journey of a post
+      $log_identifier = parse_url($url);
+      $log_identifier = $log_identifier['path'];
+      $log_identifier = "\033[45m ".$log_identifier." \033[0m "; // Add colours like a pro
+
       if($cli) {
-        WP_CLI::line('Importing url: ' . $url);
+        WP_CLI::line($log_identifier.'Starting to import url');
       }
 
-      $post = Post::getPostFromUrl($url, $onExistAction);
+      $post = Post::getPostFromUrl($url, $onExistAction, true, $log_identifier);
+
+      if($cli) {
+        WP_CLI::line($log_identifier.'Finished importing url');
+      }
 
       // Catch uncaught failure in the Post class
       if(!is_object($post)) {
         if($cli) {
-          WP_CLI::error("Post returned is not an object. " . $post);
+          WP_CLI::error($log_identifier."Error, post returned is not an object. " . $post);
         }
-        throw new Exception("Post returned is not an object. " . $post);
+        throw new Exception($log_identifier."Error, post returned is not an object. " . $post);
       }
+
+      // Pass the log_identifier forward
+      $post->log_identifier = $log_identifier;
 
       // Return the post object if successfull
       return $post;
@@ -232,9 +254,9 @@ class Sync {
     } catch (Exception $e) {
 
       if($cli) {
-        WP_CLI::error("Error importing post from url using Posts class. " . $e->getMessage());
+        WP_CLI::error($log_identifier."Error importing post from url using Posts class. " . $e->getMessage());
       }
-      throw new Exception("Error importing post from url using Posts class. " . $e->getMessage());
+      trigger_error("Error importing post from url using Posts class. " . $e->getMessage(), E_USER_ERROR);
 
     }
   }
@@ -349,8 +371,12 @@ class Sync {
       // Import from all categories since...
       return self::importCategory($data, $payload, $cli);
     } catch (Exception $e) {
+      // Show error to cli users
+      if($cli) {
+        WP_CLI::line("Error scanning and importing new posts. " . $e->getMessage());
+      }
       // Catch errors for easy debugging in BugSnag
-      throw new Exception("Error scanning and importing new posts. " . $e->getMessage());
+      trigger_error("Error scanning and importing new posts. " . $e->getMessage(), E_USER_ERROR);
     }
   }
 

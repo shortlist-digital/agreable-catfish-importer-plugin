@@ -18,13 +18,15 @@ class Post {
   /**
    * Get single post from Clock URL and import into the Pages CMS
    *
+   * TODO cli output of the full import process
    */
-  public static function getPostFromUrl($postUrl, $onExistAction = 'skip') {
+  public static function getPostFromUrl($postUrl, $onExistAction = 'skip', $cli = false, $log_identifier) {
     $fail = false;
     $postJsonUrl = $postUrl . '.json';
     try {
       $postString = file_get_contents($postJsonUrl);
     } catch (Exception $e) {
+      // To be caught in Sync.php
       throw new Exception('Unable to retrieve JSON from URL ' . $postJsonUrl);
     }
 
@@ -37,6 +39,10 @@ class Post {
     }
 
     // XXX: Create master post array to save into Wordpress
+
+    if($cli) {
+      WP_CLI::line($log_identifier.'Beginning the post import');
+    }
 
     // Create an empty wordpress post array to build up over the course of the
     // function and to insert or update using wp_insert_post or wp_update_post
@@ -55,6 +61,10 @@ class Post {
       // If there's no existing post go ahead and import it fresh
       // Make $existingPost clearer to use in future if statements by setting as false
       $existingPost = false;
+
+      if($cli) {
+        WP_CLI::line($log_identifier.'Got the existing post if it exists.');
+      }
 
     } else {
 
@@ -87,6 +97,10 @@ class Post {
           return $existingPost[0];
 
           break;
+      }
+
+      if($cli) {
+        WP_CLI::line($log_identifier.'Set the onExistAction method: '.$onExistAction);
       }
 
     }
@@ -169,10 +183,18 @@ class Post {
     // Save the post meta data (Any field that's not post_)
     self::setPostMetadata($wpPostId, $postMetaArrayForWordpress);
 
+    if($cli) {
+      WP_CLI::line($log_identifier.'Built the post metadata array.');
+    }
+
     // XXX: Actions to take place __after__ the post is saved and require either the Post ID or TimberPost object
 
     // Attach Categories to Post
     Category::attachCategories($object->article->section, $postUrl, $wpPostId);
+
+    if($cli) {
+      WP_CLI::line($log_identifier.'Attach categories.');
+    }
 
     // Add tags to post
     $postTags = array();
@@ -183,6 +205,10 @@ class Post {
     }
     wp_set_post_tags($wpPostId, $postTags);
 
+    if($cli) {
+      WP_CLI::line($log_identifier.'Attach tags.');
+    }
+
     // Catch failure to create TimberPost object
     if (!$post = new TimberPost($wpPostId)) {
       throw new Exception('Unexpected exception where Mesh did not create/fetch a post');
@@ -192,12 +218,20 @@ class Post {
     $widgets = Widget::getWidgetsFromDom($postDom);
     Widget::setPostWidgets($post, $widgets, $postObject);
 
+    if($cli) {
+      WP_CLI::line($log_identifier.'Create post widgets.');
+    }
+
     // Store header image
     $show_header = self::setHeroImages($post, $postDom, $postObject);
     $postArrayForWordpress['header_display_hero_image'] = $show_header;
 
     // Envoke any actions hooked to the 'catfish_importer_post' tag
     do_action('catfish_importer_post', $post->ID);
+
+    if($cli) {
+      WP_CLI::line($log_identifier.'Post Import complete.');
+    }
 
     return $post;
   }

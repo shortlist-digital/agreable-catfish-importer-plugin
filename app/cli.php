@@ -4,6 +4,7 @@ use AgreableCatfishImporterPlugin\Services\Post;
 use AgreableCatfishImporterPlugin\Services\Sync;
 use AgreableCatfishImporterPlugin\Services\Queue;
 
+
 /**
  * Generate a random key for the application.
  *
@@ -26,6 +27,34 @@ function generateRandomKey() {
 
 // Register command with WP_CLI
 WP_CLI::add_command('catfish generatekey', 'generateRandomKey');
+
+/**
+ * Throws an exception that should be tracked by BugSnag
+ *
+ * ## DESCRIPTION
+ *
+ * Throws a new exeption that can be used for testing error tracking within the cli.
+ *
+ * ## OPTIONS
+ *
+ * ## EXAMPLES
+ *
+ *     # Add all a specified post
+ *     wp catfish testexception
+ *
+ */
+function testException() {
+  // Show my errors
+  ini_set('display_errors', 1);
+  ini_set('display_startup_errors', 1);
+  error_reporting(E_ERROR | E_WARNING | E_PARSE);
+
+  // Trigger an error
+  trigger_error('Bugsnag Test Exception', E_USER_ERROR);
+}
+
+// Register command with WP_CLI
+WP_CLI::add_command('catfish testexception', 'testException');
 
 /**
  * Add Items to Catfish Queue.
