@@ -84,6 +84,10 @@ class Sync {
       // max number of tries
 
       $worker->pop('default', getenv('AWS_SQS_CATFISH_IMPORTER_QUEUE'), 0, 3, 0);
+
+      // Queue item ran successfully, ping the Envoyer heartbeat URL to stay we're still alive
+      file_get_contents(getenv('ENVOYER_HEARTBEAT_URL_IMPORTER'));
+
     } catch (Exception $e) {
       if($cli) {
         WP_CLI::error("Error in the Worker library while actioning single queue item. Queue item may have exceeded maxTries. " . $e->getMessage());
@@ -370,6 +374,10 @@ class Sync {
       // Queue up posts from each category since the last successfull import
       // Import from all categories since...
       return self::importCategory($data, $payload, $cli);
+
+      // Queue item ran successfully, ping the Envoyer heartbeat URL to stay we're still alive
+      file_get_contents(getenv('ENVOYER_HEARTBEAT_URL_UPDATED_POSTS_SCANNER'));
+      
     } catch (Exception $e) {
       // Show error to cli users
       if($cli) {
