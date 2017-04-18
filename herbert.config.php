@@ -68,7 +68,7 @@ return [
     /**
      * The API to auto-load.
      */
-    'api' => [
+    'apis' => [
         'AgreableCatfishImporterPlugin' => __DIR__ . '/app/api.php'
     ],
 
