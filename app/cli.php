@@ -173,6 +173,9 @@ function actionSingleQueueItem(array $args) {
   ini_set('display_startup_errors', 1);
   error_reporting(E_ERROR | E_WARNING | E_PARSE);
 
+
+  die(file_get_contents(getenv('ENVOYER_HEARTBEAT_URL_IMPORTER')));
+
   WP_CLI::line('Working on queue...');
 
   try {
