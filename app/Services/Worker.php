@@ -55,8 +55,6 @@ class Worker extends QueueWorker {
       // Pass on the slug to show in log file
       $log_identifier = (isset($response->log_identifier)) ? $response->log_identifier : '' ;
 
-      // die(var_dump($response->log_identifier,$response));
-
       if($this->cli) {
         WP_CLI::line($log_identifier.'Success: Worker action complete');
       }

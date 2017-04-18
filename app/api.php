@@ -1,5 +1,7 @@
 <?php namespace AgreableCatfishImporterPlugin;
 
+// die('API loaded');
+
 use AgreableCatfishImporterPlugin\Services\Sync;
 use \Exception;
 
@@ -37,6 +39,7 @@ add_action('wp_ajax_catfishimporter_list_categories', function() {
  * Return total imported posts
  */
 add_action('wp_ajax_catfishimporter_get_status', function() {
+  die(1);
   $response = Sync::getImportStatus();
   catfishimporter_api_response($response);
 });
