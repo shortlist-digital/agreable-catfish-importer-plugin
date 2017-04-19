@@ -22,16 +22,30 @@ class Post {
    */
   public static function getPostFromUrl($postUrl, $onExistAction = 'skip', $cli = false, $log_identifier) {
     $fail = false;
-    $postJsonUrl = $postUrl . '.json';
+    $originalJsonUrl = $postUrl . '.json';
+
+    // Handle special characters in post import urls like:
+    $urlToEscape = parse_url($originalJsonUrl);
+
+    // Create a url encoded path
+    $escapedUrlPath = explode('/', $urlToEscape['path']);
+    foreach ($escapedUrlPath as &$url_element) {
+      $url_element = rawurlencode($url_element);
+    }
+    $escapedUrlPath = implode('/', $escapedUrlPath);
+
+    // Find and replace the old version of the path with the next escaped version
+    $postJsonUrl = str_replace($urlToEscape['path'], $escapedUrlPath, $originalJsonUrl);
+
     try {
       $postString = file_get_contents($postJsonUrl);
     } catch (Exception $e) {
       // To be caught in Sync.php
-      throw new Exception('Unable to retrieve JSON from URL ' . $postJsonUrl);
+      throw new Exception('Unable to reach post JSON URL ' . $postJsonUrl);
     }
 
     if (!$object = json_decode($postString)) {
-      throw new Exception('Unable to retrieve JSON from URL ' . $postJsonUrl);
+      throw new Exception('Unable to reach post JSON URL ' . $postJsonUrl);
     }
 
     if (!isset($object->article)) {

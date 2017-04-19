@@ -377,7 +377,7 @@ class Sync {
 
       // Queue item ran successfully, ping the Envoyer heartbeat URL to stay we're still alive
       file_get_contents(getenv('ENVOYER_HEARTBEAT_URL_UPDATED_POSTS_SCANNER'));
-      
+
     } catch (Exception $e) {
       // Show error to cli users
       if($cli) {
