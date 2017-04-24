@@ -21,6 +21,7 @@ class ImporterHooks {
 
   public function get_html($post) {
     $link = $this->get_link($post);
+    // TODO only return if post has the meta catfish_importer_url
     return "<a title='Re-import from Catfish' class='reimport' href='$link'>Reimport</a>";
   }
 
