@@ -24,18 +24,8 @@ class Post {
     $fail = false;
     $originalJsonUrl = $postUrl . '.json';
 
-    // Handle special characters in post import urls like:
-    $urlToEscape = parse_url($originalJsonUrl);
-
-    // Create a url encoded path
-    $escapedUrlPath = explode('/', $urlToEscape['path']);
-    foreach ($escapedUrlPath as &$url_element) {
-      $url_element = rawurlencode($url_element);
-    }
-    $escapedUrlPath = implode('/', $escapedUrlPath);
-
-    // Find and replace the old version of the path with the next escaped version
-    $postJsonUrl = str_replace($urlToEscape['path'], $escapedUrlPath, $originalJsonUrl);
+    // Escape the url path using this handy helper
+    $postJsonUrl = Sync::escapeAPIUrlPaths($originalJsonUrl);
 
     try {
       $postString = file_get_contents($postJsonUrl);

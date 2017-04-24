@@ -262,6 +262,9 @@ class Sync {
       }
       trigger_error("Error importing post from url using Posts class. " . $e->getMessage(), E_USER_ERROR);
 
+      // TODO: Delete partial post if a post has been created...
+      // var_dump($e);
+
     }
   }
 
@@ -414,6 +417,28 @@ class Sync {
       // Return a date far in the past so we always import all content in this case.
       return strtotime('-5 years');
     }
+
+  }
+
+  /**
+   * Escape API Url Paths
+   *
+   * Handle special characters in post import urls
+   * (e.g. http://www.shortlist.com/entertainment/netflix picks.json)
+   */
+  public static function escapeAPIUrlPaths($originalJsonUrl) {
+
+    $urlToEscape = parse_url($originalJsonUrl);
+
+    // Create a url encoded path
+    $escapedUrlPath = explode('/', $urlToEscape['path']);
+    foreach ($escapedUrlPath as &$url_element) {
+      $url_element = rawurlencode($url_element);
+    }
+    $escapedUrlPath = implode('/', $escapedUrlPath);
+
+    // Find and replace the old version of the path with the next escaped version
+    return str_replace($urlToEscape['path'], $escapedUrlPath, $originalJsonUrl);
 
   }
 
