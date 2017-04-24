@@ -300,6 +300,14 @@ class Sync {
 
     $query = array(
       'post_type' => 'post',
+
+      // These two fields speed up a count only query massively by only returning the id
+      'fields' => 'ids',
+      // 'no_found_rows' => true,
+
+      // Return all posts at once.
+      'posts_per_page' => -1,
+
       'category_name' => $categorySlug,
       'meta_query' => array(
         array(
