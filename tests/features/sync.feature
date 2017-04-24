@@ -10,7 +10,7 @@ Feature: Sync
 
   Scenario: Escape an API url path
     Given I escape the API url path "http://www.shortlist.com/entertainment/films/15-things-you-probably-didnt-know-about-Léon.json"
-    Then The returned url shouldnt contain any special characters
+    Then The returned url should be valid
 
 
   Scenario: Queue a single post for import
