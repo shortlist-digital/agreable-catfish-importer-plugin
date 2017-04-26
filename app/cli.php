@@ -5,6 +5,7 @@ use AgreableCatfishImporterPlugin\Services\Sync;
 use AgreableCatfishImporterPlugin\Services\Queue;
 
 
+
 /**
  * Generate a random key for the application.
  *
@@ -49,8 +50,15 @@ function testException() {
   ini_set('display_startup_errors', 1);
   error_reporting(E_ERROR | E_WARNING | E_PARSE);
 
-  // Trigger an error
-  trigger_error('Bugsnag Test Exception', E_USER_ERROR);
+  try {
+    // The Exception handler should log with Bugsnag
+    throw new Exception("Bugsnag Test Exception");
+  } catch (Exception $e) {
+    // Send handled error to BugSnag as well..
+    $bugsnag = Bugsnag\Client::make(getenv('BUGSNAG_API_KEY'));
+    $bugsnag->notifyException($e);
+    $bugsnag->notifyError('TestError', 'Something bad happened');
+  }
 }
 
 // Register command with WP_CLI

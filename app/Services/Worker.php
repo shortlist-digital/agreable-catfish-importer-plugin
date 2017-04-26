@@ -78,7 +78,9 @@ class Worker extends QueueWorker {
         WP_CLI::line($log_identifier.'Error: Task released back to queue');
         WP_CLI::error($log_identifier.$e->getMessage());
       }
-      trigger_error($log_identifier.$e->getMessage(), E_USER_ERROR);
+      // Send handled error to BugSnag as well..
+      $bugsnag = Bugsnag\Client::make(getenv('BUGSNAG_API_KEY'));
+      $bugsnag->notifyException($e);
 
     // Repeated from above for Illuminate's error handline namespace
     } catch (Throwable $e) {

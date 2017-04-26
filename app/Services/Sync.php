@@ -25,19 +25,6 @@ class Sync {
   // NOTE this takes too long to run and is released back into the queue and duplicated
   // for that reason all large imports should be run from the command line.
 
-  // public static function queueCategory($categorySitemap = 'all', $onExistAction = 'update') {
-  //   try {
-  //     // Push item into Queue
-  //     return Queue::push('importCategory', array('url' => $categorySitemap, 'onExistAction' => $onExistAction));
-  //   } catch (Exception $e) {
-  //     // Catch errors for easy debugging in BugSnag
-  //     if($cli) {
-  //       WP_CLI::error("Error in queueUrl adding importCategory to queue. " . $e->getMessage());
-  //     }
-  //     trigger_error("Error in queueUrl adding importCategory to queue. " . $e->getMessage(), E_USER_ERROR);
-  //   }
-  // }
-
   /**
    * Queue Single URL
    */
@@ -50,7 +37,9 @@ class Sync {
       if($cli) {
         WP_CLI::error("Error in queueUrl adding importUrl to queue. " . $e->getMessage());
       }
-      trigger_error("Error in queueUrl adding importUrl to queue. " . $e->getMessage(), E_USER_ERROR);
+      // Send handled error to BugSnag as well..
+      $bugsnag = Bugsnag\Client::make(getenv('BUGSNAG_API_KEY'));
+      $bugsnag->notifyException($e);
     }
   }
 
@@ -95,7 +84,9 @@ class Sync {
       if($cli) {
         WP_CLI::error("Error in the Worker library while actioning single queue item. Queue item may have exceeded maxTries. " . $e->getMessage());
       }
-      trigger_error("Error in the Worker library while actioning single queue item. Queue item may have exceeded maxTries. " . $e->getMessage(), E_USER_ERROR);
+      // Send handled error to BugSnag as well..
+      $bugsnag = Bugsnag\Client::make(getenv('BUGSNAG_API_KEY'));
+      $bugsnag->notifyException($e);
     }
 
   }
@@ -126,7 +117,9 @@ class Sync {
       if($cli) {
         WP_CLI::error("Error processing next queue item. " . $e->getMessage());
       }
-      trigger_error("Error processing next queue item. " . $e->getMessage(), E_USER_ERROR);
+      // Send handled error to BugSnag as well..
+      $bugsnag = Bugsnag\Client::make(getenv('BUGSNAG_API_KEY'));
+      $bugsnag->notifyException($e);
     }
 
     if($cli) {
@@ -212,7 +205,9 @@ class Sync {
       if($cli) {
         WP_CLI::error("Error adding multiple importQueue queue items based on the category sitemap. " . $e->getMessage());
       }
-      trigger_error("Error adding multiple importQueue queue items based on the category sitemap. " . $e->getMessage(), E_USER_ERROR);
+      // Send handled error to BugSnag as well..
+      $bugsnag = Bugsnag\Client::make(getenv('BUGSNAG_API_KEY'));
+      $bugsnag->notifyException($e);
 
     }
 
@@ -263,7 +258,9 @@ class Sync {
       if($cli) {
         WP_CLI::error($log_identifier."Error importing post from url using Posts class. " . $e->getMessage());
       }
-      trigger_error("Error importing post from url using Posts class. " . $e->getMessage(), E_USER_ERROR);
+      // Send handled error to BugSnag as well..
+      $bugsnag = Bugsnag\Client::make(getenv('BUGSNAG_API_KEY'));
+      $bugsnag->notifyException($e);
 
       // TODO: Delete partial post if a post has been created...
       // var_dump($e);
@@ -400,7 +397,9 @@ class Sync {
         WP_CLI::line("Error scanning and importing new posts. " . $e->getMessage());
       }
       // Catch errors for easy debugging in BugSnag
-      trigger_error("Error scanning and importing new posts. " . $e->getMessage(), E_USER_ERROR);
+      // Send handled error to BugSnag as well..
+      $bugsnag = Bugsnag\Client::make(getenv('BUGSNAG_API_KEY'));
+      $bugsnag->notifyException($e);
     }
   }
 
