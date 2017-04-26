@@ -22,18 +22,21 @@ class Sync {
   /**
    * Queue Category / All
    */
-  public static function queueCategory($categorySitemap = 'all', $onExistAction = 'update') {
-    try {
-      // Push item into Queue
-      return Queue::push('importCategory', array('url' => $categorySitemap, 'onExistAction' => $onExistAction));
-    } catch (Exception $e) {
-      // Catch errors for easy debugging in BugSnag
-      if($cli) {
-        WP_CLI::error("Error in queueUrl adding importCategory to queue. " . $e->getMessage());
-      }
-      trigger_error("Error in queueUrl adding importCategory to queue. " . $e->getMessage(), E_USER_ERROR);
-    }
-  }
+  // NOTE this takes too long to run and is released back into the queue and duplicated
+  // for that reason all large imports should be run from the command line.
+
+  // public static function queueCategory($categorySitemap = 'all', $onExistAction = 'update') {
+  //   try {
+  //     // Push item into Queue
+  //     return Queue::push('importCategory', array('url' => $categorySitemap, 'onExistAction' => $onExistAction));
+  //   } catch (Exception $e) {
+  //     // Catch errors for easy debugging in BugSnag
+  //     if($cli) {
+  //       WP_CLI::error("Error in queueUrl adding importCategory to queue. " . $e->getMessage());
+  //     }
+  //     trigger_error("Error in queueUrl adding importCategory to queue. " . $e->getMessage(), E_USER_ERROR);
+  //   }
+  // }
 
   /**
    * Queue Single URL

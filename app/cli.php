@@ -96,7 +96,9 @@ function addToQueue(array $args) {
   if($args[0] == 'all' || strstr($args[0], '.xml')) {
     WP_CLI::line('Queueing category.');
 
-    Sync::queueCategory($args[0]); // TODO: Handle onExistAction
+    // Queue action is too long to run without being released back into the queue.
+    // Instead run all large queue adds on the command line
+    Sync::importCategory('', array('url' => $args[0], 'onExistAction' => 'update'), true);
 
     WP_CLI::success('Queued: ' . $args[0]);
   } else {
