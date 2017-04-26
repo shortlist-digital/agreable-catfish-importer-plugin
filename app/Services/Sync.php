@@ -311,6 +311,8 @@ class Sync {
       // Return all posts at once.
       'posts_per_page' => -1,
 
+      'post_status' => array('publish'),
+
       'category_name' => $categorySlug,
       'meta_query' => array(
         array(
