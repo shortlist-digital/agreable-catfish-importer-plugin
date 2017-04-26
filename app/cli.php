@@ -4,6 +4,7 @@ use AgreableCatfishImporterPlugin\Services\Post;
 use AgreableCatfishImporterPlugin\Services\Sync;
 use AgreableCatfishImporterPlugin\Services\Queue;
 
+
 /**
  * Generate a random key for the application.
  *
@@ -26,6 +27,34 @@ function generateRandomKey() {
 
 // Register command with WP_CLI
 WP_CLI::add_command('catfish generatekey', 'generateRandomKey');
+
+/**
+ * Throws an exception that should be tracked by BugSnag
+ *
+ * ## DESCRIPTION
+ *
+ * Throws a new exeption that can be used for testing error tracking within the cli.
+ *
+ * ## OPTIONS
+ *
+ * ## EXAMPLES
+ *
+ *     # Add all a specified post
+ *     wp catfish testexception
+ *
+ */
+function testException() {
+  // Show my errors
+  ini_set('display_errors', 1);
+  ini_set('display_startup_errors', 1);
+  error_reporting(E_ERROR | E_WARNING | E_PARSE);
+
+  // Trigger an error
+  trigger_error('Bugsnag Test Exception', E_USER_ERROR);
+}
+
+// Register command with WP_CLI
+WP_CLI::add_command('catfish testexception', 'testException');
 
 /**
  * Add Items to Catfish Queue.
@@ -67,7 +96,9 @@ function addToQueue(array $args) {
   if($args[0] == 'all' || strstr($args[0], '.xml')) {
     WP_CLI::line('Queueing category.');
 
-    Sync::queueCategory($args[0]); // TODO: Handle onExistAction
+    // Queue action is too long to run without being released back into the queue.
+    // Instead run all large queue adds on the command line
+    Sync::importCategory('', array('url' => $args[0], 'onExistAction' => 'update'), true);
 
     WP_CLI::success('Queued: ' . $args[0]);
   } else {

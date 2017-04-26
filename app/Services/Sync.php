@@ -22,15 +22,21 @@ class Sync {
   /**
    * Queue Category / All
    */
-  public static function queueCategory($categorySitemap = 'all', $onExistAction = 'update') {
-    try {
-      // Push item into Queue
-      return Queue::push('importCategory', array('url' => $categorySitemap, 'onExistAction' => $onExistAction));
-    } catch (Exception $e) {
-      // Catch errors for easy debugging in BugSnag
-      throw new Exception("Error in queueUrl adding inportCategory to queue. " . $e->getMessage());
-    }
-  }
+  // NOTE this takes too long to run and is released back into the queue and duplicated
+  // for that reason all large imports should be run from the command line.
+
+  // public static function queueCategory($categorySitemap = 'all', $onExistAction = 'update') {
+  //   try {
+  //     // Push item into Queue
+  //     return Queue::push('importCategory', array('url' => $categorySitemap, 'onExistAction' => $onExistAction));
+  //   } catch (Exception $e) {
+  //     // Catch errors for easy debugging in BugSnag
+  //     if($cli) {
+  //       WP_CLI::error("Error in queueUrl adding importCategory to queue. " . $e->getMessage());
+  //     }
+  //     trigger_error("Error in queueUrl adding importCategory to queue. " . $e->getMessage(), E_USER_ERROR);
+  //   }
+  // }
 
   /**
    * Queue Single URL
@@ -41,7 +47,10 @@ class Sync {
       return Queue::push('importUrl', array('url' => $url, 'onExistAction' => $onExistAction));
     } catch (Exception $e) {
       // Catch errors for easy debugging in BugSnag
-      throw new Exception("Error in queueUrl adding inportUrl to queue. " . $e->getMessage());
+      if($cli) {
+        WP_CLI::error("Error in queueUrl adding importUrl to queue. " . $e->getMessage());
+      }
+      trigger_error("Error in queueUrl adding importUrl to queue. " . $e->getMessage(), E_USER_ERROR);
     }
   }
 
@@ -78,8 +87,15 @@ class Sync {
       // max number of tries
 
       $worker->pop('default', getenv('AWS_SQS_CATFISH_IMPORTER_QUEUE'), 0, 3, 0);
+
+      // Queue item ran successfully, ping the Envoyer heartbeat URL to stay we're still alive
+      file_get_contents(getenv('ENVOYER_HEARTBEAT_URL_IMPORTER'));
+
     } catch (Exception $e) {
-      throw new Exception("Unhandled error in the Worker library while actioning single queue item. Queue item may have exceeded maxTries " . $e->getMessage());
+      if($cli) {
+        WP_CLI::error("Error in the Worker library while actioning single queue item. Queue item may have exceeded maxTries. " . $e->getMessage());
+      }
+      trigger_error("Error in the Worker library while actioning single queue item. Queue item may have exceeded maxTries. " . $e->getMessage(), E_USER_ERROR);
     }
 
   }
@@ -106,10 +122,11 @@ class Sync {
 
       $worker->purge('default', getenv('AWS_SQS_CATFISH_IMPORTER_QUEUE'), $cli);
     } catch (Exception $e) {
+
       if($cli) {
-        WP_CLI::error("Error processing next queue item.");
+        WP_CLI::error("Error processing next queue item. " . $e->getMessage());
       }
-      throw new Exception("Error processing next queue item.");
+      trigger_error("Error processing next queue item. " . $e->getMessage(), E_USER_ERROR);
     }
 
     if($cli) {
@@ -195,7 +212,7 @@ class Sync {
       if($cli) {
         WP_CLI::error("Error adding multiple importQueue queue items based on the category sitemap. " . $e->getMessage());
       }
-      throw new Exception("Error adding multiple importQueue queue items based on the category sitemap. " . $e->getMessage());
+      trigger_error("Error adding multiple importQueue queue items based on the category sitemap. " . $e->getMessage(), E_USER_ERROR);
 
     }
 
@@ -212,19 +229,31 @@ class Sync {
       $url = $payload['url'];
       $onExistAction = $payload['onExistAction'];
 
+      // Get Slug to prefix log messages for tracking the journey of a post
+      $log_identifier = parse_url($url);
+      $log_identifier = $log_identifier['path'];
+      $log_identifier = "\033[45m ".$log_identifier." \033[0m "; // Add colours like a pro
+
       if($cli) {
-        WP_CLI::line('Importing url: ' . $url);
+        WP_CLI::line($log_identifier.'Starting to import url');
       }
 
-      $post = Post::getPostFromUrl($url, $onExistAction);
+      $post = Post::getPostFromUrl($url, $onExistAction, true, $log_identifier);
+
+      if($cli) {
+        WP_CLI::line($log_identifier.'Finished importing url');
+      }
 
       // Catch uncaught failure in the Post class
       if(!is_object($post)) {
         if($cli) {
-          WP_CLI::error("Post returned is not an object. " . $post);
+          WP_CLI::error($log_identifier."Error, post returned is not an object. " . $post);
         }
-        throw new Exception("Post returned is not an object. " . $post);
+        throw new Exception($log_identifier."Error, post returned is not an object. " . $post);
       }
+
+      // Pass the log_identifier forward
+      $post->log_identifier = $log_identifier;
 
       // Return the post object if successfull
       return $post;
@@ -232,9 +261,12 @@ class Sync {
     } catch (Exception $e) {
 
       if($cli) {
-        WP_CLI::error("Error importing post from url using Posts class. " . $e->getMessage());
+        WP_CLI::error($log_identifier."Error importing post from url using Posts class. " . $e->getMessage());
       }
-      throw new Exception("Error importing post from url using Posts class. " . $e->getMessage());
+      trigger_error("Error importing post from url using Posts class. " . $e->getMessage(), E_USER_ERROR);
+
+      // TODO: Delete partial post if a post has been created...
+      // var_dump($e);
 
     }
   }
@@ -271,6 +303,14 @@ class Sync {
 
     $query = array(
       'post_type' => 'post',
+
+      // These two fields speed up a count only query massively by only returning the id
+      'fields' => 'ids',
+      // 'no_found_rows' => true,
+
+      // Return all posts at once.
+      'posts_per_page' => -1,
+
       'category_name' => $categorySlug,
       'meta_query' => array(
         array(
@@ -348,9 +388,17 @@ class Sync {
       // Queue up posts from each category since the last successfull import
       // Import from all categories since...
       return self::importCategory($data, $payload, $cli);
+
+      // Queue item ran successfully, ping the Envoyer heartbeat URL to stay we're still alive
+      file_get_contents(getenv('ENVOYER_HEARTBEAT_URL_UPDATED_POSTS_SCANNER'));
+
     } catch (Exception $e) {
+      // Show error to cli users
+      if($cli) {
+        WP_CLI::line("Error scanning and importing new posts. " . $e->getMessage());
+      }
       // Catch errors for easy debugging in BugSnag
-      throw new Exception("Error scanning and importing new posts. " . $e->getMessage());
+      trigger_error("Error scanning and importing new posts. " . $e->getMessage(), E_USER_ERROR);
     }
   }
 
@@ -380,6 +428,28 @@ class Sync {
       // Return a date far in the past so we always import all content in this case.
       return strtotime('-5 years');
     }
+
+  }
+
+  /**
+   * Escape API Url Paths
+   *
+   * Handle special characters in post import urls
+   * (e.g. http://www.shortlist.com/entertainment/netflix picks.json)
+   */
+  public static function escapeAPIUrlPaths($originalJsonUrl) {
+
+    $urlToEscape = parse_url($originalJsonUrl);
+
+    // Create a url encoded path
+    $escapedUrlPath = explode('/', $urlToEscape['path']);
+    foreach ($escapedUrlPath as &$url_element) {
+      $url_element = rawurlencode($url_element);
+    }
+    $escapedUrlPath = implode('/', $escapedUrlPath);
+
+    // Find and replace the old version of the path with the next escaped version
+    return str_replace($urlToEscape['path'], $escapedUrlPath, $originalJsonUrl);
 
   }
 

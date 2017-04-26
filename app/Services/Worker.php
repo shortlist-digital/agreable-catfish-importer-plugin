@@ -50,14 +50,21 @@ class Worker extends QueueWorker {
       // $data  the full json object from the queue including the function name and payload
       // $payload  the spefic payload data for this action
       // $cli  should WP_CLI console output be shown
-      Sync::$function($data, $payload, $this->cli);
+      $response = Sync::$function($data, $payload, $this->cli);
+
+      // Pass on the slug to show in log file
+      $log_identifier = (isset($response->log_identifier)) ? $response->log_identifier : '' ;
 
       if($this->cli) {
-        WP_CLI::success('Action complete');
+        WP_CLI::line($log_identifier.'Success: Worker action complete');
       }
 
       // Delete the job from the queue once
       $job->delete();
+
+      if($this->cli) {
+        WP_CLI::line($log_identifier.'Success: Task deleted from queue');
+      }
 
       return ['job' => $job, 'failed' => false];
 
@@ -66,23 +73,24 @@ class Worker extends QueueWorker {
       // Try to release the job back into the queue to try again later
       $this->handleJobException($connection, $job, $delay, $e);
 
-      // then handle the error
+      // Show the error to the cli
       if($this->cli) {
-        WP_CLI::error("Exception completing queue item within the Illuminate code. " . $e->getMessage());
+        WP_CLI::line($log_identifier.'Error: Task released back to queue');
+        WP_CLI::error($log_identifier.$e->getMessage());
       }
-      throw new Exception("Exception completing queue item within the Illuminate code. " . $e->getMessage(), 1);
+      trigger_error($log_identifier.$e->getMessage(), E_USER_ERROR);
 
+    // Repeated from above for Illuminate's error handline namespace
     } catch (Throwable $e) {
-
       // Try to release the job back into the queue to try again later
       $this->handleJobException($connection, $job, $delay, $e);
 
-      // then handle the error
+      // Show the error to the cli
       if($this->cli) {
-        WP_CLI::error("Throwable Exception completing queue item within the Illuminate code. " . $e->getMessage());
+        WP_CLI::line($log_identifier.'Error: Task released back to queue');
+        WP_CLI::error($log_identifier.$e->getMessage());
       }
-      throw new Exception("Throwable Exception completing queue item within the Illuminate code. " . $e->getMessage(), 1);
-
+      trigger_error($log_identifier.$e->getMessage(), E_USER_ERROR);
     }
   }
 
