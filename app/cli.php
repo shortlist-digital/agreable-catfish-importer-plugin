@@ -4,8 +4,6 @@ use AgreableCatfishImporterPlugin\Services\Post;
 use AgreableCatfishImporterPlugin\Services\Sync;
 use AgreableCatfishImporterPlugin\Services\Queue;
 
-
-
 /**
  * Generate a random key for the application.
  *
@@ -219,7 +217,6 @@ function purgeQueue(array $args) {
 
   WP_CLI::confirm( "Are you sure you want to DELETE ALL ITEMS from the queue?", $args );
 
-  WP_CLI::line('Purging the queue...');
   try {
     Sync::purgeQueue(true);
   } catch (\Exception $e) {

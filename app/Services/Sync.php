@@ -7,7 +7,10 @@ use \WP_CLI;
 
 use AgreableCatfishImporterPlugin\Services\Post;
 use AgreableCatfishImporterPlugin\Services\Queue;
-use AgreableCatfishImporterPlugin\Services\Worker;
+
+use Aws\Sqs\SqsClient;
+
+use \Bugsnag\Client;
 
 new Queue; // Setup Queue connection
 
@@ -31,15 +34,23 @@ class Sync {
   public static function queueUrl($url, $onExistAction = 'update') {
     try {
       // Push item into Queue
-      return Queue::push('importUrl', array('url' => $url, 'onExistAction' => $onExistAction));
+      // New method using direct sdk so we can play nicely with S3 Offload
+      $response = Queue::push(array('job' => 'importUrl', 'data' => array('url' => $url, 'onExistAction' => $onExistAction)));
+
+      return $response->MessageId;
+
     } catch (Exception $e) {
       // Catch errors for easy debugging in BugSnag
       if($cli) {
         WP_CLI::error("Error in queueUrl adding importUrl to queue. " . $e->getMessage());
       }
-      // Send handled error to BugSnag as well..
-      $bugsnag = Bugsnag\Client::make(getenv('BUGSNAG_API_KEY'));
+
+      // Send handled error to BugSnag otherwise
+      // TODO consider moving this to extension of the Exception class
+      $this->get('bugsnag')->setReleaseStage(WP_ENV);
+      $bugsnag = \Bugsnag\Client::make(getenv('BUGSNAG_API_KEY'));
       $bugsnag->notifyException($e);
+      if(WP_ENV == 'development') { die($e->getMessage); }
     }
   }
 
@@ -56,26 +67,14 @@ class Sync {
       WP_CLI::line('Poping item from queue.');
     }
 
-    // Get queue object
-    $queue = new Queue;
-
-    // Connect to the AWS SQS Queue
-    $worker = new Worker($queue->getQueueManager());
-
     // Pass cli status to worker class
     if($cli) {
-      $worker->cli = true;
+      Queue::$cli = true;
     }
 
     try {
-      // Parameters:
-      // 'default' - connection name
-      // getenv('AWS_SQS_CATFISH_IMPORTER_QUEUE') - queue name
-      // delay
-      // time before retries
-      // max number of tries
-
-      $worker->pop('default', getenv('AWS_SQS_CATFISH_IMPORTER_QUEUE'), 0, 3, 0);
+      // Pop and execute item from queue
+      $response = Queue::pop();
 
       // Queue item ran successfully, ping the Envoyer heartbeat URL to stay we're still alive
       file_get_contents(getenv('ENVOYER_HEARTBEAT_URL_IMPORTER'));
@@ -85,8 +84,10 @@ class Sync {
         WP_CLI::error("Error in the Worker library while actioning single queue item. Queue item may have exceeded maxTries. " . $e->getMessage());
       }
       // Send handled error to BugSnag as well..
-      $bugsnag = Bugsnag\Client::make(getenv('BUGSNAG_API_KEY'));
+      $this->get('bugsnag')->setReleaseStage(WP_ENV);
+      $bugsnag = \Bugsnag\Client::make(getenv('BUGSNAG_API_KEY'));
       $bugsnag->notifyException($e);
+      if(WP_ENV == 'development') { die($e->getMessage); }
     }
 
   }
@@ -100,31 +101,27 @@ class Sync {
       WP_CLI::line('Purging the queue.');
     }
 
-    // Get queue object
-    $queue = new Queue;
-
-    // Connect to the AWS SQS Queue
-    $worker = new Worker($queue->getQueueManager());
-
     try {
-      // Parameters:
-      // 'default' - connection name
-      // getenv('AWS_SQS_CATFISH_IMPORTER_QUEUE') - queue name
 
-      $worker->purge('default', getenv('AWS_SQS_CATFISH_IMPORTER_QUEUE'), $cli);
+      // Super clean purge function with native aws api
+      Queue::purge();
+
+      if($cli) {
+        WP_CLI::success('Ethan Hawke is complete.');
+      }
+
     } catch (Exception $e) {
 
       if($cli) {
-        WP_CLI::error("Error processing next queue item. " . $e->getMessage());
+        WP_CLI::error("Error purging the queue. " . $e->getMessage());
       }
       // Send handled error to BugSnag as well..
-      $bugsnag = Bugsnag\Client::make(getenv('BUGSNAG_API_KEY'));
+      $this->get('bugsnag')->setReleaseStage(WP_ENV);
+      $bugsnag = \Bugsnag\Client::make(getenv('BUGSNAG_API_KEY'));
       $bugsnag->notifyException($e);
+      if(WP_ENV == 'development') { die($e->getMessage); }
     }
 
-    if($cli) {
-      WP_CLI::success('Ethan Hawke is complete.');
-    }
   }
 
   /**
@@ -206,8 +203,10 @@ class Sync {
         WP_CLI::error("Error adding multiple importQueue queue items based on the category sitemap. " . $e->getMessage());
       }
       // Send handled error to BugSnag as well..
-      $bugsnag = Bugsnag\Client::make(getenv('BUGSNAG_API_KEY'));
+      $this->get('bugsnag')->setReleaseStage(WP_ENV);
+      $bugsnag = \Bugsnag\Client::make(getenv('BUGSNAG_API_KEY'));
       $bugsnag->notifyException($e);
+      if(WP_ENV == 'development') { die($e->getMessage); }
 
     }
 
@@ -259,8 +258,10 @@ class Sync {
         WP_CLI::error($log_identifier."Error importing post from url using Posts class. " . $e->getMessage());
       }
       // Send handled error to BugSnag as well..
-      $bugsnag = Bugsnag\Client::make(getenv('BUGSNAG_API_KEY'));
+      $this->get('bugsnag')->setReleaseStage(WP_ENV);
+      $bugsnag = \Bugsnag\Client::make(getenv('BUGSNAG_API_KEY'));
       $bugsnag->notifyException($e);
+      if(WP_ENV == 'development') { die($e->getMessage); }
 
       // TODO: Delete partial post if a post has been created...
       // var_dump($e);
@@ -398,8 +399,10 @@ class Sync {
       }
       // Catch errors for easy debugging in BugSnag
       // Send handled error to BugSnag as well..
-      $bugsnag = Bugsnag\Client::make(getenv('BUGSNAG_API_KEY'));
+      $this->get('bugsnag')->setReleaseStage(WP_ENV);
+      $bugsnag = \Bugsnag\Client::make(getenv('BUGSNAG_API_KEY'));
       $bugsnag->notifyException($e);
+      if(WP_ENV == 'development') { die($e->getMessage); }
     }
   }
 

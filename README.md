@@ -49,9 +49,9 @@ When running ```wp``` in the command line from this directory a couple of new co
 The queue commands offer direct access to pushing single or multiple posts into queue.
 
 ```
-wp catfish queue http://www.shortlist.com/entertainment/the-toughest-world-record-ever-has-been-broken --debug
-wp catfish queue all --debug
-wp catfish queue http://www.shortlist.com/sitemap/entertainment/48-hours-to.xml --debug
+wp catfish queue http://www.shortlist.com/entertainment/the-toughest-world-record-ever-has-been-broken
+wp catfish queue all
+wp catfish queue http://www.shortlist.com/sitemap/entertainment/48-hours-to.xml
 ```
 
 ### Work command
@@ -59,7 +59,7 @@ wp catfish queue http://www.shortlist.com/sitemap/entertainment/48-hours-to.xml 
 The work command actions one single item in the queue.
 
 ```
-wp catfish work --debug
+wp catfish work
 ```
 
 ### Listen command
@@ -67,14 +67,14 @@ wp catfish work --debug
 The listen command works through all items in the queue and continues watching for more queue items to be added.
 
 ```
-wp catfish listen --debug
+wp catfish listen
 ```
 ### Purge command
 
 The purge command **deletes all queue items**. Used to give tests a clean environment to work with.
 
 ```
-wp catfish purge --debug
+wp catfish purge
 ```
 
 ### Clear Automated Testing posts command
@@ -84,7 +84,7 @@ The clearautomatedtesting command **deletes all posts with the automated_testing
 ```
 wp catfish clearautomatedtesting
 ```
-### Clear Automated Testing posts command
+### Scan and import updated posts command
 
 The scanupdates command finds any new posts since the last import ran and directly imports them.
 
@@ -94,7 +94,7 @@ wp catfish scanupdates
 
 ### --debug
 
-To get any output from the wp command, event success/failure messages and info messages you need to have the
+If you are having trouble or not receiving any output from the wp cli command then you can add the `--debug` flag to get detailed output from wp cli.
 
 # Queues
 
@@ -156,7 +156,9 @@ Natively the Wordpress cron hijacks user page loads to run actions. We disable t
 To run the updates scan add the following line to your crontab:
 
 ```
-*/5 * * * * cd /var/www/pages-staging.shortlist.com/htdocs/current/web/app/dev/agreable-catfish-importer-plugin; wp catfish scanupdates > /dev/null 2>&1
+*/5 *   * * *   ubuntu  cd /var/www/pages-staging.shortlist.com/htdocs/current/web/app/plugins/agreable-catfish-importer-plugin && wp catfish scanupdates > /var/log/cron/catfishscanupdates.log 2>&1
 ```
+
+Make sure that you edit the `/etc/crontab` file directly so that you can add the user element of the command. Using `crontab -e` does not allow you to select with user the command will run by.
 
 *Because the posts are added to the queue rather than imported directly I'd suggest running the scanner every 5 minutes, 2 minutes at the least to stop any duplicates being added to the queue.*
