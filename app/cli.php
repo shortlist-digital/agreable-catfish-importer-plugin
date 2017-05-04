@@ -89,7 +89,7 @@ WP_CLI::add_command('catfish testexception', 'testException');
 function addToQueue(array $args) {
 
   // Catch incorrect useage of command which could lead to adding plain text to queue
-  if(in_array($args[0], array('work', 'listen', 'clear', 'purge'))) {
+  if(in_array($args[0], array('work', 'clear', 'purge'))) {
     WP_CLI::error('Commands aren\'t nested. You should use "wp catfish '.$args[0].'" instead of "wp catfish queue '.$args[0].'".');
     return;
   }
@@ -118,46 +118,6 @@ function addToQueue(array $args) {
 
 // Register command with WP_CLI
 WP_CLI::add_command('catfish queue', 'addToQueue');
-
-/**
- * Action Items in the Catfish Queue.
- *
- * ## DESCRIPTION
- *
- * Allows execution of the Catfish Importer queue from the command line.
- *
- * ## OPTIONS
- *
- * ## EXAMPLES
- *
- *     # Listen and action queue
- *     wp catfish listen
- *
- */
-function actionQueue(array $args) {
-  // Let the queue run FOREVER
-  set_time_limit(0);
-  ini_set('display_errors', 1);
-  ini_set('display_startup_errors', 1);
-  error_reporting(E_ERROR | E_WARNING | E_PARSE);
-
-  WP_CLI::line('Listening to queue...');
-
-  // Run indefinitely
-  while (true) {
-    exec('wp catfish work', $output);
-
-    foreach($output as $line) {
-      WP_CLI::line($line);
-    }
-
-    WP_CLI::line('Memory usage: ' . (memory_get_usage(true) / 1024 / 1024) . ' MB');
-    WP_CLI::line('Peak memory usage: ' . (memory_get_peak_usage(true) / 1024 / 1024) . ' MB');
-  }
-}
-
-// Register command with WP_CLI
-WP_CLI::add_command('catfish listen', 'actionQueue');
 
 /**
  * Action one item in the Catfish Queue.

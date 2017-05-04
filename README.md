@@ -8,19 +8,6 @@ For importing Catfish content in to Croissant
 The Catfish importer uses Amazon SQS queues and requires some environment variables to be set before it will run. Make sure you set all of the following before attempting to run the command line actions:
 
 ```
-ILLUMINATE_ENCRYPTOR_KEY=
-```
-
-The Illuminate key is the equivalent to the ```APP_KEY``` in Laravel and must be an AES-256-CBC compatible encryption key. To generate a key use the following command:
-
-```
-cd /vagrant/web/app/plugins/agreable-catfish-importer-plugin
-wp catfish generatekey
-```
-
-You also need to fill out the following details:
-
-```
 AWS_SQS_KEY=
 AWS_SQS_SECRET=
 AWS_SQS_CATFISH_IMPORTER_REGION=
@@ -62,13 +49,6 @@ The work command actions one single item in the queue.
 wp catfish work
 ```
 
-### Listen command
-
-The listen command works through all items in the queue and continues watching for more queue items to be added.
-
-```
-wp catfish listen
-```
 ### Purge command
 
 The purge command **deletes all queue items**. Used to give tests a clean environment to work with.
@@ -127,7 +107,7 @@ directory=/[PLUGINDIR]/agreable-catfish-importer-plugin/
 autostart=true
 autorestart=true
 user=ubuntu
-numprocs=2
+numprocs=8
 redirect_stderr=true
 stdout_logfile=/var/log/supervisord/catfish-worker.log
 ```
