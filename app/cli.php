@@ -169,6 +169,7 @@ WP_CLI::add_command('catfish work', 'actionSingleQueueItem');
  *
  */
 function purgeQueue(array $args) {
+
   // Let the queue run FOREVER
   set_time_limit(0);
   ini_set('display_errors', 1);

@@ -151,7 +151,7 @@ class Sync {
         $postUrls = array();
 
         // Get all sitemaps
-        $site_url = get_field('catfish_website_url', 'option');
+        $site_url = getenv('CATFISH_IMPORTER_TARGET_URL');
         $allSitemaps = Sitemap::getUrlsFromSitemap($site_url . 'sitemap-index.xml', false, $cli);
 
         foreach ($allSitemaps as $categorySitemap) {
@@ -277,7 +277,7 @@ class Sync {
    * Return a list of categories to import in admin
    */
    public static function getCategories($forFrontEnd = true) {
-     $site_url = get_field('catfish_website_url', 'option');
+     $site_url = getenv('CATFISH_IMPORTER_TARGET_URL');
      if($forFrontEnd) {
        // If this is called for the admin user interface
        $categories = array_merge(array('all'), Sitemap::getUrlsFromSitemap($site_url . 'sitemap-index.xml'));

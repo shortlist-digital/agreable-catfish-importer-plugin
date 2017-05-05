@@ -5,13 +5,21 @@ For importing Catfish content in to Croissant
 
 # Setup
 
-The Catfish importer uses Amazon SQS queues and requires some environment variables to be set before it will run. Make sure you set all of the following before attempting to run the command line actions:
+The Catfish importer uses Amazon SQS queues, calls Envoyer heartbeat urls, reports handled errors directly to Bugsnag and requires some environment variables to be set before it will run. Make sure you set all of the following before attempting to run the command line actions:
 
 ```
 AWS_SQS_KEY=
 AWS_SQS_SECRET=
 AWS_SQS_CATFISH_IMPORTER_REGION=
 AWS_SQS_CATFISH_IMPORTER_QUEUE=
+
+ENVOYER_HEARTBEAT_URL_IMPORTER=
+ENVOYER_HEARTBEAT_URL_UPDATED_POSTS_SCANNER=
+ENVOYER_HEARTBEAT_URL_SCHEDULED_POSTS_CACHE=
+
+BUGSNAG_API_KEY=
+
+CATFISH_IMPORTER_TARGET_URL=http://www.shortlist.com/
 ```
 
 These can be filled from your AWS connection. Note: *the queue should be the fully qualified queue url including http.... _not_ just the name of the queue*.
@@ -96,6 +104,12 @@ st-catfish-importer-develop
 ## Queues with supervisord
 
 The queueing system is run using supervisord worker processes. To setup the importer using supervisord follow these instructions:
+
+First install Supervisor using `apt-get`:
+
+```
+sudo apt-get install supervisor
+```
 
 Supervisor configuration files are typically stored in the `/etc/supervisor/conf.d` directory. Within this directory, you may create any number of configuration files that instruct supervisor how your processes should be monitored. For example, let's create a `/etc/supervisor/conf.d/catfish-worker.conf` file that starts and monitors a queue:work process:
 
