@@ -7,7 +7,7 @@ use Sabre\Xml\Reader;
 class SitemapParser {
 
   function __construct() {
-    $this->sitemap_url = get_field('catfish_website_url', 'option')."sitemap-index.xml";
+    $this->sitemap_url = getenv('CATFISH_IMPORTER_TARGET_URL')."sitemap-index.xml";
     $this->sitemap_xml = file_get_contents($this->sitemap_url);
     $this->service = new \Sabre\Xml\Service();
     $this->do_mapping();

@@ -63,6 +63,15 @@ class Queue {
         'QueueUrl' => self::$queueUrl
       ));
 
+      // If the queue is empty exit
+      if(!isset($response['Messages'][0])) {
+        if(self::$cli) {
+          WP_CLI::line('The queue is empty, sleeping.');
+        }
+        sleep(10);
+        return;
+      }
+
       $message = $response['Messages'][0];
       $data = json_decode($message['Body'], true);
 
