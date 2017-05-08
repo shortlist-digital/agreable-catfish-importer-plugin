@@ -258,13 +258,16 @@ class Sync {
         WP_CLI::error($log_identifier."Error importing post from url using Posts class. " . $e->getMessage());
       }
       // Send handled error to BugSnag as well..
-      $this->get('bugsnag')->setReleaseStage(WP_ENV);
+      $this->get('bugsnag')
+        ->setReleaseStage(WP_ENV)
+        ->setMetaData([
+          'log_identifier' => $log_identifier // Pass the error with
+        ]);
       $bugsnag = \Bugsnag\Client::make(getenv('BUGSNAG_API_KEY'));
       $bugsnag->notifyException($e);
       if(WP_ENV == 'development') { die($e->getMessage); }
 
       // TODO: Delete partial post if a post has been created...
-      // var_dump($e);
 
     }
   }
@@ -418,7 +421,8 @@ class Sync {
       // 'meta_value'  => true,
       'post_status' => array('publish', 'pending', 'draft', 'auto-draft', 'future', 'private', 'inherit', 'trash'),
       'posts_per_page' => 1, // Return just 1 post.
-      'orderby' => 'modified'
+      'orderby' => 'date',
+      'order' => 'DESC'
     ]);
 
     if ( $query->have_posts() ) {
