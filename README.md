@@ -24,6 +24,8 @@ CATFISH_IMPORTER_TARGET_URL=http://www.shortlist.com/
 
 These can be filled from your AWS connection. Note: *the queue should be the fully qualified queue url including http.... _not_ just the name of the queue*.
 
+The Catfish Importer doesn't work with the *Agreable Instant Articles Plugin* so make sure this one is disabled before continuing.
+
 # Managing the Importer Queue
 
 Items can be added to the queue using the Wordpress interface or using the command line. To action items in the queue you can only use the command line interface.
@@ -111,12 +113,14 @@ First install Supervisor using `apt-get`:
 sudo apt-get install supervisor
 ```
 
+*You may need to reboot the service using `sudo reboot now` for the supervisord service to start running for the first time*
+
 Supervisor configuration files are typically stored in the `/etc/supervisor/conf.d` directory. Within this directory, you may create any number of configuration files that instruct supervisor how your processes should be monitored. For example, let's create a `/etc/supervisor/conf.d/catfish-worker.conf` file that starts and monitors a queue:work process:
 
 ```
 [program:catfish-worker]
 process_name=%(program_name)s_%(process_num)02d
-command=wp catfish listen
+command=wp catfish work
 directory=/[PLUGINDIR]/agreable-catfish-importer-plugin/
 autostart=true
 autorestart=true
