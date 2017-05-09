@@ -24,8 +24,6 @@ CATFISH_IMPORTER_TARGET_URL=http://www.shortlist.com/
 
 These can be filled from your AWS connection. Note: *the queue should be the fully qualified queue url including http.... _not_ just the name of the queue*.
 
-The Catfish Importer doesn't work with the *Agreable Instant Articles Plugin* so make sure this one is disabled before continuing.
-
 # Managing the Importer Queue
 
 Items can be added to the queue using the Wordpress interface or using the command line. To action items in the queue you can only use the command line interface.
