@@ -165,6 +165,21 @@ class Post {
       'catfish_importer_date_updated' => $currentDate
     );
 
+    // Create meta array for new post (Data that's not in the core post_fields)
+    $postACFMetaArrayForWordpress = array(
+      'basic_short_headline' => $postObject->shortHeadline,
+      'basic_sell' => $sell,
+      'basic_header_type' => 'standard-hero',
+      'basic_header_display_headline' => true,
+      'basic_header_display_sell' => true,
+      'article_catfish_importer_url' => $postUrl,
+      'article_catfish_importer_imported' => true,
+      'article_catfish_importer_post_date' => $displayDate,
+      'article_catfish_importer_date_updated' => $currentDate
+    );
+
+
+
     // Log the created time if this is the first time this post was imported
     if($existingPost == false || $existingPost && $onExistAction == 'delete-insert') {
       $postMetaArrayForWordpress['catfish_importer_date_created'] = $currentDate;
@@ -212,6 +227,7 @@ class Post {
 
     // Save the post meta data (Any field that's not post_)
     self::setPostMetadata($wpPostId, $postMetaArrayForWordpress);
+    self::setACFPostMetadata($wpPostId, $postACFMetaArrayForWordpress);
 
     // XXX: Actions to take place __after__ the post is saved and require either the Post ID or TimberPost object
 
@@ -277,14 +293,34 @@ class Post {
   protected static function setPostMetaProperty($postId, $fieldName, $value = '') {
     if ( empty( $value ) OR ! $value ) {
       // Switch to acf api rather than WP api here...
+      delete_post_meta( $postId, $fieldName );
+    } elseif ( ! get_post_meta( $postId, $fieldName ) ) {
+      add_post_meta( $postId, $fieldName, $value );
+    } else {
+      update_post_meta( $postId, $fieldName, $value );
+    }
+  }
+
+  /**
+   * ACF Set or update multiple post meta properties at once
+   */
+  protected static function setACFPostMetadata($postId, $fields) {
+    foreach ($fields as $fieldName => $value) {
+      self::setPostMetaProperty($postId, $fieldName, $value);
+    }
+  }
+
+  /**
+   * ACF Create or update a post meta field
+   */
+  protected static function setACFPostMetaProperty($postId, $fieldName, $value = '') {
+    if ( empty( $value ) OR ! $value ) {
+      // Switch to acf api rather than WP api here...
       delete_field( $fieldName, $value, $postId );
-      // delete_post_meta( $postId, $fieldName );
     } elseif ( ! get_post_meta( $postId, $fieldName ) ) {
       update_field( $fieldName, $value, $postId );
-      // add_post_meta( $postId, $fieldName, $value );
     } else {
       update_field( $fieldName, $value, $postId );
-      // update_post_meta( $postId, $fieldName, $value );
     }
   }
 

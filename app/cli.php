@@ -74,6 +74,9 @@ WP_CLI::add_command('catfish testexception', 'testException');
  * [<post-url>...]
  * : One or more post url to add to the import queue.
  *
+ * [<on-exist-action>...]
+ * : Optional action if the post exists in Wordpress
+ *
  * ## EXAMPLES
  *
  *     # Add all a specified post
@@ -99,17 +102,19 @@ function addToQueue(array $args) {
     return;
   }
 
-  if(isset($args[2]) && !in_array($args[2], array('update', 'delete-insert', 'skip'))) {
+  if(isset($args[1]) && !in_array($args[1], array('update', 'delete-insert', 'skip'))) {
     WP_CLI::error("The on Exist Action must be either 'update', 'delete-insert', 'skip'");
     return;
   }
 
   // Set the onExistAction
-  if(isset($args[2])) {
-    $onExistAction = $args[2];
+  if( isset($args[1]) && in_array($args[1], array('update', 'delete-insert', 'skip')) ) {
+    $onExistAction = $args[1];
   } else {
     $onExistAction = 'update';
   }
+
+  WP_CLI::line('onExistAction set to: '.$onExistAction);
 
   if($args[0] == 'all' || strstr($args[0], '.xml')) {
     WP_CLI::line('Queueing category.');
