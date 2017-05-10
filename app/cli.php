@@ -77,7 +77,7 @@ WP_CLI::add_command('catfish testexception', 'testException');
  * ## EXAMPLES
  *
  *     # Add all a specified post
- *     wp catfish queue http://www.shortlist.com/entertainment/the-toughest-world-record-ever-has-been-broken
+ *     wp catfish queue http://www.shortlist.com/entertainment/the-toughest-world-record-ever-has-been-broken update
  *
  *     # Import a category of posts
  *     wp catfish queue http://www.shortlist.com/sitemap/entertainment/48-hours-to.xml
@@ -99,18 +99,30 @@ function addToQueue(array $args) {
     return;
   }
 
+  if(isset($args[2]) && !in_array($args[2], array('update', 'delete-insert', 'skip'))) {
+    WP_CLI::error("The on Exist Action must be either 'update', 'delete-insert', 'skip'");
+    return;
+  }
+
+  // Set the onExistAction
+  if(isset($args[2])) {
+    $onExistAction = $args[2];
+  } else {
+    $onExistAction = 'update';
+  }
+
   if($args[0] == 'all' || strstr($args[0], '.xml')) {
     WP_CLI::line('Queueing category.');
 
     // Queue action is too long to run without being released back into the queue.
     // Instead run all large queue adds on the command line
-    Sync::importCategory('', array('url' => $args[0], 'onExistAction' => 'update'), true);
+    Sync::importCategory('', array('url' => $args[0], 'onExistAction' => $onExistAction), true);
 
     WP_CLI::success('Queued: ' . $args[0]);
   } else {
     WP_CLI::line('Queueing post.');
 
-    Sync::queueUrl($args[0]); // TODO: Handle onExistAction
+    Sync::queueUrl($args[0], $onExistAction);
 
     WP_CLI::success('Queued: ' . $args[0]);
   }
