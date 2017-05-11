@@ -257,17 +257,18 @@ class Sync {
       if($cli) {
         WP_CLI::error($log_identifier."Error importing post from url using Posts class. " . $e->getMessage());
       }
+
       // Send handled error to BugSnag as well..
-      $this->get('bugsnag')
-        ->setReleaseStage(WP_ENV)
-        ->setMetaData([
+      $bugsnag = \Bugsnag\Client::make(getenv('BUGSNAG_API_KEY'));
+      $bugsnag->setReleaseStage(WP_ENV);
+      // Pass the post that is seeing this error
+      $bugsnag->setMetaData([
           'log_identifier' => $log_identifier // Pass the error with
         ]);
-      $bugsnag = \Bugsnag\Client::make(getenv('BUGSNAG_API_KEY'));
       $bugsnag->notifyException($e);
       if(WP_ENV == 'development') { die($e->getMessage); }
 
-      // TODO: Delete partial post if a post has been created...
+      // Could delete partial post if a post has been created here...
 
     }
   }

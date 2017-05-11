@@ -8,12 +8,22 @@ use \WP_CLI;
 use \TimberPost;
 use Sunra\PhpSimple\HtmlDomParser;
 
+use add_action;
+
 use AgreableCatfishImporterPlugin\Services\User;
 use AgreableCatfishImporterPlugin\Services\Category;
 
 use Exception;
 
 class Post {
+
+  /**
+   * $postArrayForWordpress
+   *
+   * Store the post meta as a a contstant so that we can access it from an
+   * anonymous function later on.
+   */
+  public static $postArrayForWordpress = array();
 
   /**
    * Get single post from Clock URL and import into the Pages CMS
@@ -155,6 +165,21 @@ class Post {
       'catfish_importer_date_updated' => $currentDate
     );
 
+    // Create meta array for new post (Data that's not in the core post_fields)
+    $postACFMetaArrayForWordpress = array(
+      'basic_short_headline' => $postObject->shortHeadline,
+      'basic_sell' => $sell,
+      'basic_header_type' => 'standard-hero',
+      'basic_header_display_headline' => true,
+      'basic_header_display_sell' => true,
+      'article_catfish_importer_url' => $postUrl,
+      'article_catfish_importer_imported' => true,
+      'article_catfish_importer_post_date' => $displayDate,
+      'article_catfish_importer_date_updated' => $currentDate
+    );
+
+
+
     // Log the created time if this is the first time this post was imported
     if($existingPost == false || $existingPost && $onExistAction == 'delete-insert') {
       $postMetaArrayForWordpress['catfish_importer_date_created'] = $currentDate;
@@ -167,29 +192,42 @@ class Post {
 
       // Do not mark delete-insert or update posts as automated_testing if they
       // weren't already marked automated_testing. This prevents tests from
-      // deleteing existing posts
+      // deleting existing posts
       if($onExistAction == 'delete-insert' || $onExistAction == 'update') {
         unset($postMetaArrayForWordpress['automated_testing']);
       }
     }
 
+    // // Save the post meta as a hook to save_post to prevent validation errors
+    // add_action('save_post', function($post_id, $post, $update) use ($postMetaArrayForWordpress, $log_identifier) {
+    //
+    //   if($cli) {
+    //     WP_CLI::line($log_identifier.'Running save_post hook.');
+    //   }
+    //
+    //   // Save the post meta data (Any field that's not post_)
+    //   self::setPostMetadata($post_id, $postMetaArrayForWordpress));
+    //
+    // }, 5, 3); // Set high priority to be called before Instant Articles plugin
+
     // Insert or update the post
     if($existingPost && $onExistAction == 'update') {
-      // Save post and return ID of newly created post for updating Categories,
-      // tags and Widgets
+      // Update the post and save post and return ID of post for updating
+      // categories, tags and Widgets
       $wpPostId = wp_update_post($postArrayForWordpress);
     } else {
-      // Save post and return ID of newly created post for updating Categories,
-      //  tags and Widgets
+      // Save post and return ID of newly created post for updating categories,
+      // tags and Widgets
       $wpPostId = wp_insert_post($postArrayForWordpress);
     }
-
-    // Save the post meta data (Any field that's not post_)
-    self::setPostMetadata($wpPostId, $postMetaArrayForWordpress);
 
     if($cli) {
       WP_CLI::line($log_identifier.'Built the post metadata array.');
     }
+
+    // Save the post meta data (Any field that's not post_)
+    self::setPostMetadata($wpPostId, $postMetaArrayForWordpress);
+    self::setACFPostMetadata($wpPostId, $postACFMetaArrayForWordpress);
 
     // XXX: Actions to take place __after__ the post is saved and require either the Post ID or TimberPost object
 
@@ -254,11 +292,35 @@ class Post {
    */
   protected static function setPostMetaProperty($postId, $fieldName, $value = '') {
     if ( empty( $value ) OR ! $value ) {
-        delete_post_meta( $postId, $fieldName );
+      // Switch to acf api rather than WP api here...
+      delete_post_meta( $postId, $fieldName );
     } elseif ( ! get_post_meta( $postId, $fieldName ) ) {
-        add_post_meta( $postId, $fieldName, $value );
+      add_post_meta( $postId, $fieldName, $value );
     } else {
-        update_post_meta( $postId, $fieldName, $value );
+      update_post_meta( $postId, $fieldName, $value );
+    }
+  }
+
+  /**
+   * ACF Set or update multiple post meta properties at once
+   */
+  protected static function setACFPostMetadata($postId, $fields) {
+    foreach ($fields as $fieldName => $value) {
+      self::setPostMetaProperty($postId, $fieldName, $value);
+    }
+  }
+
+  /**
+   * ACF Create or update a post meta field
+   */
+  protected static function setACFPostMetaProperty($postId, $fieldName, $value = '') {
+    if ( empty( $value ) OR ! $value ) {
+      // Switch to acf api rather than WP api here...
+      delete_field( $fieldName, $value, $postId );
+    } elseif ( ! get_post_meta( $postId, $fieldName ) ) {
+      update_field( $fieldName, $value, $postId );
+    } else {
+      update_field( $fieldName, $value, $postId );
     }
   }
 
