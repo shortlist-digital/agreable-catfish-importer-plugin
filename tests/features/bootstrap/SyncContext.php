@@ -22,6 +22,7 @@ define('BEHAT_ERROR_REPORTING', E_ERROR | E_WARNING | E_PARSE);
 class SyncContext extends BehatContext {
 
   // Protected variables for the tests to use
+  protected static $escapedUrlPath;
   protected static $queueID;
   protected static $queueItem;
   protected static $queueActionResponse;
@@ -56,6 +57,23 @@ class SyncContext extends BehatContext {
     $posts = $query->get_posts();
 
     Assert::assertEquals(0, count($posts));
+  }
+
+  /**
+   * @Given /^I escape the API url path "([^"]*)"$/
+   */
+  public function iEscapeTheApiUrlPath($originalJsonUrl)
+  {
+    // Escape the url path using this handy helper
+    self::$escapedUrlPath = Sync::escapeAPIUrlPaths($originalJsonUrl);
+  }
+
+  /**
+   * @Then /^The returned url should be valid$/
+   */
+  public function theReturnedUrlShouldNotContainAnySpecialCharacters()
+  {
+    Assert::assertEquals(self::$escapedUrlPath, "http://www.shortlist.com/entertainment/films/15-things-you-probably-didnt-know-about-L%C3%A9on.json");
   }
 
   /**

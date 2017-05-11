@@ -96,6 +96,10 @@ class Widget {
 
   protected static function setGalleryWidget($post, stdClass $postObject, $widgetNames) {
     $galleryApi = str_replace($postObject->__fullUrlPath, '/api/gallery-data' . $postObject->__fullUrlPath, $postObject->absoluteUrl);
+
+    // Escape the url path using this handy helper
+    $galleryApi = Sync::escapeAPIUrlPaths($galleryApi);
+
     if (!$galleryApiResponse = file_get_contents($galleryApi)) {
       throw new Exception('Unable to fetch gallery data from: ' . $galleryApi);
     }

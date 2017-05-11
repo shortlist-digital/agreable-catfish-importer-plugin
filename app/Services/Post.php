@@ -22,16 +22,20 @@ class Post {
    */
   public static function getPostFromUrl($postUrl, $onExistAction = 'skip', $cli = false, $log_identifier) {
     $fail = false;
-    $postJsonUrl = $postUrl . '.json';
+    $originalJsonUrl = $postUrl . '.json';
+
+    // Escape the url path using this handy helper
+    $postJsonUrl = Sync::escapeAPIUrlPaths($originalJsonUrl);
+
     try {
       $postString = file_get_contents($postJsonUrl);
     } catch (Exception $e) {
       // To be caught in Sync.php
-      throw new Exception('Unable to retrieve JSON from URL ' . $postJsonUrl);
+      throw new Exception('Unable to reach post JSON URL ' . $postJsonUrl);
     }
 
     if (!$object = json_decode($postString)) {
-      throw new Exception('Unable to retrieve JSON from URL ' . $postJsonUrl);
+      throw new Exception('Unable to reach post JSON URL ' . $postJsonUrl);
     }
 
     if (!isset($object->article)) {

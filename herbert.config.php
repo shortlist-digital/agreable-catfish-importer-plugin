@@ -66,10 +66,10 @@ return [
     ],
 
     /**
-     * The Cron to auto-load.
+     * The API to auto-load.
      */
-    'cron' => [
-        'AgreableCatfishImporterPlugin' => __DIR__ . '/app/cron.php'
+    'apis' => [
+        'AgreableCatfishImporterPlugin' => __DIR__ . '/app/api.php'
     ],
 
     /**

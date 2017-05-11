@@ -8,6 +8,11 @@ Feature: Sync
     Then I should have no automated_testing posts
 
 
+  Scenario: Escape an API url path
+    Given I escape the API url path "http://www.shortlist.com/entertainment/films/15-things-you-probably-didnt-know-about-Léon.json"
+    Then The returned url should be valid
+
+
   Scenario: Queue a single post for import
     Given I purge the queue
     And I delete all automated_testing posts

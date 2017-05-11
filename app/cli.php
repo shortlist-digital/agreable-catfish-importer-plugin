@@ -4,7 +4,6 @@ use AgreableCatfishImporterPlugin\Services\Post;
 use AgreableCatfishImporterPlugin\Services\Sync;
 use AgreableCatfishImporterPlugin\Services\Queue;
 
-
 /**
  * Generate a random key for the application.
  *
@@ -49,8 +48,15 @@ function testException() {
   ini_set('display_startup_errors', 1);
   error_reporting(E_ERROR | E_WARNING | E_PARSE);
 
-  // Trigger an error
-  trigger_error('Bugsnag Test Exception', E_USER_ERROR);
+  try {
+    // The Exception handler should log with Bugsnag
+    throw new Exception("Bugsnag Test Exception");
+  } catch (Exception $e) {
+    // Send handled error to BugSnag as well..
+    $bugsnag = Bugsnag\Client::make(getenv('BUGSNAG_API_KEY'));
+    $bugsnag->notifyException($e);
+    $bugsnag->notifyError('TestError', 'Something bad happened');
+  }
 }
 
 // Register command with WP_CLI
@@ -83,7 +89,7 @@ WP_CLI::add_command('catfish testexception', 'testException');
 function addToQueue(array $args) {
 
   // Catch incorrect useage of command which could lead to adding plain text to queue
-  if(in_array($args[0], array('work', 'listen', 'clear', 'purge'))) {
+  if(in_array($args[0], array('work', 'clear', 'purge'))) {
     WP_CLI::error('Commands aren\'t nested. You should use "wp catfish '.$args[0].'" instead of "wp catfish queue '.$args[0].'".');
     return;
   }
@@ -96,7 +102,9 @@ function addToQueue(array $args) {
   if($args[0] == 'all' || strstr($args[0], '.xml')) {
     WP_CLI::line('Queueing category.');
 
-    Sync::queueCategory($args[0]); // TODO: Handle onExistAction
+    // Queue action is too long to run without being released back into the queue.
+    // Instead run all large queue adds on the command line
+    Sync::importCategory('', array('url' => $args[0], 'onExistAction' => 'update'), true);
 
     WP_CLI::success('Queued: ' . $args[0]);
   } else {
@@ -110,46 +118,6 @@ function addToQueue(array $args) {
 
 // Register command with WP_CLI
 WP_CLI::add_command('catfish queue', 'addToQueue');
-
-/**
- * Action Items in the Catfish Queue.
- *
- * ## DESCRIPTION
- *
- * Allows execution of the Catfish Importer queue from the command line.
- *
- * ## OPTIONS
- *
- * ## EXAMPLES
- *
- *     # Listen and action queue
- *     wp catfish listen
- *
- */
-function actionQueue(array $args) {
-  // Let the queue run FOREVER
-  set_time_limit(0);
-  ini_set('display_errors', 1);
-  ini_set('display_startup_errors', 1);
-  error_reporting(E_ERROR | E_WARNING | E_PARSE);
-
-  WP_CLI::line('Listening to queue...');
-
-  // Run indefinitely
-  while (true) {
-    exec('wp catfish work', $output);
-
-    foreach($output as $line) {
-      WP_CLI::line($line);
-    }
-
-    WP_CLI::line('Memory usage: ' . (memory_get_usage(true) / 1024 / 1024) . ' MB');
-    WP_CLI::line('Peak memory usage: ' . (memory_get_peak_usage(true) / 1024 / 1024) . ' MB');
-  }
-}
-
-// Register command with WP_CLI
-WP_CLI::add_command('catfish listen', 'actionQueue');
 
 /**
  * Action one item in the Catfish Queue.
@@ -173,8 +141,10 @@ function actionSingleQueueItem(array $args) {
   ini_set('display_startup_errors', 1);
   error_reporting(E_ERROR | E_WARNING | E_PARSE);
 
-
-  die(file_get_contents(getenv('ENVOYER_HEARTBEAT_URL_IMPORTER')));
+  if(!getenv('ENVOYER_HEARTBEAT_URL_IMPORTER') || getenv('ENVOYER_HEARTBEAT_URL_IMPORTER') == '') {
+    throw new Exception("ENVOYER_HEARTBEAT_URL_IMPORTER is not set in your .env file");
+    return;
+  }
 
   WP_CLI::line('Working on queue...');
 
@@ -204,6 +174,7 @@ WP_CLI::add_command('catfish work', 'actionSingleQueueItem');
  *
  */
 function purgeQueue(array $args) {
+
   // Let the queue run FOREVER
   set_time_limit(0);
   ini_set('display_errors', 1);
@@ -212,7 +183,6 @@ function purgeQueue(array $args) {
 
   WP_CLI::confirm( "Are you sure you want to DELETE ALL ITEMS from the queue?", $args );
 
-  WP_CLI::line('Purging the queue...');
   try {
     Sync::purgeQueue(true);
   } catch (\Exception $e) {

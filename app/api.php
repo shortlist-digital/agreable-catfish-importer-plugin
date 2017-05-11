@@ -1,5 +1,7 @@
 <?php namespace AgreableCatfishImporterPlugin;
 
+// die('API loaded');
+
 use AgreableCatfishImporterPlugin\Services\Sync;
 use \Exception;
 
