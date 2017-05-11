@@ -73,11 +73,14 @@ class Sync {
     }
 
     try {
+
       // Pop and execute item from queue
       $response = Queue::pop();
 
       // Queue item ran successfully, ping the Envoyer heartbeat URL to stay we're still alive
       file_get_contents(getenv('ENVOYER_HEARTBEAT_URL_IMPORTER'));
+
+      return $return;
 
     } catch (Exception $e) {
       if($cli) {
@@ -391,10 +394,12 @@ class Sync {
     try {
       // Queue up posts from each category since the last successfull import
       // Import from all categories since...
-      return self::importCategory($data, $payload, $cli);
+      $return = self::importCategory($data, $payload, $cli);
 
       // Queue item ran successfully, ping the Envoyer heartbeat URL to stay we're still alive
       file_get_contents(getenv('ENVOYER_HEARTBEAT_URL_UPDATED_POSTS_SCANNER'));
+
+      return $return;
 
     } catch (Exception $e) {
       // Show error to cli users
