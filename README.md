@@ -145,6 +145,12 @@ sudo supervisorctl start catfish-worker:*
 
 For more information on configuring and using Supervisor, consult the Supervisor documentation.
 
+To stop the Supervisor process run:
+
+```
+sudo supervisorctl stop catfish-worker:*
+```
+
 ## Scanner with crontab
 
 The new posts scanner runs on an interval and imports any new posts that have been added since the last post was importer.
