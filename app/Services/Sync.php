@@ -549,7 +549,7 @@ class Sync {
 
         if($queueMissing) {
           WP_CLI::line("Queing for import");
-          self::queueUrl($postUrl);
+          self::queueUrl($url);
         }
       }
 

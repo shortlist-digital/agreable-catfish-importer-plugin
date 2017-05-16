@@ -97,7 +97,7 @@ class Post {
 
           // Delete existing post and add a new one below
           try {
-            wp_delete_post($existingPost[0]->ID);
+            wp_delete_post($existingPost[0]->ID, true); // Second parameter is force delete, skips trash, do not pass go, do not collect £200.
           } catch (Exception $e) {
             throw new Exception("Error deleting original post.");
           }
