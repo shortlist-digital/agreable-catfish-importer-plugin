@@ -353,7 +353,7 @@ class Sync {
 
     // Get a total posts listed in Clocks sitemap.xml files by counting through each one!
     foreach($categories as $categoryUrl) {
-      $categoryStatus = self::getImportCategoryStatus($categoryUrl, $wordpressPostTotalScope);
+      $categoryStatus = self::getImportCategoryStatus($categoryUrl);
 
       $totalStatus->total += $categoryStatus->categoryTotal;
     }
@@ -489,6 +489,74 @@ class Sync {
 
     // Find and replace the old version of the path with the next escaped version
     return str_replace($urlToEscape['path'], $escapedUrlPath, $originalJsonUrl);
+
+  }
+
+  /**
+   * Find missing
+   */
+  public static function findMissing($queueMissing = false) {
+
+    // Collect all $postUrls in one array to check against the WP database
+    $postUrls = array();
+    $missingPostUrls = array();
+
+    // Get a list of all category sitemaps
+    $categories = self::getCategories(false);
+
+    // Go through all of Clocks sitemap.xml files to get all of the post urls
+    foreach($categories as $categoryUrl) {
+
+      WP_CLI::line('Checking: '.$categoryUrl);
+
+      $posts = Sitemap::getUrlsFromSitemap($categoryUrl);
+
+      if(is_array($posts)) {
+        $postUrls = array_merge($postUrls, $posts);
+      }
+
+      // WP_CLI::line('count($posts)', count($posts), 'count($postUrls)', count($postUrls));
+    }
+
+    // die(var_dump('count($postUrls)',count($postUrls)));
+
+    foreach ($postUrls as $url) {
+
+      // Check if each post exists
+      $query = array(
+        // 'post_type' => 'post',
+        // These two fields speed up a count only query massively by only returning the id
+        // 'fields' => 'ids',
+        // Return all posts at once.
+        'posts_per_page' => 1,
+        // 'post_status' => array('publish'),
+        'meta_query' => array(
+          array(
+            'key' => 'catfish_importer_url',
+            'value' => $url
+          )
+        )
+      );
+
+      $output = new WP_Query($query);
+
+      if( $output->post_count == 0 ) {
+        // var_dump($query);
+        // var_dump($output->post_count);
+        // var_dump($output->have_posts());
+        WP_CLI::line("Missing post: ".$url);
+        $missingPostUrls[] = $url;
+
+        if($queueMissing) {
+          WP_CLI::line("Queing for import");
+          self::queueUrl($postUrl);
+        }
+      }
+
+    }
+
+    // var_dump($missingPostUrls);
+    WP_CLI::line("Total missing posts ". count($missingPostUrls));
 
   }
 

@@ -82,6 +82,14 @@ The scanupdates command finds any new posts since the last import ran and direct
 wp catfish scanupdates
 ```
 
+## Find missing posts command
+
+The findmissing command goes through each sitemap and post in Clock and checks to see if we have a post with the catfish_importer_url value to match it. with the optional `--queuemissing` command you can add those that are missing to the queue.
+
+```
+wp catfish findmissing --queuemissing=true
+```
+
 ### --debug
 
 If you are having trouble or not receiving any output from the wp cli command then you can add the `--debug` flag to get detailed output from wp cli.
