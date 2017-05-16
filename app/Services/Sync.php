@@ -295,8 +295,17 @@ class Sync {
 
   /**
    * Get % progress of posts imported from selected category
+   *
+   * $categorySitemap  The sitemap of the category to count
+   * $wordpressPostTotalScope  Defines whether the function should return the total of all posts in the database or the total only from that category passed as $categorySitemap
    */
   public static function getImportCategoryStatus($categorySitemap) {
+
+    // If categorySitemap is set to all then count all using getImportStatus and exit
+    if($categorySitemap == 'all') {
+      return self::getImportStatus();
+    }
+
     $postUrls = Sitemap::getUrlsFromSitemap($categorySitemap);
 
     // http://www.stylist.co.uk/sitemap/life.xml > life
@@ -305,16 +314,11 @@ class Sync {
 
     $query = array(
       'post_type' => 'post',
-
       // These two fields speed up a count only query massively by only returning the id
       'fields' => 'ids',
-      // 'no_found_rows' => true,
-
       // Return all posts at once.
       'posts_per_page' => -1,
-
       'post_status' => array('publish'),
-
       'category_name' => $categorySlug,
       'meta_query' => array(
         array(
@@ -327,6 +331,7 @@ class Sync {
     $status = new stdClass();
 
     $query = new WP_Query($query);
+
     $status->importedCount = $query->post_count;
     $status->categoryTotal = count($postUrls);
 
@@ -338,17 +343,42 @@ class Sync {
    */
   public static function getImportStatus() {
 
+    // Set up response object
     $totalStatus = new stdClass();
     $totalStatus->importedCount = 0;
     $totalStatus->total = 0;
 
+    // Get a list of all category sitemaps
     $categories = self::getCategories(false);
-    foreach($categories as $categoryUrl) {
-      $categoryStatus = self::getImportCategoryStatus($categoryUrl);
 
-      $totalStatus->importedCount += $categoryStatus->importedCount;
+    // Get a total posts listed in Clocks sitemap.xml files by counting through each one!
+    foreach($categories as $categoryUrl) {
+      $categoryStatus = self::getImportCategoryStatus($categoryUrl, $wordpressPostTotalScope);
+
       $totalStatus->total += $categoryStatus->categoryTotal;
     }
+
+    // Get the total imported posts across all categories...
+    $query = array(
+      'post_type' => 'post',
+      // These two fields speed up a count only query massively by only returning the id
+      'fields' => 'ids',
+      // Return all posts at once.
+      'posts_per_page' => -1,
+      'post_status' => array('publish'),
+      'meta_query' => array(
+        array(
+          'key' => 'catfish_importer_imported',
+          'value' => true
+        )
+      )
+    );
+
+    $status = new stdClass();
+
+    $query = new WP_Query($query);
+
+    $totalStatus->importedCount = $query->post_count;
 
     return $totalStatus;
   }
