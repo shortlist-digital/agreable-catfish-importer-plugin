@@ -87,8 +87,11 @@ wp catfish scanupdates
 The findmissing command goes through each sitemap and post in Clock and checks to see if we have a post with the catfish_importer_url value to match it. with the optional `--queuemissing` command you can add those that are missing to the queue.
 
 ```
-wp catfish findmissing --queuemissing=true
+wp catfish findmissing
+wp catfish findmissing --queuemissing=true --onexistaction=delete-insert
 ```
+
+This is useful to find posts that failed on the original import and add them back into the queue again.
 
 ### --debug
 
@@ -174,3 +177,11 @@ To run the updates scan add the following line to your crontab:
 Make sure that you edit the `/etc/crontab` file directly so that you can add the user element of the command. Using `crontab -e` does not allow you to select with user the command will run by.
 
 *Because the posts are added to the queue rather than imported directly I'd suggest running the scanner every 5 minutes, 2 minutes at the least to stop any duplicates being added to the queue.*
+
+## Dealing with missing images in imported posts
+
+In two cases that Elliot found in QA some images in posts weren't imported and upload to S3 by S3 Offload. In each case I fixed the post by running the following command. The `delete-insert` on exists action completely removes then re-adds the post in Pages.
+
+```
+wp catfish queue http://www.shortlist.com/news/idris-elbas-open-casting-in-hackney-had-to-be-shut-down-by-police delete-insert
+```

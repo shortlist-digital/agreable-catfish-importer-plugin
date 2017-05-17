@@ -495,7 +495,7 @@ class Sync {
   /**
    * Find missing
    */
-  public static function findMissing($queueMissing = false) {
+  public static function findMissing($queueMissing = false, $onExistAction = 'update') {
 
     // Collect all $postUrls in one array to check against the WP database
     $postUrls = array();
@@ -549,7 +549,7 @@ class Sync {
 
         if($queueMissing) {
           WP_CLI::line("Queing for import");
-          self::queueUrl($url);
+          self::queueUrl($url, $onExistAction);
         }
       }
 
@@ -557,6 +557,65 @@ class Sync {
 
     // var_dump($missingPostUrls);
     WP_CLI::line("Total missing posts ". count($missingPostUrls));
+
+  }
+
+  /**
+   * Find additional
+   */
+  public static function findAdditional() {
+
+    // Collect all $postUrls in one array to check against the WP database
+    $postUrls = array();
+    $additionalPostUrls = array();
+
+    // Get a list of all category sitemaps
+    $categories = self::getCategories(false);
+
+    // Go through all of Clocks sitemap.xml files to get all of the post urls
+    foreach($categories as $categoryUrl) {
+
+      WP_CLI::line('Checking: '.$categoryUrl);
+
+      $posts = Sitemap::getUrlsFromSitemap($categoryUrl);
+
+      if(is_array($posts)) {
+        $postUrls = array_merge($postUrls, $posts);
+      }
+
+      // WP_CLI::line('count($posts)', count($posts), 'count($postUrls)', count($postUrls));
+    }
+
+    WP_CLI::line('Getting list of importer posts in Pages.');
+
+    // Get the total imported posts across all categories...
+    $query = array(
+      'post_type' => 'post',
+      // These two fields speed up a count only query massively by only returning the id
+      'fields' => 'ids,catfish_importer_imported',
+      // Return all posts at once.
+      'posts_per_page' => -1,
+      'post_status' => array('publish'),
+      'meta_query' => array(
+        array(
+          'key' => 'catfish_importer_imported',
+          'value' => true
+        )
+      )
+    );
+
+    $status = new stdClass();
+
+    $output = new WP_Query($query);
+
+    if( $output->post_count == 0 ) {
+      foreach ($output->posts as $key => $value) {
+        die(var_dump($value));
+        # code...
+      }
+    }
+
+    die(var_dump($query));
 
   }
 

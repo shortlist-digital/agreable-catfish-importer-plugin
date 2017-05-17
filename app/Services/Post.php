@@ -231,11 +231,15 @@ class Post {
 
     // XXX: Actions to take place __after__ the post is saved and require either the Post ID or TimberPost object
 
+    if($cli) {
+      WP_CLI::line($log_identifier.'Attach categories.');
+    }
+
     // Attach Categories to Post
     Category::attachCategories($object->article->section, $postUrl, $wpPostId);
 
     if($cli) {
-      WP_CLI::line($log_identifier.'Attach categories.');
+      WP_CLI::line($log_identifier.'Attach tags.');
     }
 
     // Add tags to post
@@ -247,13 +251,13 @@ class Post {
     }
     wp_set_post_tags($wpPostId, $postTags);
 
-    if($cli) {
-      WP_CLI::line($log_identifier.'Attach tags.');
-    }
-
     // Catch failure to create TimberPost object
     if (!$post = new TimberPost($wpPostId)) {
-      throw new Exception('Unexpected exception where Mesh did not create/fetch a post');
+      throw new Exception('Unexpected exception where we did not create/fetch a post');
+    }
+
+    if($cli) {
+      WP_CLI::line($log_identifier.'Create post widgets.');
     }
 
     // Create the ACF Widgets from DOM content
@@ -261,8 +265,10 @@ class Post {
     Widget::setPostWidgets($post, $widgets, $postObject);
 
     if($cli) {
-      WP_CLI::line($log_identifier.'Create post widgets.');
+      WP_CLI::line($log_identifier.'Set hero image.');
     }
+
+    // die('Wow there only testing!!!'); // XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
 
     // Store header image
     $show_header = self::setHeroImages($post, $postDom, $postObject);
@@ -444,7 +450,7 @@ class Post {
         return;
     }
 
-    var_dump('Deleting media for post '.$post_id, $media);
+    // var_dump('Deleting media for post '.$post_id, $media);
 
     foreach( $media as $file ) {
         wp_delete_attachment( $file->ID );

@@ -5,6 +5,9 @@ use \stdClass;
 
 class InlineImage {
   public static function getFromWidgetDom($widgetDom) {
+
+    var_dump('InlineImage', $widgetDom);
+
     $widgetData = new stdClass();
     $widgetData->type = 'image';
     $widgetData->image = new stdClass();

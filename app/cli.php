@@ -299,6 +299,16 @@ WP_CLI::add_command('catfish scanupdates', 'callUpdatedPostScan');
  *   - false
  * ---
  *
+ * [--onexistaction=<onexistaction>]
+ * : The method to handle posts that already exist in the database.
+ * ---
+ * default: false
+ * options:
+ *   - update
+ *   - delete-insert
+ *   - skip
+ * ---
+ *
  * ## EXAMPLES
  *
  *     wp catfish findmissing
@@ -321,8 +331,13 @@ function findMissing(array $args, $assoc_args) {
       $queueMissing = true;
     }
 
+    // Set handling if posts exist
+    $onExistAction = 'update';
+    if($assoc_args['onexistaction']) {
+      $onExistAction = $assoc_args['onexistaction'];
+    }
 
-    Sync::findMissing($queueMissing);
+    Sync::findMissing($queueMissing, $onExistAction);
 
     WP_CLI::success('Scan complete');
   } catch (Exception $e) {
@@ -332,3 +347,40 @@ function findMissing(array $args, $assoc_args) {
 
 // Register command with WP_CLI
 WP_CLI::add_command('catfish findmissing', 'findMissing');
+
+/**
+ * Find posts that are in Pages but not in Clock
+ *
+ * ## DESCRIPTION
+ *
+ * Checks sitemap and the Wordpress database and finds posts which exists in
+ * Pages but aren't in the Clock sitemaps
+ *
+ * ## OPTIONS
+ *
+ * ## EXAMPLES
+ *
+ *     wp catfish findadditional
+ *
+ */
+function findAdditional(array $args) {
+  // Let the scan run FOREVER
+  set_time_limit(0);
+  ini_set('display_errors', 1);
+  ini_set('display_startup_errors', 1);
+  error_reporting(E_ERROR | E_WARNING | E_PARSE);
+
+  WP_CLI::line('Finding posts that exist in Pages but not in Clock...');
+
+  try {
+
+    Sync::findAdditional();
+
+    WP_CLI::success('Scan complete');
+  } catch (Exception $e) {
+    WP_CLI::error($e->getMessage());
+  }
+}
+
+// Register command with WP_CLI
+WP_CLI::add_command('catfish findadditional', 'findAdditional');
