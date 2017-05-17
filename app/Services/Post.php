@@ -178,8 +178,6 @@ class Post {
       'article_catfish_importer_date_updated' => $currentDate
     );
 
-
-
     // Log the created time if this is the first time this post was imported
     if($existingPost == false || $existingPost && $onExistAction == 'delete-insert') {
       $postMetaArrayForWordpress['catfish_importer_date_created'] = $currentDate;
@@ -268,7 +266,7 @@ class Post {
       WP_CLI::line($log_identifier.'Set hero image.');
     }
 
-    // die('Wow there only testing!!!'); // XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
+    die('Wow there only testing!!!'); // XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
 
     // Store header image
     $show_header = self::setHeroImages($post, $postDom, $postObject);
@@ -449,8 +447,6 @@ class Post {
     if( empty( $media ) ) {
         return;
     }
-
-    // var_dump('Deleting media for post '.$post_id, $media);
 
     foreach( $media as $file ) {
         wp_delete_attachment( $file->ID );

@@ -514,22 +514,14 @@ class Sync {
       if(is_array($posts)) {
         $postUrls = array_merge($postUrls, $posts);
       }
-
-      // WP_CLI::line('count($posts)', count($posts), 'count($postUrls)', count($postUrls));
     }
-
-    // die(var_dump('count($postUrls)',count($postUrls)));
 
     foreach ($postUrls as $url) {
 
       // Check if each post exists
       $query = array(
-        // 'post_type' => 'post',
-        // These two fields speed up a count only query massively by only returning the id
-        // 'fields' => 'ids',
         // Return all posts at once.
         'posts_per_page' => 1,
-        // 'post_status' => array('publish'),
         'meta_query' => array(
           array(
             'key' => 'catfish_importer_url',
@@ -541,9 +533,6 @@ class Sync {
       $output = new WP_Query($query);
 
       if( $output->post_count == 0 ) {
-        // var_dump($query);
-        // var_dump($output->post_count);
-        // var_dump($output->have_posts());
         WP_CLI::line("Missing post: ".$url);
         $missingPostUrls[] = $url;
 
@@ -555,7 +544,6 @@ class Sync {
 
     }
 
-    // var_dump($missingPostUrls);
     WP_CLI::line("Total missing posts ". count($missingPostUrls));
 
   }
@@ -582,9 +570,8 @@ class Sync {
       if(is_array($posts)) {
         $postUrls = array_merge($postUrls, $posts);
       }
-
-      // WP_CLI::line('count($posts)', count($posts), 'count($postUrls)', count($postUrls));
     }
+
 
     WP_CLI::line('Getting list of importer posts in Pages.');
 
@@ -604,19 +591,24 @@ class Sync {
       )
     );
 
-    $status = new stdClass();
+    $query = new WP_Query($query);
+    $additionalPosts = [];
 
-    $output = new WP_Query($query);
+    foreach($query->have_posts() as $post) {
+      $meta = get_post_meta($post->ID);
 
-    if( $output->post_count == 0 ) {
-      foreach ($output->posts as $key => $value) {
-        die(var_dump($value));
-        # code...
+      WP_CLI::line('Checking: '.$meta['catfish_importer_url'][0]);
+
+      if(!in_array($meta['catfish_importer_url'][0], $postUrls)) {
+        $additionalPosts[] = $meta['catfish_importer_url'][0];
       }
+
     }
 
-    die(var_dump($query));
+    WP_CLI::line(count($additionalPosts).' posts exist in Pages but not Clock:');
 
+    foreach($additionalPosts as $url) {
+      WP_CLI::line($url);
+    }
   }
-
 }

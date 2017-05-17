@@ -130,14 +130,11 @@ class Widget {
 
       $post_attachement_id = self::simple_image_sideload($imageUrl.'.jpg', $post->ID, $title, $post_data);
 
-      var_dump($post_attachement_id);
-
       $imageIds[] = $post_attachement_id;
     }
 
     self::setPostMetaProperty($post, 'widgets_' . count($widgetNames) . '_gallery_items', 'widget_gallery_galleryitems', serialize($imageIds));
   }
-
 
   /**
    * Function to sideload image from Clock to Wordpress
