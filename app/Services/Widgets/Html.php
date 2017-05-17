@@ -32,6 +32,7 @@ class Html {
       return Paragraph::getFromWidgetDom($widgetDom);
     } else {
       // Break up mixed content articles into separate widgets
+      // die(var_dump('array_filter(self::breakIntoWidgets($widgetDom))', array_filter(self::breakIntoWidgets($widgetDom))));
       return array_filter(self::breakIntoWidgets($widgetDom));
     }
   }
@@ -56,8 +57,12 @@ class Html {
           continue;
         }
         // Store embeddible content as embed widgets
-        if ($embedData = Embed::getFromWidgetDom($node)) {
-          array_push($widgets, $embedData);
+        if ($embedWidgets = Embed::getWidgetsFromDom($node)) {
+
+          foreach ($embedWidgets as $widget)  {
+            array_push($widgets, $widget);
+          }
+
           continue;
         } else {
           // Skip excess script tags from a social embed string eg. "<script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>"

@@ -266,8 +266,6 @@ class Post {
       WP_CLI::line($log_identifier.'Set hero image.');
     }
 
-    die('Wow there only testing!!!'); // XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
-
     // Store header image
     $show_header = self::setHeroImages($post, $postDom, $postObject);
     $postArrayForWordpress['header_display_hero_image'] = $show_header;
