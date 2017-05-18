@@ -575,6 +575,8 @@ class Sync {
    */
   public static function findAdditional() {
 
+    WP_CLI::line('Getting big list of Clock posts from sitemaps.');
+
     // Collect all $postUrls in one array to check against the WP database
     $postUrls = array();
     $additionalPostUrls = array();
@@ -594,16 +596,16 @@ class Sync {
       }
     }
 
-
     WP_CLI::line('Getting list of importer posts in Pages.');
 
     // Get the total imported posts across all categories...
     $query = array(
+      // Return post paginated
       'post_type' => 'post',
       // These two fields speed up a count only query massively by only returning the id
       'fields' => 'ids,catfish_importer_imported',
       // Return all posts at once.
-      'posts_per_page' => -1,
+      'posts_per_page' => 50,
       'post_status' => array('publish'),
       'meta_query' => array(
         array(
@@ -613,20 +615,32 @@ class Sync {
       )
     );
 
-    $query = new WP_Query($query);
     $additionalPosts = [];
 
-    foreach($query->have_posts() as $post) {
-      $meta = get_post_meta($post->ID);
+    $output = new WP_Query($query);
 
-      WP_CLI::line('Checking: '.$meta['catfish_importer_url'][0]);
+    // Fancy loop through all Wordpress posts
+    while ( $output->post_count > 0 ) {
+      foreach ($output->get_posts() as $post) {
+        WP_CLI::line("Checking post: ". $post->ID);
 
-      if(!in_array($meta['catfish_importer_url'][0], $postUrls)) {
-        $additionalPosts[] = $meta['catfish_importer_url'][0];
+        // Get post meta and check if post is imported but not in Clock anymore...
+        $meta = get_post_meta($post->ID);
+
+        if(!in_array($meta['catfish_importer_url'][0], $postUrls)) {
+          $additionalPosts[] = $meta['catfish_importer_url'][0];
+        }
+
       }
 
+      $query['offset'] += 50;
+
+      WP_CLI::success("Offset: ". $query['offset']);
+
+      $output = new WP_Query($query);
     }
 
+    // Finally show what we're after, the additional posts
     WP_CLI::line(count($additionalPosts).' posts exist in Pages but not Clock:');
 
     foreach($additionalPosts as $url) {
@@ -639,33 +653,59 @@ class Sync {
    */
   public static function findMissingImages($queueMissing = false, $onExistAction = 'update') {
 
+    // if($queueMissing) {
+      WP_CLI::error('Queue missing isn\'t yet fully impletmented.');
+      die();
+    // }
+
     // Check if each post exists
     $query = array(
+      // Return post paginated
+      'post_type' => 'post',
+      // These two fields speed up a count only query massively by only returning the id
+      'fields' => 'ids,catfish_importer_imported',
       // Return all posts at once.
       'posts_per_page' => 50,
-      'page' => 1,
+      'post_status' => array('publish'),
       'meta_query' => array(
         array(
-          'key' => 'catfish_importer_url',
-          'value' => $url
+          'key' => 'catfish_importer_imported',
+          'value' => true
         )
       )
     );
 
+    $missingImages = [];
+
     $output = new WP_Query($query);
 
+    // Fancy loop through all Wordpress posts
     while ( $output->post_count > 0 ) {
-      foreach ($query->get_posts() as $post) {
-        WP_CLI::line("Post: ". $post->title);
+      foreach ($output->get_posts() as $post) {
+        WP_CLI::line("Checking post: ". $post->ID);
+
+        // Get post meta and check if post is imported but not in Clock anymore...
+        $meta = get_post_meta($post->ID);
+
+        // Check if images exist here
+        $images = get_attached_media( 'image' );
+
+        // die(var_dump($meta, $images));
+
+        // If queue missing is set then add to queue here:
+        // if($queueMissing) {
+        //   WP_CLI::line("Queing for import");
+        //   self::queueUrl($url, $onExistAction);
+        // }
+
       }
 
-      $query['page'] += 1;
+      $query['offset'] += 50;
 
-      WP_CLI::success("Page: ". $query['page']);
+      WP_CLI::success("Offset: ". $query['offset']);
 
       $output = new WP_Query($query);
     }
-
 
     // if( $output->post_count == 0 ) {
     //   WP_CLI::line("Missing post: ".$url);
