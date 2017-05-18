@@ -72,11 +72,14 @@ class Sync {
     }
 
     try {
+
       // Pop and execute item from queue
       $response = Queue::pop();
 
       // Queue item ran successfully, ping the Envoyer heartbeat URL to stay we're still alive
       file_get_contents(getenv('ENVOYER_HEARTBEAT_URL_IMPORTER'));
+
+      return $return;
 
     } catch (Exception $e) {
       if($cli) {
@@ -389,14 +392,14 @@ class Sync {
    */
   public static function updatedPostScan($cli = false) {
 
+    // Get the time the importer was last run
     $since = self::getLastUpdatedRunDate();
+    // Record the time the import started, if the import is successful we use this as the last run time.
+    $updateStartTime = time();
 
     if($cli) {
       WP_CLI::line('Importing posts since last post on '.$since);
     }
-
-    // Format as unix time
-    $since = strtotime($since);
 
     // The following gitignored file let's you check when the last scan ran.
     if(WP_ENV !== 'producton') {
@@ -416,10 +419,15 @@ class Sync {
     try {
       // Queue up posts from each category since the last successfull import
       // Import from all categories since...
-      return self::importCategory($data, $payload, $cli);
+      $return = self::importCategory($data, $payload, $cli);
 
       // Queue item ran successfully, ping the Envoyer heartbeat URL to stay we're still alive
       file_get_contents(getenv('ENVOYER_HEARTBEAT_URL_UPDATED_POSTS_SCANNER'));
+
+      // Update the last run time only once all posts are complete
+      self::updateLastUpdatedRunDate($updateStartTime);
+
+      return $return;
 
     } catch (Exception $e) {
       // Show error to cli users
@@ -432,6 +440,22 @@ class Sync {
       $bugsnag = \Bugsnag\Client::make(getenv('BUGSNAG_API_KEY'));
       $bugsnag->notifyException($e);
     }
+
+  }
+
+  public function getLastUpdatedRunDate() {
+    $since = get_option('catfish_updates_scan_last_run');
+
+    if(!$since) {
+      self::updateLastUpdatedRunDate(time());
+      $since = get_option('catfish_updates_scan_last_run');
+    }
+
+    return $since;
+  }
+
+  public function updateLastUpdatedRunDate($time) {
+    return update_option('catfish_updates_scan_last_run', $time);
   }
 
   /**
@@ -439,7 +463,7 @@ class Sync {
    *
    * catfish_importer_date_updated
    */
-  public function getLastUpdatedRunDate() {
+  public function getLastUpdatedPostDate() {
     $query = new WP_Query([
       'post_type' => 'post',
       'meta_key'  => 'catfish_importer_post_date',

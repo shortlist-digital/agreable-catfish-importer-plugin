@@ -158,6 +158,11 @@ function actionSingleQueueItem(array $args) {
   ini_set('display_startup_errors', 1);
   error_reporting(E_ERROR | E_WARNING | E_PARSE);
 
+  if(!getenv('ENVOYER_HEARTBEAT_URL_IMPORTER') || getenv('ENVOYER_HEARTBEAT_URL_IMPORTER') == '') {
+    throw new Exception("ENVOYER_HEARTBEAT_URL_IMPORTER is not set in your .env file");
+    return;
+  }
+
   WP_CLI::line('Working on queue...');
 
   try {
