@@ -298,8 +298,17 @@ class Sync {
 
   /**
    * Get % progress of posts imported from selected category
+   *
+   * $categorySitemap  The sitemap of the category to count
+   * $wordpressPostTotalScope  Defines whether the function should return the total of all posts in the database or the total only from that category passed as $categorySitemap
    */
   public static function getImportCategoryStatus($categorySitemap) {
+
+    // If categorySitemap is set to all then count all using getImportStatus and exit
+    if($categorySitemap == 'all') {
+      return self::getImportStatus();
+    }
+
     $postUrls = Sitemap::getUrlsFromSitemap($categorySitemap);
 
     // http://www.stylist.co.uk/sitemap/life.xml > life
@@ -308,16 +317,11 @@ class Sync {
 
     $query = array(
       'post_type' => 'post',
-
       // These two fields speed up a count only query massively by only returning the id
       'fields' => 'ids',
-      // 'no_found_rows' => true,
-
       // Return all posts at once.
       'posts_per_page' => -1,
-
       'post_status' => array('publish'),
-
       'category_name' => $categorySlug,
       'meta_query' => array(
         array(
@@ -330,6 +334,7 @@ class Sync {
     $status = new stdClass();
 
     $query = new WP_Query($query);
+
     $status->importedCount = $query->post_count;
     $status->categoryTotal = count($postUrls);
 
@@ -341,17 +346,42 @@ class Sync {
    */
   public static function getImportStatus() {
 
+    // Set up response object
     $totalStatus = new stdClass();
     $totalStatus->importedCount = 0;
     $totalStatus->total = 0;
 
+    // Get a list of all category sitemaps
     $categories = self::getCategories(false);
+
+    // Get a total posts listed in Clocks sitemap.xml files by counting through each one!
     foreach($categories as $categoryUrl) {
       $categoryStatus = self::getImportCategoryStatus($categoryUrl);
 
-      $totalStatus->importedCount += $categoryStatus->importedCount;
       $totalStatus->total += $categoryStatus->categoryTotal;
     }
+
+    // Get the total imported posts across all categories...
+    $query = array(
+      'post_type' => 'post',
+      // These two fields speed up a count only query massively by only returning the id
+      'fields' => 'ids',
+      // Return all posts at once.
+      'posts_per_page' => -1,
+      'post_status' => array('publish'),
+      'meta_query' => array(
+        array(
+          'key' => 'catfish_importer_imported',
+          'value' => true
+        )
+      )
+    );
+
+    $status = new stdClass();
+
+    $query = new WP_Query($query);
+
+    $totalStatus->importedCount = $query->post_count;
 
     return $totalStatus;
   }
@@ -467,4 +497,123 @@ class Sync {
 
   }
 
+  /**
+   * Find missing
+   */
+  public static function findMissing($queueMissing = false, $onExistAction = 'update') {
+
+    // Collect all $postUrls in one array to check against the WP database
+    $postUrls = array();
+    $missingPostUrls = array();
+
+    // Get a list of all category sitemaps
+    $categories = self::getCategories(false);
+
+    // Go through all of Clocks sitemap.xml files to get all of the post urls
+    foreach($categories as $categoryUrl) {
+
+      WP_CLI::line('Checking: '.$categoryUrl);
+
+      $posts = Sitemap::getUrlsFromSitemap($categoryUrl);
+
+      if(is_array($posts)) {
+        $postUrls = array_merge($postUrls, $posts);
+      }
+    }
+
+    foreach ($postUrls as $url) {
+
+      // Check if each post exists
+      $query = array(
+        // Return all posts at once.
+        'posts_per_page' => 1,
+        'meta_query' => array(
+          array(
+            'key' => 'catfish_importer_url',
+            'value' => $url
+          )
+        )
+      );
+
+      $output = new WP_Query($query);
+
+      if( $output->post_count == 0 ) {
+        WP_CLI::line("Missing post: ".$url);
+        $missingPostUrls[] = $url;
+
+        if($queueMissing) {
+          WP_CLI::line("Queing for import");
+          self::queueUrl($url, $onExistAction);
+        }
+      }
+
+    }
+
+    WP_CLI::line("Total missing posts ". count($missingPostUrls));
+
+  }
+
+  /**
+   * Find additional
+   */
+  public static function findAdditional() {
+
+    // Collect all $postUrls in one array to check against the WP database
+    $postUrls = array();
+    $additionalPostUrls = array();
+
+    // Get a list of all category sitemaps
+    $categories = self::getCategories(false);
+
+    // Go through all of Clocks sitemap.xml files to get all of the post urls
+    foreach($categories as $categoryUrl) {
+
+      WP_CLI::line('Checking: '.$categoryUrl);
+
+      $posts = Sitemap::getUrlsFromSitemap($categoryUrl);
+
+      if(is_array($posts)) {
+        $postUrls = array_merge($postUrls, $posts);
+      }
+    }
+
+
+    WP_CLI::line('Getting list of importer posts in Pages.');
+
+    // Get the total imported posts across all categories...
+    $query = array(
+      'post_type' => 'post',
+      // These two fields speed up a count only query massively by only returning the id
+      'fields' => 'ids,catfish_importer_imported',
+      // Return all posts at once.
+      'posts_per_page' => -1,
+      'post_status' => array('publish'),
+      'meta_query' => array(
+        array(
+          'key' => 'catfish_importer_imported',
+          'value' => true
+        )
+      )
+    );
+
+    $query = new WP_Query($query);
+    $additionalPosts = [];
+
+    foreach($query->have_posts() as $post) {
+      $meta = get_post_meta($post->ID);
+
+      WP_CLI::line('Checking: '.$meta['catfish_importer_url'][0]);
+
+      if(!in_array($meta['catfish_importer_url'][0], $postUrls)) {
+        $additionalPosts[] = $meta['catfish_importer_url'][0];
+      }
+
+    }
+
+    WP_CLI::line(count($additionalPosts).' posts exist in Pages but not Clock:');
+
+    foreach($additionalPosts as $url) {
+      WP_CLI::line($url);
+    }
+  }
 }

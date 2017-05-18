@@ -97,7 +97,7 @@ class Post {
 
           // Delete existing post and add a new one below
           try {
-            wp_delete_post($existingPost[0]->ID);
+            wp_delete_post($existingPost[0]->ID, true); // Second parameter is force delete, skips trash, do not pass go, do not collect £200.
           } catch (Exception $e) {
             throw new Exception("Error deleting original post.");
           }
@@ -178,8 +178,6 @@ class Post {
       'article_catfish_importer_date_updated' => $currentDate
     );
 
-
-
     // Log the created time if this is the first time this post was imported
     if($existingPost == false || $existingPost && $onExistAction == 'delete-insert') {
       $postMetaArrayForWordpress['catfish_importer_date_created'] = $currentDate;
@@ -231,11 +229,15 @@ class Post {
 
     // XXX: Actions to take place __after__ the post is saved and require either the Post ID or TimberPost object
 
+    if($cli) {
+      WP_CLI::line($log_identifier.'Attach categories.');
+    }
+
     // Attach Categories to Post
     Category::attachCategories($object->article->section, $postUrl, $wpPostId);
 
     if($cli) {
-      WP_CLI::line($log_identifier.'Attach categories.');
+      WP_CLI::line($log_identifier.'Attach tags.');
     }
 
     // Add tags to post
@@ -247,13 +249,13 @@ class Post {
     }
     wp_set_post_tags($wpPostId, $postTags);
 
-    if($cli) {
-      WP_CLI::line($log_identifier.'Attach tags.');
-    }
-
     // Catch failure to create TimberPost object
     if (!$post = new TimberPost($wpPostId)) {
-      throw new Exception('Unexpected exception where Mesh did not create/fetch a post');
+      throw new Exception('Unexpected exception where we did not create/fetch a post');
+    }
+
+    if($cli) {
+      WP_CLI::line($log_identifier.'Create post widgets.');
     }
 
     // Create the ACF Widgets from DOM content
@@ -261,7 +263,7 @@ class Post {
     Widget::setPostWidgets($post, $widgets, $postObject);
 
     if($cli) {
-      WP_CLI::line($log_identifier.'Create post widgets.');
+      WP_CLI::line($log_identifier.'Set hero image.');
     }
 
     // Store header image
@@ -443,8 +445,6 @@ class Post {
     if( empty( $media ) ) {
         return;
     }
-
-    var_dump('Deleting media for post '.$post_id, $media);
 
     foreach( $media as $file ) {
         wp_delete_attachment( $file->ID );

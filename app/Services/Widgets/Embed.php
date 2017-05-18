@@ -4,7 +4,10 @@ namespace AgreableCatfishImporterPlugin\Services\Widgets;
 use stdClass;
 
 class Embed {
-  public static function getFromWidgetDom($widgetDom) {
+  public static function getWidgetsFromDom($widgetDom) {
+
+    // var_dump($widgetDom->outertext);
+
     if (preg_match('/iframe/', $widgetDom->outertext)) {
       return self::handleFrame($widgetDom);
     } elseif (preg_match('/blockquote/', $widgetDom->outertext)) {
@@ -39,18 +42,34 @@ class Embed {
   }
 
   public static function handleBlock($widgetDom) {
-    $links = $widgetDom->find('a');
-    foreach(array_reverse($links) as $link) {
-      $href = $link->href;
-      $check = wp_oembed_get($href);
-      if ($check) {
-        $widgetData = new stdClass();
-        $widgetData->type = 'embed';
-        $widgetData->embed = $href;
-        return $widgetData;
-        break;
+
+    // Separate multiple embeds in a row
+    $widgets = [];
+
+    $blockquotes = $widgetDom->find('blockquote');
+
+    foreach ($blockquotes as $blockquote) {
+
+      $links = $blockquote->find('a');
+
+      // Take the last link in each blockquote which should be the link to the tweet
+      foreach(array_reverse($links) as $link) {
+
+        $href = $link->href;
+        $check = wp_oembed_get($href);
+        if ($check) {
+          $widgetData = new stdClass();
+          $widgetData->type = 'embed';
+          $widgetData->embed = $href;
+
+          array_push($widgets, $widgetData);
+          // Break because we only want the link to the embed not all the other links in the tweet.
+          break;
+        }
       }
     }
+
+    $widgets = array_values($widgets);
+    return count($widgets) ? array_filter($widgets) : false;
   }
 }
-
