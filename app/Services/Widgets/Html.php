@@ -56,9 +56,11 @@ class Html {
           array_push($widgets, Heading::getFromWidgetDom($node));
           continue;
         }
+
         // Store embeddible content as embed widgets
         if ($embedWidgets = Embed::getWidgetsFromDom($node)) {
 
+          // Push all embed widgets into the widget array
           foreach ($embedWidgets as $widget)  {
             array_push($widgets, $widget);
           }
