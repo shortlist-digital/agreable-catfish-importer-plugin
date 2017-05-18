@@ -605,4 +605,52 @@ class Sync {
       WP_CLI::line($url);
     }
   }
+
+  /**
+   * Find missing images
+   */
+  public static function findMissingImages($queueMissing = false, $onExistAction = 'update') {
+
+    // Check if each post exists
+    $query = array(
+      // Return all posts at once.
+      'posts_per_page' => 50,
+      'page' => 1,
+      'meta_query' => array(
+        array(
+          'key' => 'catfish_importer_url',
+          'value' => $url
+        )
+      )
+    );
+
+    $output = new WP_Query($query);
+
+    while ( $output->post_count > 0 ) {
+      foreach ($query->get_posts() as $post) {
+        WP_CLI::line("Post: ". $post->title);
+      }
+
+      $query['page'] += 1;
+
+      WP_CLI::success("Page: ". $query['page']);
+
+      $output = new WP_Query($query);
+    }
+
+
+    // if( $output->post_count == 0 ) {
+    //   WP_CLI::line("Missing post: ".$url);
+    //   $missingPostUrls[] = $url;
+    //
+    //   if($queueMissing) {
+    //     WP_CLI::line("Queing for import");
+    //     self::queueUrl($url, $onExistAction);
+    //   }
+    // }
+
+    WP_CLI::line("Total missing images ". count($missingPostUrls));
+
+  }
+
 }

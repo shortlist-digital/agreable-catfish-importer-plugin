@@ -312,6 +312,7 @@ WP_CLI::add_command('catfish scanupdates', 'callUpdatedPostScan');
  * ## EXAMPLES
  *
  *     wp catfish findmissing
+ *     wp catfish findmissing --queuemissing=true --onexistaction=delete-insert
  *
  */
 function findMissing(array $args, $assoc_args) {
@@ -384,3 +385,71 @@ function findAdditional(array $args) {
 
 // Register command with WP_CLI
 WP_CLI::add_command('catfish findadditional', 'findAdditional');
+
+/**
+ * Find missing images from Import
+ *
+ * ## DESCRIPTION
+ *
+ * Checks each imported post and it's attachements for images that are missing
+ *
+ * ## OPTIONS
+ *
+ * [--queuemissing=<queuemissing>]
+ * : Whether or not to queue posts with missing images for import.
+ * ---
+ * default: false
+ * options:
+ *   - true
+ *   - false
+ * ---
+ *
+ * [--onexistaction=<onexistaction>]
+ * : The method to handle posts that already exist in the database. (delete-insert recommended)
+ * ---
+ * default: false
+ * options:
+ *   - update
+ *   - delete-insert
+ *   - skip
+ * ---
+ *
+ * ## EXAMPLES
+ *
+ *     wp catfish findmissingimages
+ *     wp catfish findmissingimages --queuemissing=true --onexistaction=delete-insert
+ *
+ */
+function findMissingImages(array $args, $assoc_args) {
+  // Let the scan run FOREVER
+  set_time_limit(0);
+  ini_set('display_errors', 1);
+  ini_set('display_startup_errors', 1);
+  error_reporting(E_ERROR | E_WARNING | E_PARSE);
+
+  WP_CLI::line('Finding missing images...');
+
+  try {
+
+    // Optionally queue missing posts so that they can be reimported
+    $queueMissing = false;
+    if($assoc_args['queuemissing'] && $assoc_args['queuemissing'] == 'true') {
+      $queueMissing = true;
+    }
+
+    // Set handling if posts exist
+    $onExistAction = 'update';
+    if($assoc_args['onexistaction']) {
+      $onExistAction = $assoc_args['onexistaction'];
+    }
+
+    Sync::findMissingImages($queueMissing, $onExistAction);
+
+    WP_CLI::success('Scan complete');
+  } catch (Exception $e) {
+    WP_CLI::error($e->getMessage());
+  }
+}
+
+// Register command with WP_CLI
+WP_CLI::add_command('catfish findmissingimages', 'findMissingImages');
