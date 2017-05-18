@@ -50,7 +50,6 @@ class Sync {
       $this->get('bugsnag')->setReleaseStage(WP_ENV);
       $bugsnag = \Bugsnag\Client::make(getenv('BUGSNAG_API_KEY'));
       $bugsnag->notifyException($e);
-      if(WP_ENV == 'development') { die($e->getMessage); }
     }
   }
 
@@ -87,7 +86,6 @@ class Sync {
       $this->get('bugsnag')->setReleaseStage(WP_ENV);
       $bugsnag = \Bugsnag\Client::make(getenv('BUGSNAG_API_KEY'));
       $bugsnag->notifyException($e);
-      if(WP_ENV == 'development') { die($e->getMessage); }
     }
 
   }
@@ -119,7 +117,6 @@ class Sync {
       $this->get('bugsnag')->setReleaseStage(WP_ENV);
       $bugsnag = \Bugsnag\Client::make(getenv('BUGSNAG_API_KEY'));
       $bugsnag->notifyException($e);
-      if(WP_ENV == 'development') { die($e->getMessage); }
     }
 
   }
@@ -206,7 +203,6 @@ class Sync {
       $this->get('bugsnag')->setReleaseStage(WP_ENV);
       $bugsnag = \Bugsnag\Client::make(getenv('BUGSNAG_API_KEY'));
       $bugsnag->notifyException($e);
-      if(WP_ENV == 'development') { die($e->getMessage); }
 
     }
 
@@ -266,7 +262,6 @@ class Sync {
           'log_identifier' => $log_identifier // Pass the error with
         ]);
       $bugsnag->notifyException($e);
-      if(WP_ENV == 'development') { die($e->getMessage); }
 
       // Could delete partial post if a post has been created here...
 
@@ -436,7 +431,6 @@ class Sync {
       $this->get('bugsnag')->setReleaseStage(WP_ENV);
       $bugsnag = \Bugsnag\Client::make(getenv('BUGSNAG_API_KEY'));
       $bugsnag->notifyException($e);
-      if(WP_ENV == 'development') { die($e->getMessage); }
     }
   }
 

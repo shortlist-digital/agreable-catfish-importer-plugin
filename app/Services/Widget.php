@@ -75,6 +75,13 @@ class Widget {
         case 'horizontal-rule':
           $widgetNames[] = $widget->acf_fc_layout;
           break;
+        case 'gallery':
+
+          // Create gallery widget...
+          self::setGalleryWidget($post, $catfishPostObject, $widgetNames, '/api/in-page-gallery-data', '?widgetId=' . $widget->html->attr['data-id']);
+          $widgetNames[] = $widget->acf_fc_layout;
+
+          break;
         case 'promo':
           // Throw exception if promo widget found
           // To help decide if we need Promo widgets in the new pages CMS, throw an exception if a promo widget is found
@@ -94,8 +101,12 @@ class Widget {
     update_post_meta($post->id, '_widgets', 'post_widgets');
   }
 
-  protected static function setGalleryWidget($post, stdClass $postObject, $widgetNames) {
-    $galleryApi = str_replace($postObject->__fullUrlPath, '/api/gallery-data' . $postObject->__fullUrlPath, $postObject->absoluteUrl);
+  /**
+   * Gallery post type
+   *
+   */
+  protected static function setGalleryWidget($post, stdClass $postObject, $widgetNames, $galleryApiEndpoint = '/api/gallery-data', $widgetId = '') {
+    $galleryApi = str_replace($postObject->__fullUrlPath, $galleryApiEndpoint . $postObject->__fullUrlPath . $widgetId, $postObject->absoluteUrl);
 
     // Escape the url path using this handy helper
     $galleryApi = Sync::escapeAPIUrlPaths($galleryApi);
@@ -234,6 +245,7 @@ class Widget {
 
     foreach($postDom->find('.article__content .widget__wrapper') as $widgetWrapper) {
 
+      // Handle most core widgets that have the .widget class
       if (isset($widgetWrapper->find('.widget')[0])) {
         $widget = $widgetWrapper->find('.widget')[0];
 
@@ -258,9 +270,20 @@ class Widget {
             $widgetData = Video::getFromWidgetDom($widget);
             break;
         }
+
+      // Catch <hr>
       } else if (isset($widgetWrapper->find('hr')[0])) {
         $widget = $widgetWrapper->find('hr')[0];
         $widgetData = HorizontalRule::getFromWidgetDom($widget);
+
+      // Catch .js-in-page-gallery
+      } else if (isset($widgetWrapper->find('.js-in-page-gallery')[0])) {
+
+        // TODO This could be moved to a separate class for consistancy
+        $widgetData = new stdClass();
+        $widgetData->type = 'gallery';
+        $widgetData->html = $widgetWrapper->find('.js-in-page-gallery')[0];
+
       }
 
       if (is_array($widgetData)) {

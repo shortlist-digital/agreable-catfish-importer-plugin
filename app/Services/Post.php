@@ -260,6 +260,7 @@ class Post {
 
     // Create the ACF Widgets from DOM content
     $widgets = Widget::getWidgetsFromDom($postDom);
+
     Widget::setPostWidgets($post, $widgets, $postObject);
 
     if($cli) {
