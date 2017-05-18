@@ -421,11 +421,15 @@ class Sync {
       // Import from all categories since...
       $return = self::importCategory($data, $payload, $cli);
 
-      // Queue item ran successfully, ping the Envoyer heartbeat URL to stay we're still alive
-      file_get_contents(getenv('ENVOYER_HEARTBEAT_URL_UPDATED_POSTS_SCANNER'));
-
       // Update the last run time only once all posts are complete
       self::updateLastUpdatedRunDate($updateStartTime);
+
+      if($cli) {
+        WP_CLI::line('Setting last updates time to '.$updateStartTime);
+      }
+
+      // Queue item ran successfully, ping the Envoyer heartbeat URL to stay we're still alive
+      file_get_contents(getenv('ENVOYER_HEARTBEAT_URL_UPDATED_POSTS_SCANNER'));
 
       return $return;
 
