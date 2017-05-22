@@ -10,7 +10,8 @@
     "phpunit/phpunit": "5.0.*",
     "sunra/php-simple-html-dom-parser" : "~1.5",
     "maknz/slack": "^1.7",
-    "sabre/xml": "^1.4",
+    "sabre/uri": "1.2.*",
+    "sabre/xml": "1.5.*",
     "jarednova/mesh": "0.4",
     "shortlist-digital/agreable-base-theme": "~2.1"
   },
