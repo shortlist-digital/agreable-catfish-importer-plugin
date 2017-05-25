@@ -8,15 +8,22 @@ class Paragraph {
     $widgetData = new stdClass();
     $widgetData->type = 'paragraph';
     $widgetDom = self::filterBadTags($widgetDom);
-    $widgetData->paragraph = $widgetDom->innertext;
-    return $widgetData;
+    // Catch $widgetDom == false
+    if($widgetDom->innertext) {
+      $widgetData->paragraph = $widgetDom->innertext;
+      return $widgetData;
+    }
+    return $widgetDom;
   }
 
   public static function filterBadTags($html) {
     $badTags = 'span, center';
-    if (count($html->find($badTags))) {
-      foreach($html->find($badTags) as $index=>$element) {
-        $html->find($badTags, $index)->outertext = $element->innertext;
+    // Catch if $html does not have the find() member function
+    if($html) {
+      if (count($html->find($badTags))) {
+        foreach($html->find($badTags) as $index=>$element) {
+          $html->find($badTags, $index)->outertext = $element->innertext;
+        }
       }
     }
     return $html;

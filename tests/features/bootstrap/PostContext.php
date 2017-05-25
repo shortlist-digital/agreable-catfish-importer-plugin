@@ -8,17 +8,16 @@ use Behat\Behat\Context\BehatContext,
   Behat\Behat\Exception\PendingException;
 use Behat\Gherkin\Node\PyStringNode,
     Behat\Gherkin\Node\TableNode;
-use Behat\Behat\Event\SuiteEvent;
+use Behat\Behat\Event\FeatureEvent;
 use \PHPUnit_Framework_Assert as Assert;
 
 class PostContext extends BehatContext {
   private static $post;
 
   /**
-   * @BeforeSuite
+   * NOTE: The FeatureContext clears all posts with the automated_testing data
+   * from the database on BeforeFeature and AfterFeature events.
    */
-  public static function prepare(SuiteEvent $scope) {
-  }
 
   /**
    * @Given /^the post "([^"]*)"$/
@@ -32,7 +31,6 @@ class PostContext extends BehatContext {
    */
   public function iShouldHaveAnObjectOfThePost() {
     Assert::assertInstanceOf('TimberPost', self::$post);
-
   }
 
   /**
@@ -189,9 +187,17 @@ class PostContext extends BehatContext {
   }
 
   /**
-   * @AfterSuite
+   * @Given /^the post has (\d+) "([^"]*)" widgets$/
    */
-  public static function after(SuiteEvent $scope) {
-    wp_delete_post(self::$post->id);
+  public function thePostHasWidgets($count, $widget_type) {
+    $widgets = self::$post->get_field('widgets');
+    $image_count = 0;
+    foreach ($widgets as $key => $widget) {
+      if ($widget['acf_fc_layout'] == $widget_type) {
+        $image_count = $image_count + 1;
+      }
+    }
+    Assert::assertEquals($count, $image_count);
   }
+
 }

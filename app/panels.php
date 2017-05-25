@@ -1,11 +1,7 @@
 <?php namespace AgreableCatfishImporterPlugin;
-
 /** @var \Herbert\Framework\Panel $panel */
-
 $options_page_name = 'acf-options';
-
 if( function_exists('register_field_group') ):
-
 register_field_group(array (
   'key' => 'group_catfish_importer_plugin',
   'title' => 'Catfish Importer Credentials',
@@ -56,32 +52,21 @@ register_field_group(array (
   'instruction_placement' => 'label',
   'hide_on_screen' => '',
 ));
-
 endif;
-
-\add_action('plugins_loaded', function() use ($panel) {
-
-  $user = wp_get_current_user();
-  $user_roles = $user->roles;
-
-  if (in_array('catfish_editor', $user_roles) || in_array('administrator',$user_roles)) {
-    $panel->add([
-      'type'   => 'panel',
-      'as'     => 'mainPanel',
-      'title'  => 'Catfish Importer',
-      'rename' => 'Recent imports',
-      'slug'   => 'catfish-importer-index',
-      'icon'   => 'dashicons-download',
-      'uses'   => __NAMESPACE__ . '\Controllers\AdminController@index'
-    ]);
-
-    $panel->add([
-      'type'   => 'sub-panel',
-      'parent' => 'mainPanel',
-      'as'     => 'syncPanel',
-      'title'  => 'Sync',
-      'slug'   => 'sync',
-      'uses'   => __NAMESPACE__ . '\Controllers\AdminController@sync'
-    ]);
-  }
-});
+$panel->add([
+  'type'   => 'panel',
+  'as'     => 'mainPanel',
+  'title'  => 'Catfish Importer',
+  'rename' => 'Sync',
+  'slug'   => 'catfish-importer-index',
+  'icon'   => 'dashicons-download',
+  'uses'   => __NAMESPACE__ . '\Controllers\AdminController@sync'
+]);
+$panel->add([
+  'type'   => 'sub-panel',
+  'parent' => 'mainPanel',
+  'as'     => 'recentImportPanel',
+  'title'  => 'Recent Imports',
+  'slug'   => 'recentImport',
+  'uses'   => __NAMESPACE__ . '\Controllers\AdminController@index'
+]);

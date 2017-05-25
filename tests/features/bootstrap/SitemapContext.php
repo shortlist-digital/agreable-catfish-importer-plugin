@@ -6,7 +6,7 @@ use Behat\Behat\Context\BehatContext,
   Behat\Behat\Exception\PendingException;
 use Behat\Gherkin\Node\PyStringNode,
     Behat\Gherkin\Node\TableNode;
-use Behat\Behat\Event\SuiteEvent;
+use Behat\Behat\Event\FeatureEvent;
 use \PHPUnit_Framework_Assert as Assert;
 
 class SitemapContext extends BehatContext {
@@ -15,16 +15,10 @@ class SitemapContext extends BehatContext {
   private static $post;
 
   /**
-   * @BeforeSuite
-   */
-  public static function prepare(SuiteEvent $scope) {
-  }
-
-  /**
    * @Given /^the sitemap index "([^"]*)"$/
    */
   public function theSitemapIndex($sitemapIndex) {
-    self::$categorys = Sitemap::getCategoriesFromIndex($sitemapIndex);
+    self::$categorys = Sitemap::getUrlsFromSitemap($sitemapIndex);
   }
 
   /**
@@ -38,7 +32,7 @@ class SitemapContext extends BehatContext {
    * @Given /^the category sitemap "([^"]*)"$/
    */
   public function theCategorySitemap($categorySitemap) {
-    self::$categoryPosts = Sitemap::getPostsFromCategory($categorySitemap);
+    self::$categoryPosts = Sitemap::getUrlsFromSitemap($categorySitemap);
   }
 
   /**
@@ -46,11 +40,5 @@ class SitemapContext extends BehatContext {
    */
   public function iShouldHaveAListOfPosts() {
     Assert::assertGreaterThan(0, count(self::$categoryPosts));
-  }
-
-  /**
-   * @AfterSuite
-   */
-  public static function after(SuiteEvent $scope) {
   }
 }

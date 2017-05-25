@@ -25,6 +25,7 @@ class Widget {
    * Attach widgets to the $post via WP metadata
    */
   public static function setPostWidgets(TimberPost $post, array $widgets, stdClass $catfishPostObject) {
+
     $widgetNames = [];
     foreach ($widgets as $key => $widget) {
 
@@ -74,6 +75,18 @@ class Widget {
         case 'horizontal-rule':
           $widgetNames[] = $widget->acf_fc_layout;
           break;
+        case 'gallery':
+
+          // Create gallery widget...
+          self::setGalleryWidget($post, $catfishPostObject, $widgetNames, '/api/in-page-gallery-data', '?widgetId=' . $widget->html->attr['data-id']);
+          $widgetNames[] = $widget->acf_fc_layout;
+
+          break;
+        case 'promo':
+          // Throw exception if promo widget found
+          // To help decide if we need Promo widgets in the new pages CMS, throw an exception if a promo widget is found
+          throw new Exception("Importer found a promo widget. Someone call Elliot.", 30);
+          break;
       }
 
     }
@@ -88,8 +101,16 @@ class Widget {
     update_post_meta($post->id, '_widgets', 'post_widgets');
   }
 
-  protected static function setGalleryWidget($post, stdClass $postObject, $widgetNames) {
-    $galleryApi = str_replace($postObject->__fullUrlPath, '/api/gallery-data' . $postObject->__fullUrlPath, $postObject->absoluteUrl);
+  /**
+   * Gallery post type
+   *
+   */
+  protected static function setGalleryWidget($post, stdClass $postObject, $widgetNames, $galleryApiEndpoint = '/api/gallery-data', $widgetId = '') {
+    $galleryApi = str_replace($postObject->__fullUrlPath, $galleryApiEndpoint . $postObject->__fullUrlPath . $widgetId, $postObject->absoluteUrl);
+
+    // Escape the url path using this handy helper
+    $galleryApi = Sync::escapeAPIUrlPaths($galleryApi);
+
     if (!$galleryApiResponse = file_get_contents($galleryApi)) {
       throw new Exception('Unable to fetch gallery data from: ' . $galleryApi);
     }
@@ -104,22 +125,80 @@ class Widget {
 
     $imageIds = [];
     foreach($galleryData->images as $image) {
+
       $title = $image->title;
       if ($title == ".") {
-        $title = "";
+        $title = $post->title;
       }
       $imageUrl = array_pop($image->__mainImageUrls);
 
-      $meshImage = new \Mesh\Image($imageUrl);
-      $imagePost = get_post($meshImage->id);
-      $imagePost->post_title = $title;
-      $imagePost->post_excerpt = $image->description;
-      wp_update_post($imagePost);
+      // Sideload the image
+      $post_data = array(
+        // 'post_title' => $title,
+        'post_content' => $image->description,
+        'post_excerpt' => $image->description
+      );
 
-      $imageIds[] = $meshImage->id;
+      $post_attachement_id = self::simple_image_sideload($imageUrl.'.jpg', $post->ID, $title, $post_data);
+
+      $imageIds[] = $post_attachement_id;
     }
 
     self::setPostMetaProperty($post, 'widgets_' . count($widgetNames) . '_gallery_items', 'widget_gallery_galleryitems', serialize($imageIds));
+  }
+
+  /**
+   * Function to sideload image from Clock to Wordpress
+   *
+   * Adapted from Mark Wilkinson's function:
+   * https://markwilkinson.me/2015/07/using-the-media-handle-sideload-function/
+   */
+  public function simple_image_sideload($url, $post_id, $desc, $post_data) {
+
+    /**
+     * download the url into wordpress
+     * saved temporarly for now
+     */
+    $tmp = download_url( $url );
+    /**
+     * biild an array of file information about the url
+     * getting the files name using basename()
+     */
+    $file_array = array(
+        'name' => basename( $url ),
+        'tmp_name' => $tmp
+    );
+    /**
+     * Check for download errors
+     * if there are error unlink the temp file name
+     */
+    if ( is_wp_error( $tmp ) ) {
+        @unlink( $file_array[ 'tmp_name' ] );
+        return $tmp;
+    }
+    /**
+     * now we can use the sideload function
+     * we pass it the file array of the file to handle
+     * and the post id of the post to attach it too
+     * it returns the attachment id if the file
+     */
+    $id = media_handle_sideload( $file_array, $post_id, $desc, $post_data );
+    /**
+     * check for handle sideload errors
+     * if errors again unlink the file
+     */
+    if ( is_wp_error( $id ) ) {
+        @unlink( $file_array['tmp_name'] );
+        return $id;
+    }
+    /**
+     * get the url from the newly upload file
+     * $value now contians the file url in WordPress
+     * $id is the attachment id
+     */
+    $value = wp_get_attachment_url( $id );
+
+    return $id;
   }
 
   public static function getPostWidgets(TimberPost $post) {
@@ -166,6 +245,7 @@ class Widget {
 
     foreach($postDom->find('.article__content .widget__wrapper') as $widgetWrapper) {
 
+      // Handle most core widgets that have the .widget class
       if (isset($widgetWrapper->find('.widget')[0])) {
         $widget = $widgetWrapper->find('.widget')[0];
 
@@ -190,9 +270,20 @@ class Widget {
             $widgetData = Video::getFromWidgetDom($widget);
             break;
         }
+
+      // Catch <hr>
       } else if (isset($widgetWrapper->find('hr')[0])) {
         $widget = $widgetWrapper->find('hr')[0];
         $widgetData = HorizontalRule::getFromWidgetDom($widget);
+
+      // Catch .js-in-page-gallery
+      } else if (isset($widgetWrapper->find('.js-in-page-gallery')[0])) {
+
+        // TODO This could be moved to a separate class for consistancy
+        $widgetData = new stdClass();
+        $widgetData->type = 'gallery';
+        $widgetData->html = $widgetWrapper->find('.js-in-page-gallery')[0];
+
       }
 
       if (is_array($widgetData)) {

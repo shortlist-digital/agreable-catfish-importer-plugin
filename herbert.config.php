@@ -23,7 +23,6 @@ return [
     'tables' => [
     ],
 
-
     /**
      * Activate
      */
@@ -68,7 +67,7 @@ return [
     ],
 
     /**
-     * The APIs to auto-load.
+     * The API to auto-load.
      */
     'apis' => [
         'AgreableCatfishImporterPlugin' => __DIR__ . '/app/api.php'

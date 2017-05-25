@@ -5,6 +5,7 @@ use \stdClass;
 
 class InlineImage {
   public static function getFromWidgetDom($widgetDom) {
+
     $widgetData = new stdClass();
     $widgetData->type = 'image';
     $widgetData->image = new stdClass();
@@ -24,7 +25,7 @@ class InlineImage {
       $classes = $inlineImageElements[0]->class;
 
       if (strpos($classes, 'inline-image--full') !== false) {
-        $widgetData->image->width = 'full';
+        $widgetData->image->width = 'large';
       } else if (strpos($classes, 'inline-image--medium') !== false) {
         $widgetData->image->width = 'medium';
       } else {
