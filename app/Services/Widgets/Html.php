@@ -99,7 +99,7 @@ class Html {
 
     // Check if post contains widgets with the html type
     $htmlCheck = $widgetCollection->reduce(function ($carry, $widget) {
-      return ($widget->type == 'html');
+      return (isset($widget->type) && $widget->type == 'html');
     });
     if ($htmlCheck) {
       $widgets = array($widgetCollection->reduce(function ($carry, $item) {

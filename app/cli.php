@@ -2,7 +2,6 @@
 
 use AgreableCatfishImporterPlugin\Services\Post;
 use AgreableCatfishImporterPlugin\Services\Sync;
-use AgreableCatfishImporterPlugin\Services\Queue;
 
 /**
  * Generate a random key for the application.
@@ -20,12 +19,12 @@ use AgreableCatfishImporterPlugin\Services\Queue;
  *
  */
 function generateRandomKey() {
-  WP_CLI::line('Add the following link to your .env:');
-  WP_CLI::line('ILLUMINATE_ENCRYPTOR_KEY=' . substr(base64_encode(sha1(mt_rand())), 0, 32) );
+	\WP_CLI::line( 'Add the following link to your .env:' );
+	\WP_CLI::line( 'ILLUMINATE_ENCRYPTOR_KEY=' . substr( base64_encode( sha1( mt_rand() ) ), 0, 32 ) );
 }
 
-// Register command with WP_CLI
-WP_CLI::add_command('catfish generatekey', 'generateRandomKey');
+// Register command with \WP_CLI
+\WP_CLI::add_command( 'catfish generatekey', 'generateRandomKey' );
 
 /**
  * Throws an exception that should be tracked by BugSnag
@@ -43,24 +42,24 @@ WP_CLI::add_command('catfish generatekey', 'generateRandomKey');
  *
  */
 function testException() {
-  // Show my errors
-  ini_set('display_errors', 1);
-  ini_set('display_startup_errors', 1);
-  error_reporting(E_ERROR | E_WARNING | E_PARSE);
+	// Show my errors
+	ini_set( 'display_errors', 1 );
+	ini_set( 'display_startup_errors', 1 );
+	error_reporting( E_ERROR | E_WARNING | E_PARSE );
 
-  try {
-    // The Exception handler should log with Bugsnag
-    throw new Exception("Bugsnag Test Exception");
-  } catch (Exception $e) {
-    // Send handled error to BugSnag as well..
-    $bugsnag = Bugsnag\Client::make(getenv('BUGSNAG_API_KEY'));
-    $bugsnag->notifyException($e);
-    $bugsnag->notifyError('TestError', 'Something bad happened');
-  }
+	try {
+		// The Exception handler should log with Bugsnag
+		throw new Exception( "Bugsnag Test Exception" );
+	} catch ( Exception $e ) {
+		// Send handled error to BugSnag as well..
+		$bugsnag = Bugsnag\Client::make( getenv( 'BUGSNAG_API_KEY' ) );
+		$bugsnag->notifyException( $e );
+		$bugsnag->notifyError( 'TestError', 'Something bad happened' );
+	}
 }
 
-// Register command with WP_CLI
-WP_CLI::add_command('catfish testexception', 'testException');
+// Register command with \WP_CLI
+\WP_CLI::add_command( 'catfish testexception', 'testException' );
 
 /**
  * Add Items to Catfish Queue.
@@ -89,52 +88,55 @@ WP_CLI::add_command('catfish testexception', 'testException');
  *     wp catfish all
  *
  */
-function addToQueue(array $args) {
+function addToQueue( array $args ) {
 
-  // Catch incorrect useage of command which could lead to adding plain text to queue
-  if(in_array($args[0], array('work', 'clear', 'purge'))) {
-    WP_CLI::error('Commands aren\'t nested. You should use "wp catfish '.$args[0].'" instead of "wp catfish queue '.$args[0].'".');
-    return;
-  }
+	// Catch incorrect useage of command which could lead to adding plain text to queue
+	if ( in_array( $args[0], array( 'work', 'clear', 'purge' ) ) ) {
+		\WP_CLI::error( 'Commands aren\'t nested. You should use "wp catfish ' . $args[0] . '" instead of "wp catfish queue ' . $args[0] . '".' );
 
-  if(!isset($args[0])) {
-    WP_CLI::error("You must pass a post or sitemap url to the catfish queue command. eg. http://www.shortlist.com/entertainment/the-toughest-world-record-ever-has-been-broken");
-    return;
-  }
+		return;
+	}
 
-  if(isset($args[1]) && !in_array($args[1], array('update', 'delete-insert', 'skip'))) {
-    WP_CLI::error("The on Exist Action must be either 'update', 'delete-insert', 'skip'");
-    return;
-  }
+	if ( ! isset( $args[0] ) ) {
+		\WP_CLI::error( "You must pass a post or sitemap url to the catfish queue command. eg. http://www.shortlist.com/entertainment/the-toughest-world-record-ever-has-been-broken" );
 
-  // Set the onExistAction
-  if( isset($args[1]) && in_array($args[1], array('update', 'delete-insert', 'skip')) ) {
-    $onExistAction = $args[1];
-  } else {
-    $onExistAction = 'update';
-  }
+		return;
+	}
 
-  WP_CLI::line('onExistAction set to: '.$onExistAction);
+	if ( isset( $args[1] ) && ! in_array( $args[1], array( 'update', 'delete-insert', 'skip' ) ) ) {
+		\WP_CLI::error( "The on Exist Action must be either 'update', 'delete-insert', 'skip'" );
 
-  if($args[0] == 'all' || strstr($args[0], '.xml')) {
-    WP_CLI::line('Queueing category.');
+		return;
+	}
 
-    // Queue action is too long to run without being released back into the queue.
-    // Instead run all large queue adds on the command line
-    Sync::importCategory('', array('url' => $args[0], 'onExistAction' => $onExistAction), true);
+	// Set the onExistAction
+	if ( isset( $args[1] ) && in_array( $args[1], array( 'update', 'delete-insert', 'skip' ) ) ) {
+		$onExistAction = $args[1];
+	} else {
+		$onExistAction = 'update';
+	}
 
-    WP_CLI::success('Queued: ' . $args[0]);
-  } else {
-    WP_CLI::line('Queueing post.');
+	\WP_CLI::line( 'onExistAction set to: ' . $onExistAction );
 
-    Sync::queueUrl($args[0], $onExistAction);
+	if ( $args[0] == 'all' || strstr( $args[0], '.xml' ) ) {
+		\WP_CLI::line( 'Queueing category.' );
 
-    WP_CLI::success('Queued: ' . $args[0]);
-  }
+		// Queue action is too long to run without being released back into the queue.
+		// Instead run all large queue adds on the command line
+		Sync::importCategory( '', array( 'url' => $args[0], 'onExistAction' => $onExistAction ), true );
+
+		\WP_CLI::success( 'Queued: ' . $args[0] );
+	} else {
+		\WP_CLI::line( 'Queueing post.' );
+
+		Sync::queueUrl( $args[0], $onExistAction );
+
+		\WP_CLI::success( 'Queued: ' . $args[0] );
+	}
 }
 
-// Register command with WP_CLI
-WP_CLI::add_command('catfish queue', 'addToQueue');
+// Register command with \WP_CLI
+\WP_CLI::add_command( 'catfish queue', 'addToQueue' );
 
 /**
  * Action one item in the Catfish Queue.
@@ -151,29 +153,25 @@ WP_CLI::add_command('catfish queue', 'addToQueue');
  *     wp catfish work
  *
  */
-function actionSingleQueueItem(array $args) {
-  // Let the queue run FOREVER
-  set_time_limit(0);
-  ini_set('display_errors', 1);
-  ini_set('display_startup_errors', 1);
-  error_reporting(E_ERROR | E_WARNING | E_PARSE);
+function actionSingleQueueItem( array $args ) {
+	// Let the queue run FOREVER
+	set_time_limit( 0 );
+	ini_set( 'display_errors', 1 );
+	ini_set( 'display_startup_errors', 1 );
+	error_reporting( E_ERROR | E_WARNING | E_PARSE );
 
-  if(!getenv('ENVOYER_HEARTBEAT_URL_IMPORTER') || getenv('ENVOYER_HEARTBEAT_URL_IMPORTER') == '') {
-    throw new Exception("ENVOYER_HEARTBEAT_URL_IMPORTER is not set in your .env file");
-    return;
-  }
+	if ( ! getenv( 'ENVOYER_HEARTBEAT_URL_IMPORTER' ) || getenv( 'ENVOYER_HEARTBEAT_URL_IMPORTER' ) == '' ) {
+		throw new Exception( "ENVOYER_HEARTBEAT_URL_IMPORTER is not set in your .env file" );
 
-  WP_CLI::line('Working on queue...');
+		return;
+	}
 
-  try {
-    Sync::actionSingleQueueItem(true);
-  } catch (\Exception $e) {
-    WP_CLI::error(var_dump($e));
-  }
+	\WP_CLI::line( 'Working on queue...' );
+	Sync::actionSingleQueueItem();
 }
 
-// Register command with WP_CLI
-WP_CLI::add_command('catfish work', 'actionSingleQueueItem');
+// Register command with \WP_CLI
+\WP_CLI::add_command( 'catfish work', 'actionSingleQueueItem' );
 
 /**
  * Action to clear all items from the Catfish Queue.
@@ -190,26 +188,22 @@ WP_CLI::add_command('catfish work', 'actionSingleQueueItem');
  *     wp catfish purge
  *
  */
-function purgeQueue(array $args) {
+function purgeQueue( array $args ) {
 
-  // Let the queue run FOREVER
-  set_time_limit(0);
-  ini_set('display_errors', 1);
-  ini_set('display_startup_errors', 1);
-  error_reporting(E_ERROR | E_WARNING | E_PARSE);
+	// Let the queue run FOREVER
+	set_time_limit( 0 );
+	ini_set( 'display_errors', 1 );
+	ini_set( 'display_startup_errors', 1 );
+	error_reporting( E_ERROR | E_WARNING | E_PARSE );
 
-  WP_CLI::confirm( "Are you sure you want to DELETE ALL ITEMS from the queue?", $args );
+	\WP_CLI::confirm( "Are you sure you want to DELETE ALL ITEMS from the queue?", $args );
+	Sync::purgeQueue( true );
 
-  try {
-    Sync::purgeQueue(true);
-  } catch (\Exception $e) {
-    WP_CLI::error(var_dump($e));
-  }
 
 }
 
-// Register command with WP_CLI
-WP_CLI::add_command('catfish purge', 'purgeQueue');
+// Register command with \WP_CLI
+\WP_CLI::add_command( 'catfish purge', 'purgeQueue' );
 
 /**
  * Action to delete all automated_testing posts from
@@ -226,26 +220,23 @@ WP_CLI::add_command('catfish purge', 'purgeQueue');
  *     wp catfish clearautomatedtesting
  *
  */
-function deleteAllAutomatedTestingPosts(array $args) {
-  // Let the queue run FOREVER
-  set_time_limit(0);
-  ini_set('display_errors', 1);
-  ini_set('display_startup_errors', 1);
-  error_reporting(E_ERROR | E_WARNING | E_PARSE);
+function deleteAllAutomatedTestingPosts( array $args ) {
+	// Let the queue run FOREVER
+	set_time_limit( 0 );
+	ini_set( 'display_errors', 1 );
+	ini_set( 'display_startup_errors', 1 );
+	error_reporting( E_ERROR | E_WARNING | E_PARSE );
 
-  WP_CLI::confirm( "Are you sure you want to DELETE ALL POSTS marked as automated_testing?", $args );
+	\WP_CLI::confirm( "Are you sure you want to DELETE ALL POSTS marked as automated_testing?", $args );
 
-  WP_CLI::line('Clearing automated_testing post from the queue...');
-  try {
-    Post::deleteAllAutomatedTestingPosts(true);
-  } catch (Exception $e) {
-    WP_CLI::error(var_dump($e));
-  }
+	\WP_CLI::line( 'Clearing automated_testing post from the queue...' );
+
+	Post::deleteAllAutomatedTestingPosts( true );
 
 }
 
-// Register command with WP_CLI
-WP_CLI::add_command('catfish clearautomatedtesting', 'deleteAllAutomatedTestingPosts');
+// Register command with \WP_CLI
+\WP_CLI::add_command( 'catfish clearautomatedtesting', 'deleteAllAutomatedTestingPosts' );
 
 /**
  * Scan for updates in Clock CMS.
@@ -264,26 +255,21 @@ WP_CLI::add_command('catfish clearautomatedtesting', 'deleteAllAutomatedTestingP
  *     wp catfish scanupdates
  *
  */
-function callUpdatedPostScan(array $args) {
-  // Let the scan run FOREVER
-  set_time_limit(0);
-  ini_set('display_errors', 1);
-  ini_set('display_startup_errors', 1);
-  error_reporting(E_ERROR | E_WARNING | E_PARSE);
+function callUpdatedPostScan( array $args ) {
+	// Let the scan run FOREVER
+	set_time_limit( 0 );
+	ini_set( 'display_errors', 1 );
+	ini_set( 'display_startup_errors', 1 );
+	error_reporting( E_ERROR | E_WARNING | E_PARSE );
 
-  WP_CLI::line('Scanning for new updates in Clock...');
+	\WP_CLI::line( 'Scanning for new updates in Clock...' );
+	Sync::updatedPostScan( true );
+	\WP_CLI::success( 'Scan complete' );
 
-  try {
-    Sync::updatedPostScan(true);
-
-    WP_CLI::success('Scan complete');
-  } catch (Exception $e) {
-    WP_CLI::error($e->getMessage());
-  }
 }
 
-// Register command with WP_CLI
-WP_CLI::add_command('catfish scanupdates', 'callUpdatedPostScan');
+// Register command with \WP_CLI
+\WP_CLI::add_command( 'catfish scanupdates', 'callUpdatedPostScan' );
 
 /**
  * Find missing posts from Import
@@ -319,39 +305,39 @@ WP_CLI::add_command('catfish scanupdates', 'callUpdatedPostScan');
  *     wp catfish findmissing
  *
  */
-function findMissing(array $args, $assoc_args) {
-  // Let the scan run FOREVER
-  set_time_limit(0);
-  ini_set('display_errors', 1);
-  ini_set('display_startup_errors', 1);
-  error_reporting(E_ERROR | E_WARNING | E_PARSE);
+function findMissing( array $args, $assoc_args ) {
+	// Let the scan run FOREVER
+	set_time_limit( 0 );
+	ini_set( 'display_errors', 1 );
+	ini_set( 'display_startup_errors', 1 );
+	error_reporting( E_ERROR | E_WARNING | E_PARSE );
 
-  WP_CLI::line('Finding posts that exist in Clock but not in Pages...');
+	\WP_CLI::line( 'Finding posts that exist in Clock but not in Pages...' );
 
-  try {
+	try {
 
-    // Optionally queue missing posts so that they can be reimported
-    $queueMissing = false;
-    if($assoc_args['queuemissing'] && $assoc_args['queuemissing'] == 'true') {
-      $queueMissing = true;
-    }
+		// Optionally queue missing posts so that they can be reimported
+		$queueMissing = false;
+		if ( $assoc_args['queuemissing'] && $assoc_args['queuemissing'] == 'true' ) {
+			$queueMissing = true;
+		}
 
-    // Set handling if posts exist
-    $onExistAction = 'update';
-    if($assoc_args['onexistaction']) {
-      $onExistAction = $assoc_args['onexistaction'];
-    }
+		// Set handling if posts exist
+		$onExistAction = 'update';
+		if ( $assoc_args['onexistaction'] ) {
+			$onExistAction = $assoc_args['onexistaction'];
+		}
 
-    Sync::findMissing($queueMissing, $onExistAction);
+		Sync::findMissing( $queueMissing, $onExistAction );
 
-    WP_CLI::success('Scan complete');
-  } catch (Exception $e) {
-    WP_CLI::error($e->getMessage());
-  }
+		\WP_CLI::success( 'Scan complete' );
+	} catch ( Exception $e ) {
+		\WP_CLI::error( $e->getMessage() );
+	}
 }
 
-// Register command with WP_CLI
-WP_CLI::add_command('catfish findmissing', 'findMissing');
+// Register command with \WP_CLI
+\WP_CLI::add_command( 'catfish findmissing', 'findMissing' );
 
 /**
  * Find posts that are in Pages but not in Clock
@@ -368,24 +354,24 @@ WP_CLI::add_command('catfish findmissing', 'findMissing');
  *     wp catfish findadditional
  *
  */
-function findAdditional(array $args) {
-  // Let the scan run FOREVER
-  set_time_limit(0);
-  ini_set('display_errors', 1);
-  ini_set('display_startup_errors', 1);
-  error_reporting(E_ERROR | E_WARNING | E_PARSE);
+function findAdditional( array $args ) {
+	// Let the scan run FOREVER
+	set_time_limit( 0 );
+	ini_set( 'display_errors', 1 );
+	ini_set( 'display_startup_errors', 1 );
+	error_reporting( E_ERROR | E_WARNING | E_PARSE );
 
-  WP_CLI::line('Finding posts that exist in Pages but not in Clock...');
+	\WP_CLI::line( 'Finding posts that exist in Pages but not in Clock...' );
 
-  try {
+	try {
 
-    Sync::findAdditional();
+		Sync::findAdditional();
 
-    WP_CLI::success('Scan complete');
-  } catch (Exception $e) {
-    WP_CLI::error($e->getMessage());
-  }
+		\WP_CLI::success( 'Scan complete' );
+	} catch ( Exception $e ) {
+		\WP_CLI::error( $e->getMessage() );
+	}
 }
 
-// Register command with WP_CLI
-WP_CLI::add_command('catfish findadditional', 'findAdditional');
+// Register command with \WP_CLI
+\WP_CLI::add_command( 'catfish findadditional', 'findAdditional' );

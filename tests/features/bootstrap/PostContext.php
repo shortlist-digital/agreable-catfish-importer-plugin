@@ -1,7 +1,7 @@
 <?php
 include __DIR__ . '/bootstrap.php';
 
-use AgreableCatfishImporterPlugin\Services\Sitemap;
+use AgreableCatfishImporterPlugin\Services\SiteMap;
 use AgreableCatfishImporterPlugin\Services\Post;
 use AgreableCatfishImporterPlugin\Services\Widget;
 use Behat\Behat\Context\BehatContext,

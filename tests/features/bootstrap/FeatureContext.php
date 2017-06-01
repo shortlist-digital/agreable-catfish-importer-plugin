@@ -11,6 +11,7 @@ class FeatureContext extends BehatContext {
    * @BeforeFeature
    */
   public static function prepare(FeatureEvent $scope) {
+  	//TODO:: remove this frunction from Post
     Post::deleteAllAutomatedTestingPosts();
   }
 

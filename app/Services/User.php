@@ -1,11 +1,6 @@
 <?php
 namespace AgreableCatfishImporterPlugin\Services;
 
-use stdClass;
-use WP_Post;
-use TimberPost;
-use Sunra\PhpSimple\HtmlDomParser;
-
 class User {
 
   public static function checkUserByEmail($email) {

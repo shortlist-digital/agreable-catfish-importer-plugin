@@ -1,5 +1,5 @@
 <?php
-use AgreableCatfishImporterPlugin\Services\Sitemap;
+use AgreableCatfishImporterPlugin\Services\SiteMap;
 use AgreableCatfishImporterPlugin\Services\Post;
 use AgreableCatfishImporterPlugin\Services\Widget;
 use Behat\Behat\Context\BehatContext,
@@ -18,7 +18,7 @@ class SitemapContext extends BehatContext {
    * @Given /^the sitemap index "([^"]*)"$/
    */
   public function theSitemapIndex($sitemapIndex) {
-    self::$categorys = Sitemap::getUrlsFromSitemap($sitemapIndex);
+    self::$categorys = SiteMap::getUrlsFromSitemap($sitemapIndex);
   }
 
   /**
@@ -32,7 +32,7 @@ class SitemapContext extends BehatContext {
    * @Given /^the category sitemap "([^"]*)"$/
    */
   public function theCategorySitemap($categorySitemap) {
-    self::$categoryPosts = Sitemap::getUrlsFromSitemap($categorySitemap);
+    self::$categoryPosts = SiteMap::getUrlsFromSitemap($categorySitemap);
   }
 
   /**
