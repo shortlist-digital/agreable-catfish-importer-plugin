@@ -11,6 +11,7 @@
     "sunra/php-simple-html-dom-parser" : "~1.5",
     "maknz/slack": "^1.7",
     "sabre/xml": "^1.4",
+    "sabre/uri": "^1.9",
     "jarednova/mesh": "0.4",
     "shortlist-digital/agreable-base-theme": "~2.1",
     "aws/aws-sdk-php": "2.8.31",
