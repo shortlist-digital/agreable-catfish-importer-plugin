@@ -40,7 +40,7 @@ class Post {
 			throw new \Exception( '"Article" property does not exist in JSON, might be a full page embed or microsite' );
 		}
 
-		// XXX: Create master post array to save into Wordpress
+		// XXX: Create master post array to save into WordpressRedirects
 
 		if ( $cli ) {
 			Output::cliStatic( $log_identifier . 'Beginning the post import' );
@@ -82,11 +82,8 @@ class Post {
 				case 'delete-insert':
 
 					// Delete existing post and add a new one below
-					try {
-						wp_delete_post( $existingPost[0]->ID, true ); // Second parameter is force delete, skips trash, do not pass go, do not collect £200.
-					} catch ( \Exception $e ) {
-						throw new \Exception( "Error deleting original post." );
-					}
+
+					wp_delete_post( $existingPost[0]->ID, true ); // Second parameter is force delete, skips trash, do not pass go, do not collect £200.
 
 					break;
 				case 'skip':
@@ -94,7 +91,7 @@ class Post {
 
 					// Default, skip any post that already exists
 					// return the existing post object as is
-					return $existingPost[0];
+					return new \TimberPost( $existingPost[0]->ID );
 
 					break;
 			}
@@ -115,7 +112,7 @@ class Post {
 		// If no sell exists on this post then create it from the headline
 		$sell = empty( $postObject->sell ) ? $postObject->headline : $postObject->sell;
 
-		// Create the base array for the new Wordpress post or merge with existing post if updating
+		// Create the base array for the new WordpressRedirects post or merge with existing post if updating
 		$postArrayForWordpress = array_merge( array(
 			'post_name'         => $postObject->slug,
 			'post_title'        => $postObject->headline,
@@ -124,7 +121,7 @@ class Post {
 			'post_modified'     => $displayDate,
 			'post_modified_gmt' => $displayDate,
 			'post_status'       => 'publish' // Publish the post on import
-		), $postArrayForWordpress ); // Clock data from api take presidence over local data from Wordpress
+		), $postArrayForWordpress ); // Clock data from api take presidence over local data from WordpressRedirects
 
 		// Create or select Author ID
 		if ( isset( $object->article->__author ) &&
@@ -166,7 +163,7 @@ class Post {
 		);
 
 		// Log the created time if this is the first time this post was imported
-		if ( $existingPost == false || $existingPost && $onExistAction == 'delete-insert' ) {
+		if ( $existingPost == false || ( $existingPost && $onExistAction == 'delete-insert' ) ) {
 			$postMetaArrayForWordpress['catfish_importer_date_created'] = $currentDate;
 		}
 
@@ -183,25 +180,16 @@ class Post {
 			}
 		}
 
-		// // Save the post meta as a hook to save_post to prevent validation errors
-		// add_action('save_post', function($post_id, $post, $update) use ($postMetaArrayForWordpress, $log_identifier) {
-		//
-
-		//
-		//   // Save the post meta data (Any field that's not post_)
-		//   self::setPostMetadata($post_id, $postMetaArrayForWordpress));
-		//
-		// }, 5, 3); // Set high priority to be called before Instant Articles plugin
-
 		// Insert or update the post
 		if ( $existingPost && $onExistAction == 'update' ) {
 			// Update the post and save post and return ID of post for updating
 			// categories, tags and Widgets
-			$wpPostId = wp_update_post( $postArrayForWordpress );
+			$wpPostId = WPErrorToException::loud( wp_update_post( $postArrayForWordpress ) );
+
 		} else {
 			// Save post and return ID of newly created post for updating categories,
 			// tags and Widgets
-			$wpPostId = wp_insert_post( $postArrayForWordpress );
+			$wpPostId = WPErrorToException::loud( wp_insert_post( $postArrayForWordpress ) );
 		}
 
 
@@ -234,10 +222,7 @@ class Post {
 		wp_set_post_tags( $wpPostId, $postTags );
 
 		// Catch failure to create TimberPost object
-		if ( ! $post = new \TimberPost( $wpPostId ) ) {
-			throw new \Exception( 'Unexpected exception where we did not create/fetch a post' );
-		}
-
+		$post = new \TimberPost( $wpPostId );
 
 		Output::cliStatic( $log_identifier . 'Create post widgets.' );
 
@@ -402,7 +387,7 @@ class Post {
 	/**
 	 * Delete all post with the automated_testing metadata
 	 */
-	public static function deleteAllAutomatedTestingPosts(  ) {
+	public static function deleteAllAutomatedTestingPosts() {
 		$query = new \WP_Query( [
 			'post_type'      => 'post',
 			'meta_key'       => 'automated_testing',

@@ -9,7 +9,7 @@ namespace AgreableCatfishImporterPlugin\Services\Context;
 
 /**
  * Class Output
- * @package AgreableCatfishImporterPlugin\Services\Context
+ * @package AgreableCatfishImporterPlugin\Driver\Context
  * @method static int cliStatic( $message )
  * @method static int cliErrorStatic( $message )
  * @method static int cliSuccessStatic( $message )

@@ -71,8 +71,7 @@ class Queue {
 			Output::cliStatic( 'The queue is empty, sleeping.' );
 			//TODO:: Is that required?
 			sleep( 10 );
-
-			return;
+			return null;
 		}
 
 		$message = $response['Messages'][0];
@@ -89,7 +88,6 @@ class Queue {
 		// Parameters:
 		// $data  the full json object from the queue including the function name and payload
 		// $payload  the spefic payload data for this action
-		// $cli  should WP_CLI console output be shown
 		$response = Sync::$function( $data, $payload );
 
 		// Pass on the slug to show in log file
@@ -107,11 +105,10 @@ class Queue {
 			'ReceiptHandle' => $message['ReceiptHandle']
 		) );
 
-
 		Output::cliStatic( $log_identifier . 'Success: Task deleted from queue' );
 
 		//TODO::what is job in here
-		return [ 'job' => $job, 'failed' => false ];
+		return ['failed' => false ];
 
 
 	}

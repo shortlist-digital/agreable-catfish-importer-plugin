@@ -20,7 +20,7 @@ Feature: Sync
     Then I should have a valid queue ID
 
   Scenario: Action a single post import
-    Given I pull an item from the queue and run it
+    And I pull an item from the queue and run it
     Then I should have imported the "the-chicken-connoisseur-is-in-new-york-rating-jay-z-old-chicken-spot-asap-bari-vlone" post
     And I delete all automated_testing posts
 

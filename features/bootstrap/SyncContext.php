@@ -16,7 +16,7 @@ use Behat\Gherkin\Node\PyStringNode,
 use \PHPUnit_Framework_Assert as Assert;
 
 // Ignore Notices
-// Runtime Notice: Declaration of AgreableCatfishImporterPlugin\Services\Worker::process() should be compatible with Illuminate\Queue\Worker::process($connection, Illuminate\Contracts\Queue\Job $job, $maxTries = 0, $delay = 0) in app/Services/Worker.php line 10
+// Runtime Notice: Declaration of AgreableCatfishImporterPlugin\Driver\Worker::process() should be compatible with Illuminate\Queue\Worker::process($connection, Illuminate\Contracts\Queue\Job $job, $maxTries = 0, $delay = 0) in app/Driver/Worker.php line 10
 define('BEHAT_ERROR_REPORTING', E_ERROR | E_WARNING | E_PARSE);
 
 class SyncContext extends BehatContext {

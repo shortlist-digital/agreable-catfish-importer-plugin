@@ -19,7 +19,7 @@ Feature: Post
 <p>This is a <a href="http://google.com/" target="_blank">link</a>.</p>
 
       """
-    And the "image" "width" is "full" at index 0
+    And the "image" "width" is "large" at index 0
     And the "image" "position" is "center" at index 0
     And the "image" "caption" at index 0 is:
       """
@@ -68,8 +68,8 @@ Feature: Post
       """
 
 
-    Scenario: Article has correct number of widgets
-      Given the post "http://www.shortlist.com/style/fashion/best-trainers-sneakers-hottest-february-2017"
-      Then I should have an object of the post
-      And the post has the headline "The 10 Hottest Trainers for February 2017"
-      And the post has 10 "image" widgets
+  Scenario: Article has correct number of widgets
+    Given the post "http://www.shortlist.com/style/fashion/best-trainers-sneakers-hottest-february-2017"
+    Then I should have an object of the post
+    And the post has the headline "The 10 Hottest Trainers for February 2017"
+    And the post has 10 "image" widgets
