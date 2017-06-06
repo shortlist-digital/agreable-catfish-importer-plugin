@@ -61,6 +61,7 @@ class Widget {
 					self::setPostMetaProperty( $post, $metaLabel . '_width', 'widget_image_width', $widget->image->width );
 					self::setPostMetaProperty( $post, $metaLabel . '_position', 'widget_image_position', $widget->image->position );
 					self::setPostMetaProperty( $post, $metaLabel . '_crop', 'widget_image_crop', 'original' );
+					self::setPostMetaProperty( $post, $metaLabel . '_link', 'widget_image_link', $widget->url );
 
 					if ( isset( $widget->image->caption ) ) {
 						self::setPostMetaProperty( $post, $metaLabel . '_caption', 'widget_image_caption', $widget->image->caption );
@@ -246,7 +247,7 @@ class Widget {
 	public static function getWidgetsFromDom( $postDom ) {
 
 		if ( ! $postDom ) {
-			throw new \Exception( 'Could not retrieve widgets from ' . $postUrl );
+			throw new \Exception( 'Could not retrieve widgets from ' . $postDom );
 		}
 
 		$widgets = array();
@@ -272,6 +273,9 @@ class Widget {
 						$widgetData = Html::getFromWidgetDom( $widget );
 						break;
 					case 'inline-image':
+						$widgetData = InlineImage::getFromWidgetDom( $widget );
+						break;
+					case 'image-promo':
 						$widgetData = InlineImage::getFromWidgetDom( $widget );
 						break;
 					case 'video':

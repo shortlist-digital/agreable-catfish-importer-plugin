@@ -10,6 +10,7 @@ class InlineImage {
 		$widgetData                   = new stdClass();
 		$widgetData->type             = 'image';
 		$widgetData->image            = new stdClass();
+		$widgetData->url              = '';
 		$image                        = $widgetDom->find( 'img' );
 		$widgetData->image->src       = $image[0]->src;
 		$widgetData->image->filename  = substr( $widgetData->image->src, strrpos( $widgetData->image->src, '/' ) + 1 );
@@ -19,6 +20,8 @@ class InlineImage {
 		$imageCaptionElements = $widgetDom->find( '.inline-image__caption' );
 		if ( count( $imageCaptionElements ) > 0 ) {
 			$widgetData->image->caption = $imageCaptionElements[0]->innertext;
+		} else {
+			$widgetData->image->caption = '';
 		}
 
 		$inlineImageElements = $widgetDom->find( '.inline-image' );
@@ -41,6 +44,14 @@ class InlineImage {
 			} else {
 				$widgetData->image->position = 'right';
 			}
+		} else {
+			$a =  $widgetDom->find( 'a' );
+			if(count($a)>0){
+				$widgetData->url             = $a[0]->attr['href'];
+			}
+
+			$widgetData->image->width    = 'medium';
+			$widgetData->image->position = 'center';
 		}
 
 		return $widgetData;

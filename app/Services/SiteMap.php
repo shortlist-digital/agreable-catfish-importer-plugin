@@ -21,13 +21,10 @@ class SiteMap {
 	 */
 	public static function getUrlsFromSitemap( $siteMapLocation, $since = false ) {
 		// Catch if sub sitemap doesn't exist - Clock strangeness
-		$siteMapHeaders = get_headers( $siteMapLocation, 1 );
-		if ( strstr( $siteMapHeaders[0], '200' ) == false ) {
-			return [];
-		}
 
 		$sitemap = HtmlDomParser::file_get_html( $siteMapLocation );
-		$urls    = [];
+
+		$urls = [];
 		// Only process if object is returned
 		if ( is_object( $sitemap ) ) {
 
@@ -82,6 +79,6 @@ class SiteMap {
 			return $urls;
 		}
 
-		return null;
+		return [];
 	}
 }

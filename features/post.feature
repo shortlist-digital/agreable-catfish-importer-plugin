@@ -9,7 +9,7 @@ Feature: Post
     And the post has the property "short_headline" of "All widgets test (short headline)"
     And the post has the property "sell" of "This is the sell"
     And the category slug "test-tech"
-    And the widgets "paragraph,image,image,image,horizontal-rule,embed,embed,embed,embed,embed"
+    And the widgets "paragraph,image,image,image,horizontal-rule,embed,embed,embed,embed,embed,image"
     And the paragraph widget at index 0:
       """
 <p>This is my HTML widget.&nbsp;</p>

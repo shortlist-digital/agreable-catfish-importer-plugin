@@ -35,7 +35,8 @@ add_action( 'wp_ajax_catfishimporter_start_sync-url', function () {
  */
 add_action( 'wp_ajax_catfishimporter_list_categories', function () {
 	Debug::enable();
-	$response = Sync::getCategories();
+
+	$response = array_merge( [ 'all' ], Sync::getCategories() );
 	catfishimporter_api_response( $response );
 } );
 

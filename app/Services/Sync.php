@@ -2,10 +2,37 @@
 
 namespace AgreableCatfishImporterPlugin\Services;
 
+use AgreableCatfishImporterPlugin\Services\Context\Exception;
 use AgreableCatfishImporterPlugin\Services\Context\Output;
 
 class Sync {
 
+	public static function checkEnvironmentalVariables() {
+		/**
+		 * Run once
+		 */
+		static $run = false;
+		if ( $run ) {
+			return true;
+		}
+
+		$run  = true;
+		$vars = [
+			'ENVOYER_HEARTBEAT_URL_IMPORTER',
+			'ENVOYER_HEARTBEAT_URL_UPDATED_POSTS_SCANNER',
+			'ENVOYER_HEARTBEAT_URL_SCHEDULED_POSTS_CACHE', //TODO: do we need those < ^
+			'CATFISH_IMPORTER_TARGET_URL',
+			'AWS_SQS_SECRET',
+			'AWS_SQS_KEY',
+			'AWS_SQS_CATFISH_IMPORTER_REGION',
+			'AWS_SQS_CATFISH_IMPORTER_QUEUE',
+		];
+		foreach ( $vars as $index => $var ) {
+			if ( ! getenv( $var ) || getenv( $var ) === '' ) {
+				throw new Exception( $var . ' is undefined' );
+			}
+		}
+	}
 	/**
 	 * Queue Functions (Called from admin)
 	 */
@@ -190,17 +217,8 @@ class Sync {
 	/**
 	 * Return a list of categories to import in admin
 	 */
-	public static function getCategories( $forFrontEnd = true ) {
-		$site_url = getenv( 'CATFISH_IMPORTER_TARGET_URL' );
-		if ( $forFrontEnd ) {
-			// If this is called for the admin user interface
-			$categories = array_merge( array( 'all' ), SiteMap::getUrlsFromSitemap( $site_url . 'sitemap-index.xml' ) );
-		} else {
-			$categories = SiteMap::getUrlsFromSitemap( $site_url . 'sitemap-index.xml' );
-		}
-
-		// Add and option for all categories
-		return $categories;
+	public static function getCategories(  ) {
+		return  SiteMap::getUrlsFromSitemap( getenv( 'CATFISH_IMPORTER_TARGET_URL' ) . 'sitemap-index.xml' );
 	}
 
 	/**
@@ -341,12 +359,11 @@ class Sync {
 
 		return $return;
 
-
 	}
 
 	public static function getLastUpdatedRunDate() {
 		$since = get_option( 'catfish_updates_scan_last_run' );
-
+		//TODO: doesn't make sense. If never updated return current date?
 		if ( ! $since ) {
 			self::updateLastUpdatedRunDate( time() );
 			$since = get_option( 'catfish_updates_scan_last_run' );
@@ -538,5 +555,9 @@ class Sync {
 		foreach ( $additionalPosts as $url ) {
 			Output::cliStatic( $url );
 		}
+	}
+
+	public static function queueCategory( $siteMapAction, $onExist = 'skip' ) {
+
 	}
 }
