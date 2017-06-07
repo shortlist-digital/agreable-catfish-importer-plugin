@@ -1,9 +1,5 @@
 <?php
-/**
- * User: maciej
- * Date: 05/06/2017
- * Time: 11:32
- */
+
 
 namespace AgreableCatfishImporterPlugin\Services;
 

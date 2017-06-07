@@ -38,7 +38,6 @@ class Embed {
 				$widgetData->embed = $url;
 
 				return $widgetData;
-				break;
 			}
 		}
 

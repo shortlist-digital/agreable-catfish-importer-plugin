@@ -1,9 +1,4 @@
 <?php
-/**
- * User: maciej
- * Date: 01/06/2017
- * Time: 10:51
- */
 
 namespace AgreableCatfishImporterPlugin\Services\Context;
 
