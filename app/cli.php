@@ -76,7 +76,7 @@ define( 'MAX_FILE_SIZE', 600000001 );
  * : One or more post url to add to the import queue.
  *
  * [<on-exist-action>...]
- * : Optional action if the post exists in WordpressRedirects
+ * : Optional action if the post exists in Wordpress
  *
  * ## EXAMPLES
  *
@@ -276,7 +276,7 @@ define( 'MAX_FILE_SIZE', 600000001 );
  *
  * ## DESCRIPTION
  *
- * Checks sitemap and the WordpressRedirects database and finds posts that are missing
+ * Checks sitemap and the Wordpress database and finds posts that are missing
  * from the import to re import
  *
  * ## OPTIONS
@@ -326,7 +326,7 @@ define( 'MAX_FILE_SIZE', 600000001 );
  *
  * ## DESCRIPTION
  *
- * Checks sitemap and the WordpressRedirects database and finds posts which exists in
+ * Checks sitemap and the Wordpress database and finds posts which exists in
  * Pages but aren't in the Clock sitemaps
  *
  * ## OPTIONS

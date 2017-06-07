@@ -30,7 +30,7 @@ class Post {
 		$object      = json_decode( $postString );
 
 
-		// XXX: Create master post array to save into WordpressRedirects
+		// XXX: Create master post array to save into Wordpress
 
 		Output::cliStatic( $log_identifier . 'Beginning the post import' );
 
@@ -101,7 +101,7 @@ class Post {
 		// If no sell exists on this post then create it from the headline
 		$sell = empty( $postObject->sell ) ? $postObject->headline : $postObject->sell;
 
-		// Create the base array for the new WordpressRedirects post or merge with existing post if updating
+		// Create the base array for the new Wordpress post or merge with existing post if updating
 		$postArrayForWordpress = array_merge( array(
 			'post_name'         => $postObject->slug,
 			'post_title'        => $postObject->headline,
@@ -110,7 +110,7 @@ class Post {
 			'post_modified'     => $displayDate,
 			'post_modified_gmt' => $displayDate,
 			'post_status'       => 'publish' // Publish the post on import
-		), $postArrayForWordpress ); // Clock data from api take presidence over local data from WordpressRedirects
+		), $postArrayForWordpress ); // Clock data from api take presidence over local data from Wordpress
 
 		// Create or select Author ID
 		if ( isset( $object->article->__author ) &&

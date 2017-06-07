@@ -151,7 +151,7 @@ class Widget {
 	}
 
 	/**
-	 * Function to sideload image from Clock to WordpressRedirects
+	 * Function to sideload image from Clock to Wordpress
 	 *
 	 * Adapted from Mark Wilkinson's function:
 	 * https://markwilkinson.me/2015/07/using-the-media-handle-sideload-function/
