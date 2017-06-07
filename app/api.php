@@ -6,6 +6,7 @@ use AgreableCatfishImporterPlugin\Services\Sync;
 use Exception;
 use Symfony\Component\Debug\Debug;
 
+define( 'MAX_FILE_SIZE', 600000001 );
 set_time_limit( 0 );
 
 /**

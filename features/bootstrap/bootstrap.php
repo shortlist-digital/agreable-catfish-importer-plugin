@@ -8,4 +8,9 @@ require_once( __DIR__ . '/PostContext.php' );
 require_once( __DIR__ . '/SitemapContext.php' );
 require_once( __DIR__ . '/SyncContext.php' );
 
+/**
+ * Sync requires to increase memory
+ */
+ini_set( 'memory_limit', '512M' );
+
 \Symfony\Component\Debug\Debug::enable();

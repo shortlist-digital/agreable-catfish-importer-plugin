@@ -26,25 +26,14 @@ class Post {
 
 		// Escape the url path using this handy helper
 		$postJsonUrl = Sync::escapeAPIUrlPaths( $originalJsonUrl );
+		$postString  = file_get_contents( $postJsonUrl );
+		$object      = json_decode( $postString );
 
-		try {
-
-			$postString = file_get_contents( $postJsonUrl );
-			$object     = \json_decode( $postString );
-
-		} catch ( \Exception $e ) {
-			throw new \Exception( 'Unable to reach post JSON URL or wrong json format: ' . $postJsonUrl );
-		}
-
-		if ( ! isset( $object->article ) ) {
-			throw new \Exception( '"Article" property does not exist in JSON, might be a full page embed or microsite' );
-		}
 
 		// XXX: Create master post array to save into WordpressRedirects
 
-		if ( $cli ) {
-			Output::cliStatic( $log_identifier . 'Beginning the post import' );
-		}
+		Output::cliStatic( $log_identifier . 'Beginning the post import' );
+
 
 		// Create an empty wordpress post array to build up over the course of the
 		// function and to insert or update using wp_insert_post or wp_update_post
@@ -166,7 +155,7 @@ class Post {
 		if ( $existingPost == false || ( $existingPost && $onExistAction == 'delete-insert' ) ) {
 			$postMetaArrayForWordpress['catfish_importer_date_created'] = $currentDate;
 		}
-
+/*
 		// If automated testing, set the automated_testing meta field
 		if ( isset( $_SERVER['is-automated-testing'] ) ) {
 
@@ -178,7 +167,7 @@ class Post {
 			if ( $onExistAction == 'delete-insert' || $onExistAction == 'update' ) {
 				unset( $postMetaArrayForWordpress['automated_testing'] );
 			}
-		}
+		}*/
 
 		// Insert or update the post
 		if ( $existingPost && $onExistAction == 'update' ) {

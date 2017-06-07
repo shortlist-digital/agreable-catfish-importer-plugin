@@ -19,7 +19,7 @@ class PostContext extends BehatContext {
 	 * @Given /^the post "([^"]*)"$/
 	 */
 	public function thePost( $url ) {
-		self::$post = Post::getPostFromUrl( $url ,'update');
+		self::$post = Post::getPostFromUrl( $url, 'update' );
 	}
 
 	/**
@@ -197,6 +197,10 @@ class PostContext extends BehatContext {
 			}
 		}
 		Assert::assertEquals( $count, $image_count );
+	}
+
+	public static function clearVariables() {
+		self::$post = null;
 	}
 
 }

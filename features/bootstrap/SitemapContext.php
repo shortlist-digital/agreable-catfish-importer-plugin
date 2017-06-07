@@ -1,44 +1,43 @@
 <?php
 use AgreableCatfishImporterPlugin\Services\SiteMap;
-use AgreableCatfishImporterPlugin\Services\Post;
-use AgreableCatfishImporterPlugin\Services\Widget;
-use Behat\Behat\Context\BehatContext,
-  Behat\Behat\Exception\PendingException;
-use Behat\Gherkin\Node\PyStringNode,
-    Behat\Gherkin\Node\TableNode;
-use Behat\Behat\Event\FeatureEvent;
-use \PHPUnit_Framework_Assert as Assert;
+use Behat\Behat\Context\BehatContext;
+use PHPUnit_Framework_Assert as Assert;
 
 class SitemapContext extends BehatContext {
-  private static $categorys;
-  private static $categoryPosts;
-  private static $post;
+	private static $categorys;
+	private static $categoryPosts;
 
-  /**
-   * @Given /^the sitemap index "([^"]*)"$/
-   */
-  public function theSitemapIndex($sitemapIndex) {
-    self::$categorys = SiteMap::getUrlsFromSitemap($sitemapIndex);
-  }
 
-  /**
-   * @Then /^I should have a list of categories$/
-   */
-  public function iShouldHaveAListOfCategories() {
-    Assert::assertGreaterThan(0, count(self::$categorys));
-  }
+	/**
+	 * @Given /^the sitemap index "([^"]*)"$/
+	 */
+	public function theSitemapIndex( $sitemapIndex ) {
+		self::$categorys = SiteMap::getUrlsFromSitemap( $sitemapIndex );
+	}
 
-  /**
-   * @Given /^the category sitemap "([^"]*)"$/
-   */
-  public function theCategorySitemap($categorySitemap) {
-    self::$categoryPosts = SiteMap::getUrlsFromSitemap($categorySitemap);
-  }
+	/**
+	 * @Then /^I should have a list of categories$/
+	 */
+	public function iShouldHaveAListOfCategories() {
+		Assert::assertGreaterThan( 0, count( self::$categorys ) );
+	}
 
-  /**
-   * @Then /^I should have a list of posts$/
-   */
-  public function iShouldHaveAListOfPosts() {
-    Assert::assertGreaterThan(0, count(self::$categoryPosts));
-  }
+	/**
+	 * @Given /^the category sitemap "([^"]*)"$/
+	 */
+	public function theCategorySitemap( $categorySitemap ) {
+		self::$categoryPosts = SiteMap::getUrlsFromSitemap( $categorySitemap );
+	}
+
+	/**
+	 * @Then /^I should have a list of posts$/
+	 */
+	public function iShouldHaveAListOfPosts() {
+		Assert::assertGreaterThan( 0, count( self::$categoryPosts ) );
+	}
+
+	public static function clearVariables() {
+		self::$categorys     = null;
+		self::$categoryPosts = null;
+	}
 }

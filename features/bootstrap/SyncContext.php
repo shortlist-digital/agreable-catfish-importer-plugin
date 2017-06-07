@@ -17,6 +17,9 @@ class SyncContext extends BehatContext {
 	protected static $escapedUrlPath;
 	protected static $queueID;
 	protected static $queueItem;
+	/**
+	 * @var TimberPost
+	 */
 	protected static $queueActionResponse;
 	protected static $categorySitemap;
 	// Last Updated Post Import Date
@@ -160,12 +163,13 @@ class SyncContext extends BehatContext {
 			throw new Exception( "You must specify either created or updated time to check.", 30 );
 		}
 
-		$postTime = self::$queueActionResponse->custom["catfish_importer_date_$timeType"];
+		$postTime = self::$queueActionResponse->{"catfish_importer_date_$timeType"};
 		// Seconds since modified
-		$timeDifference = time() - $postTime;
+		$timeDifference = time() - strtotime( $postTime );
 
 		// Assert modified in the last 10 seconds
 		Assert::assertLessThan( $seconds, $timeDifference );
+		Assert::assertGreaterThan( 0, $timeDifference );
 	}
 
 	/**
@@ -227,8 +231,17 @@ class SyncContext extends BehatContext {
 	 * @Then /^I should have updated the cron last run time$/
 	 */
 	public function iShouldHaveUpdatedTheCronLastRunTime() {
-		$last_run = strtotime( Sync::getLastUpdatedRunDate() );
+		$last_run = ( Sync::getLastUpdatedRunDate() );
 		Assert::assertTrue( is_integer( $last_run ) );
 	}
 
+	public static function clearVariables() {
+		self::$escapedUrlPath      = null;
+		self::$queueID             = null;
+		self::$queueItem           = null;
+		self::$queueActionResponse = null;
+		self::$categorySitemap     = null;
+		self::$lastUpdatedRunDate  = null;
+		self::$statusData          = null;
+	}
 }

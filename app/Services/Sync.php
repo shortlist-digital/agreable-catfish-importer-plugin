@@ -4,6 +4,7 @@ namespace AgreableCatfishImporterPlugin\Services;
 
 use AgreableCatfishImporterPlugin\Services\Context\Exception;
 use AgreableCatfishImporterPlugin\Services\Context\Output;
+use Symfony\Component\Debug\Debug;
 
 class Sync {
 
@@ -190,7 +191,7 @@ class Sync {
 
 		Output::cliStatic( $log_identifier . 'Starting to import url' );
 
-
+		Debug::enable();
 		$post = Post::getPostFromUrl( $url, $onExistAction, true, $log_identifier );
 
 
@@ -217,8 +218,9 @@ class Sync {
 	/**
 	 * Return a list of categories to import in admin
 	 */
-	public static function getCategories(  ) {
-		return  SiteMap::getUrlsFromSitemap( getenv( 'CATFISH_IMPORTER_TARGET_URL' ) . 'sitemap-index.xml' );
+	public static function getCategories( $forFrontEnd = true ) {
+
+		return SiteMap::getUrlsFromSitemap( getenv( 'CATFISH_IMPORTER_TARGET_URL' ) . 'sitemap-index.xml' );
 	}
 
 	/**
@@ -363,7 +365,7 @@ class Sync {
 
 	public static function getLastUpdatedRunDate() {
 		$since = get_option( 'catfish_updates_scan_last_run' );
-		//TODO: doesn't make sense. If never updated return current date?
+
 		if ( ! $since ) {
 			self::updateLastUpdatedRunDate( time() );
 			$since = get_option( 'catfish_updates_scan_last_run' );
@@ -558,6 +560,11 @@ class Sync {
 	}
 
 	public static function queueCategory( $siteMapAction, $onExist = 'skip' ) {
+		$response = Queue::push( array(
+			'job'  => 'importCategory',
+			'data' => array( 'url' => $siteMapAction, 'onExistAction' => $onExist )
+		) );
 
+		return $response->get( 'MessageId' );
 	}
 }

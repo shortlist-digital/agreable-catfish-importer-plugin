@@ -3,6 +3,8 @@
 use AgreableCatfishImporterPlugin\Services\Post;
 use AgreableCatfishImporterPlugin\Services\Sync;
 
+define( 'MAX_FILE_SIZE', 600000001 );
+
 /**
  * Generate a random key for the application.
  *
@@ -18,13 +20,13 @@ use AgreableCatfishImporterPlugin\Services\Sync;
  *     wp catfish generatekey
  *
  */
-function generateRandomKey() {
-	\WP_CLI::line( 'Add the following link to your .env:' );
-	\WP_CLI::line( 'ILLUMINATE_ENCRYPTOR_KEY=' . substr( base64_encode( sha1( mt_rand() ) ), 0, 32 ) );
-}
+
 
 // Register command with \WP_CLI
-\WP_CLI::add_command( 'catfish generatekey', 'generateRandomKey' );
+\WP_CLI::add_command( 'catfish generatekey', function () {
+	\WP_CLI::line( 'Add the following link to your .env:' );
+	\WP_CLI::line( 'ILLUMINATE_ENCRYPTOR_KEY=' . substr( base64_encode( sha1( mt_rand() ) ), 0, 32 ) );
+} );
 
 /**
  * Throws an exception that should be tracked by BugSnag
@@ -41,7 +43,10 @@ function generateRandomKey() {
  *     wp catfish testexception
  *
  */
-function testException() {
+
+
+// Register command with \WP_CLI
+\WP_CLI::add_command( 'catfish testexception', function () {
 	// Show my errors
 	ini_set( 'display_errors', 1 );
 	ini_set( 'display_startup_errors', 1 );
@@ -56,10 +61,7 @@ function testException() {
 		$bugsnag->notifyException( $e );
 		$bugsnag->notifyError( 'TestError', 'Something bad happened' );
 	}
-}
-
-// Register command with \WP_CLI
-\WP_CLI::add_command( 'catfish testexception', 'testException' );
+} );
 
 /**
  * Add Items to Catfish Queue.
@@ -88,7 +90,9 @@ function testException() {
  *     wp catfish all
  *
  */
-function addToQueue( array $args ) {
+
+// Register command with \WP_CLI
+\WP_CLI::add_command( 'catfish queue', function ( array $args ) {
 
 	// Catch incorrect useage of command which could lead to adding plain text to queue
 	if ( in_array( $args[0], array( 'work', 'clear', 'purge' ) ) ) {
@@ -133,10 +137,7 @@ function addToQueue( array $args ) {
 
 		\WP_CLI::success( 'Queued: ' . $args[0] );
 	}
-}
-
-// Register command with \WP_CLI
-\WP_CLI::add_command( 'catfish queue', 'addToQueue' );
+} );
 
 /**
  * Action one item in the Catfish Queue.
@@ -153,7 +154,9 @@ function addToQueue( array $args ) {
  *     wp catfish work
  *
  */
-function actionSingleQueueItem( array $args ) {
+
+// Register command with \WP_CLI
+\WP_CLI::add_command( 'catfish work', function ( array $args ) {
 	// Let the queue run FOREVER
 	set_time_limit( 0 );
 	ini_set( 'display_errors', 1 );
@@ -168,10 +171,7 @@ function actionSingleQueueItem( array $args ) {
 
 	\WP_CLI::line( 'Working on queue...' );
 	Sync::actionSingleQueueItem();
-}
-
-// Register command with \WP_CLI
-\WP_CLI::add_command( 'catfish work', 'actionSingleQueueItem' );
+} );
 
 /**
  * Action to clear all items from the Catfish Queue.
@@ -188,7 +188,10 @@ function actionSingleQueueItem( array $args ) {
  *     wp catfish purge
  *
  */
-function purgeQueue( array $args ) {
+
+
+// Register command with \WP_CLI
+\WP_CLI::add_command( 'catfish purge', function ( array $args ) {
 
 	// Let the queue run FOREVER
 	set_time_limit( 0 );
@@ -200,10 +203,7 @@ function purgeQueue( array $args ) {
 	Sync::purgeQueue( true );
 
 
-}
-
-// Register command with \WP_CLI
-\WP_CLI::add_command( 'catfish purge', 'purgeQueue' );
+} );
 
 /**
  * Action to delete all automated_testing posts from
@@ -220,7 +220,10 @@ function purgeQueue( array $args ) {
  *     wp catfish clearautomatedtesting
  *
  */
-function deleteAllAutomatedTestingPosts( array $args ) {
+
+
+// Register command with \WP_CLI
+\WP_CLI::add_command( 'catfish clearautomatedtesting', function ( array $args ) {
 	// Let the queue run FOREVER
 	set_time_limit( 0 );
 	ini_set( 'display_errors', 1 );
@@ -233,10 +236,7 @@ function deleteAllAutomatedTestingPosts( array $args ) {
 
 	Post::deleteAllAutomatedTestingPosts( true );
 
-}
-
-// Register command with \WP_CLI
-\WP_CLI::add_command( 'catfish clearautomatedtesting', 'deleteAllAutomatedTestingPosts' );
+} );
 
 /**
  * Scan for updates in Clock CMS.
@@ -255,7 +255,10 @@ function deleteAllAutomatedTestingPosts( array $args ) {
  *     wp catfish scanupdates
  *
  */
-function callUpdatedPostScan( array $args ) {
+
+
+// Register command with \WP_CLI
+\WP_CLI::add_command( 'catfish scanupdates', function () {
 	// Let the scan run FOREVER
 	set_time_limit( 0 );
 	ini_set( 'display_errors', 1 );
@@ -266,10 +269,7 @@ function callUpdatedPostScan( array $args ) {
 	Sync::updatedPostScan( true );
 	\WP_CLI::success( 'Scan complete' );
 
-}
-
-// Register command with \WP_CLI
-\WP_CLI::add_command( 'catfish scanupdates', 'callUpdatedPostScan' );
+} );
 
 /**
  * Find missing posts from Import
@@ -305,7 +305,9 @@ function callUpdatedPostScan( array $args ) {
  *     wp catfish findmissing
  *
  */
-function findMissing( array $args, $assoc_args ) {
+
+// Register command with \WP_CLI
+\WP_CLI::add_command( 'catfish findmissing', function () {
 	// Let the scan run FOREVER
 	set_time_limit( 0 );
 	ini_set( 'display_errors', 1 );
@@ -314,30 +316,10 @@ function findMissing( array $args, $assoc_args ) {
 
 	\WP_CLI::line( 'Finding posts that exist in Clock but not in Pages...' );
 
-	try {
+	Sync::findMissing( true, 'update' );
 
-		// Optionally queue missing posts so that they can be reimported
-		$queueMissing = false;
-		if ( $assoc_args['queuemissing'] && $assoc_args['queuemissing'] == 'true' ) {
-			$queueMissing = true;
-		}
-
-		// Set handling if posts exist
-		$onExistAction = 'update';
-		if ( $assoc_args['onexistaction'] ) {
-			$onExistAction = $assoc_args['onexistaction'];
-		}
-
-		Sync::findMissing( $queueMissing, $onExistAction );
-
-		\WP_CLI::success( 'Scan complete' );
-	} catch ( Exception $e ) {
-		\WP_CLI::error( $e->getMessage() );
-	}
-}
-
-// Register command with \WP_CLI
-\WP_CLI::add_command( 'catfish findmissing', 'findMissing' );
+	\WP_CLI::success( 'Scan complete' );
+} );
 
 /**
  * Find posts that are in Pages but not in Clock
@@ -354,7 +336,10 @@ function findMissing( array $args, $assoc_args ) {
  *     wp catfish findadditional
  *
  */
-function findAdditional( array $args ) {
+
+
+// Register command with \WP_CLI
+\WP_CLI::add_command( 'catfish findadditional', function ( array $args ) {
 	// Let the scan run FOREVER
 	set_time_limit( 0 );
 	ini_set( 'display_errors', 1 );
@@ -371,7 +356,4 @@ function findAdditional( array $args ) {
 	} catch ( Exception $e ) {
 		\WP_CLI::error( $e->getMessage() );
 	}
-}
-
-// Register command with \WP_CLI
-\WP_CLI::add_command( 'catfish findadditional', 'findAdditional' );
+} );
