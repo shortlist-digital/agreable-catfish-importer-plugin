@@ -1,4 +1,4 @@
 default:
   paths:
-    features: tests/features
-    bootstrap: tests/features/bootstrap
+    features: features
+    bootstrap: features/bootstrap
