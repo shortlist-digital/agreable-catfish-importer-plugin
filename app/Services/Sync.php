@@ -191,7 +191,7 @@ class Sync {
 
 		Output::cliStatic( $log_identifier . 'Starting to import url' );
 
-		Debug::enable();
+
 		$post = Post::getPostFromUrl( $url, $onExistAction, true, $log_identifier );
 
 
