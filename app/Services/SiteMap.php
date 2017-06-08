@@ -21,9 +21,8 @@ class SiteMap {
 	 */
 	public static function getUrlsFromSitemap( $siteMapLocation, $since = false ) {
 		// Catch if sub sitemap doesn't exist - Clock strangeness
-
-		$sitemap = HtmlDomParser::file_get_html( $siteMapLocation );
-
+		$html    = file_get_contents( $siteMapLocation );
+		$sitemap = HtmlDomParser::str_get_html( $html );
 		$urls = [];
 		// Only process if object is returned
 		if ( is_object( $sitemap ) ) {
