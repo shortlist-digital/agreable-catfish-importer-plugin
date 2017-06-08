@@ -2,7 +2,6 @@
 
 namespace AgreableCatfishImporterPlugin\Services;
 
-use AgreableCatfishImporterPlugin\Services\Context\Output;
 use Sunra\PhpSimple\HtmlDomParser;
 
 class SiteMap {
@@ -23,7 +22,7 @@ class SiteMap {
 		// Catch if sub sitemap doesn't exist - Clock strangeness
 		$html    = file_get_contents( $siteMapLocation );
 		$sitemap = HtmlDomParser::str_get_html( $html );
-		$urls = [];
+		$urls    = [];
 		// Only process if object is returned
 		if ( is_object( $sitemap ) ) {
 
@@ -48,20 +47,12 @@ class SiteMap {
 					$innertext = array_shift( $swap );
 
 					// If date filter is passed then only show more recent posts
-					if ( $since ) {
-						// Only add posts after since date to string
-						if ( $since < $lastmod ) {
 
-							$urls[] = $innertext;
-							Output::cliStatic( "Scanning the sitemap: " . $innertext . " because " . $since . " < " . $lastmod );
-
-						}
-
-					} else {
-
+					// Only add posts after since date to string
+					if ( $since && $since < $lastmod ) {
 						$urls[] = $innertext;
-						Output::cliStatic( "Scanning the sitemap: " . $innertext );
-
+					} else {
+						$urls[] = $innertext;
 					}
 				}
 

@@ -3,8 +3,6 @@
 use AgreableCatfishImporterPlugin\Services\Post;
 use AgreableCatfishImporterPlugin\Services\Sync;
 
-define( 'MAX_FILE_SIZE', 600000001 );
-
 /**
  * Generate a random key for the application.
  *
@@ -279,27 +277,6 @@ define( 'MAX_FILE_SIZE', 600000001 );
  * Checks sitemap and the Wordpress database and finds posts that are missing
  * from the import to re import
  *
- * ## OPTIONS
- *
- * [--queuemissing=<queuemissing>]
- * : Whether or not to queue the missing items for import.
- * ---
- * default: false
- * options:
- *   - true
- *   - false
- * ---
- *
- * [--onexistaction=<onexistaction>]
- * : The method to handle posts that already exist in the database.
- * ---
- * default: false
- * options:
- *   - update
- *   - delete-insert
- *   - skip
- * ---
- *
  * ## EXAMPLES
  *
  *     wp catfish findmissing
@@ -309,10 +286,6 @@ define( 'MAX_FILE_SIZE', 600000001 );
 // Register command with \WP_CLI
 \WP_CLI::add_command( 'catfish findmissing', function () {
 	// Let the scan run FOREVER
-	set_time_limit( 0 );
-	ini_set( 'display_errors', 1 );
-	ini_set( 'display_startup_errors', 1 );
-	error_reporting( E_ERROR | E_WARNING | E_PARSE );
 
 	\WP_CLI::line( 'Finding posts that exist in Clock but not in Pages...' );
 
@@ -338,22 +311,23 @@ define( 'MAX_FILE_SIZE', 600000001 );
  */
 
 
-// Register command with \WP_CLI
-\WP_CLI::add_command( 'catfish findadditional', function ( array $args ) {
-	// Let the scan run FOREVER
-	set_time_limit( 0 );
-	ini_set( 'display_errors', 1 );
-	ini_set( 'display_startup_errors', 1 );
-	error_reporting( E_ERROR | E_WARNING | E_PARSE );
-
-	\WP_CLI::line( 'Finding posts that exist in Pages but not in Clock...' );
-
-	try {
-
-		Sync::findAdditional();
-
-		\WP_CLI::success( 'Scan complete' );
-	} catch ( Exception $e ) {
-		\WP_CLI::error( $e->getMessage() );
+WP_Cli::add_command( 'catfish test-self', function () {
+	\WP_CLI::success( 'Scan complete' );
+	$actions = [
+		'generatekey',
+		[
+			'queue',
+			'http://www.shortlist.com/news/jeremy-corbyn-is-drawing-bigger-crowds-than-any-uk-leader-since-winston-churchill'
+		],
+		'work',
+		'purge',
+		'scanupdates',
+		'findmissing'
+	];
+	foreach ( $actions as $index => $action ) {
+		WP_CLI::line( 'wp catfish ' . ( is_array( $action ) ? $action[0] . ' ' . $action[1] : $action ) );
+		WP_CLI::runcommand( 'catfish ' . ( is_array( $action ) ? $action[0] . ' ' . $action[1] : $action ) );
 	}
+	WP_CLI::success( 'Scan complete' );
+
 } );
