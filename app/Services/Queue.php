@@ -70,7 +70,8 @@ class Queue {
 
 			Output::cliStatic( 'The queue is empty, sleeping.' );
 			//TODO:: Is that required?
-			sleep( 10 );
+			sleep( 1 );
+
 			return null;
 		}
 
@@ -83,6 +84,13 @@ class Queue {
 
 		Output::cliStatic( 'Processing job ' . $function );
 
+		// Delete the job from the queue once complete without exception
+		$delete = self::$queue->deleteMessage( array(
+			// QueueUrl is required
+			'QueueUrl'      => self::$queueUrl,
+			// ReceiptHandle is required
+			'ReceiptHandle' => $message['ReceiptHandle']
+		) );
 
 		// Call the queued function in the Sync Class
 		// Parameters:
@@ -93,22 +101,8 @@ class Queue {
 		// Pass on the slug to show in log file
 		$log_identifier = ( isset( $response->log_identifier ) ) ? $response->log_identifier : '';
 
-
-		Output::cliStatic( $log_identifier . 'Success: Worker action complete' );
-
-
-		// Delete the job from the queue once complete without exception
-		$delete = self::$queue->deleteMessage( array(
-			// QueueUrl is required
-			'QueueUrl'      => self::$queueUrl,
-			// ReceiptHandle is required
-			'ReceiptHandle' => $message['ReceiptHandle']
-		) );
-
-		Output::cliStatic( $log_identifier . 'Success: Task deleted from queue' );
-
 		//TODO::what is job in here
-		return ['failed' => false ];
+		return [ 'failed' => false ];
 
 
 	}
