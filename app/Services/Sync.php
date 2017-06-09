@@ -4,7 +4,6 @@ namespace AgreableCatfishImporterPlugin\Services;
 
 use AgreableCatfishImporterPlugin\Services\Context\Exception;
 use AgreableCatfishImporterPlugin\Services\Context\Output;
-use Symfony\Component\Debug\Debug;
 
 class Sync {
 
@@ -191,7 +190,7 @@ class Sync {
 
 		Output::cliStatic( $log_identifier . 'Starting to import url' );
 
-		Debug::enable();
+
 		$post = Post::getPostFromUrl( $url, $onExistAction, true, $log_identifier );
 
 
@@ -442,19 +441,22 @@ class Sync {
 	/**
 	 * Find missing
 	 */
-	public static function findMissing( $queueMissing = false, $onExistAction = 'update' ) {
+	public static function findMissing() {
 
 		// Collect all $postUrls in one array to check against the WP database
+		global $wpdb;
 		$postUrls        = array();
 		$missingPostUrls = array();
+		$output          = new Output();
+
 
 		// Get a list of all category sitemaps
 		$categories = self::getCategories( false );
-
+		$output->cli( 'Checking available categorires ' );
 		// Go through all of Clocks sitemap.xml files to get all of the post urls
 		foreach ( $categories as $categoryUrl ) {
 
-			Output::cliStatic( 'Checking: ' . $categoryUrl );
+			$output->cli( 'Checking: ' . $categoryUrl );
 
 			$posts = SiteMap::getUrlsFromSitemap( $categoryUrl );
 
@@ -462,36 +464,23 @@ class Sync {
 				$postUrls = array_merge( $postUrls, $posts );
 			}
 		}
+		$output->cli( 'Categories checked, found ' . count( $postUrls ) . ' posts in ' . count( $categories ) . ' categories' );
+		$wpdb->show_errors     = true;
+		$wpdb->suppress_errors = false;
+		$exist                 = $wpdb->get_col( "SELECT DISTINCT meta_value FROM {$wpdb->postmeta} WHERE meta_key = 'catfish_importer_url'" );
+		$output->cli( "already exists: " . count( $exist ) );
 
-		foreach ( $postUrls as $url ) {
+		$new = array_diff( $postUrls, $exist );
+		$output->cli( "new: " . count( $new ) );
 
-			// Check if each post exists
-			$query = array(
-				// Return all posts at once.
-				'posts_per_page' => 1,
-				'meta_query'     => array(
-					array(
-						'key'   => 'catfish_importer_url',
-						'value' => $url
-					)
-				)
-			);
+		foreach ( $new as $index => $url ) {
 
-			$output = new \WP_Query( $query );
-
-			if ( $output->post_count == 0 ) {
-				Output::cliStatic( "Missing post: " . $url );
-				$missingPostUrls[] = $url;
-
-				if ( $queueMissing ) {
-					Output::cliStatic( "Queing for import" );
-					self::queueUrl( $url, $onExistAction );
-				}
-			}
+			$output->cli( "Missing post: " . $url );
+			self::queueUrl( $url );
 
 		}
 
-		Output::cliStatic( "Total missing posts " . count( $missingPostUrls ) );
+		$output->cli( "Total missing posts " . count( $missingPostUrls ) );
 
 	}
 
