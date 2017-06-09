@@ -29,6 +29,10 @@ class Post {
 		$postString  = file_get_contents( $postJsonUrl );
 		$object      = json_decode( $postString );
 
+		if ( ! $postString ) {
+			Output::cliErrorStatic( 'Post ' . $postJsonUrl . ' does not exist' );
+			exit;
+		}
 
 		// XXX: Create master post array to save into Wordpress
 
@@ -155,19 +159,19 @@ class Post {
 		if ( $existingPost == false || ( $existingPost && $onExistAction == 'delete-insert' ) ) {
 			$postMetaArrayForWordpress['catfish_importer_date_created'] = $currentDate;
 		}
-/*
-		// If automated testing, set the automated_testing meta field
-		if ( isset( $_SERVER['is-automated-testing'] ) ) {
+		/*
+				// If automated testing, set the automated_testing meta field
+				if ( isset( $_SERVER['is-automated-testing'] ) ) {
 
-			$postMetaArrayForWordpress['automated_testing'] = true;
+					$postMetaArrayForWordpress['automated_testing'] = true;
 
-			// Do not mark delete-insert or update posts as automated_testing if they
-			// weren't already marked automated_testing. This prevents tests from
-			// deleting existing posts
-			if ( $onExistAction == 'delete-insert' || $onExistAction == 'update' ) {
-				unset( $postMetaArrayForWordpress['automated_testing'] );
-			}
-		}*/
+					// Do not mark delete-insert or update posts as automated_testing if they
+					// weren't already marked automated_testing. This prevents tests from
+					// deleting existing posts
+					if ( $onExistAction == 'delete-insert' || $onExistAction == 'update' ) {
+						unset( $postMetaArrayForWordpress['automated_testing'] );
+					}
+				}*/
 
 		// Insert or update the post
 		if ( $existingPost && $onExistAction == 'update' ) {

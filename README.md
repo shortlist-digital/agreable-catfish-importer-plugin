@@ -44,7 +44,7 @@ When running ```wp``` in the command line from this directory a couple of new co
 The queue commands offer direct access to pushing single or multiple posts into queue. It also supports an onExistAction attribute which selects how to handle existing posts in the database. By default the importer will update posts in place.
 
 ```
-wp catfish queue http://www.shortlist.com/entertainment/the-toughest-world-record-ever-has-been-broken
+wp catfish queue http://www.shortlist.com/entertainment/the-toughest-world-record-ever-has-been-broken update
 wp catfish queue http://www.shortlist.com/entertainment/the-toughest-world-record-ever-has-been-broken skip
 wp catfish queue http://www.shortlist.com/entertainment/the-toughest-world-record-ever-has-been-broken delete-insert
 wp catfish queue all

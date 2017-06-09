@@ -4,6 +4,7 @@ namespace AgreableCatfishImporterPlugin\Services\Context;
 
 /**
  * Class Output
+ *
  * @package AgreableCatfishImporterPlugin\Driver\Context
  * @method static int cliStatic( $message )
  * @method static int cliErrorStatic( $message )
@@ -54,13 +55,13 @@ class Output {
 		}
 	}
 
-	public function cliSuccess($message) {
+	public function cliSuccess( $message ) {
 		if ( $this->isCli ) {
 			$this->cliOutputSuccess( $message );
 		}
 	}
 
-	public function cliError($message) {
+	public function cliError( $message ) {
 		if ( $this->isCli ) {
 			$this->cliOutputError( $message );
 		}
@@ -86,11 +87,12 @@ class Output {
 		\WP_CLI::line( $message );
 	}
 
-	public function cliOutputSuccess($message) {
+	public function cliOutputSuccess( $message ) {
 		\WP_CLI::success( $message );
 	}
-	public function cliOutputError($message) {
-		\WP_CLI::success( $message );
+
+	public function cliOutputError( $message ) {
+		\WP_CLI::error( $message );
 	}
 
 	/**
@@ -121,6 +123,6 @@ class Output {
 	 */
 	public static function __( $message ) {
 		$out = new self();
-		$out($message);
+		$out( $message );
 	}
 }

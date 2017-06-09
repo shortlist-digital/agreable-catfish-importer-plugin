@@ -197,12 +197,6 @@ class Sync {
 		Output::cliStatic( $log_identifier . 'Finished importing url' );
 
 
-		// Catch uncaught failure in the Post class
-		if ( ! is_object( $post ) ) {
-
-			throw new \Exception( $log_identifier . "Error, post returned is not an object. " . $post );
-		}
-
 		// Pass the log_identifier forward
 		$post->log_identifier = $log_identifier;
 
