@@ -157,11 +157,10 @@ define( 'MAX_FILE_SIZE', 600000001 );
 
 // Register command with \WP_CLI
 \WP_CLI::add_command( 'catfish work', function ( array $args ) {
-	// Let the queue run FOREVER
-	set_time_limit( 0 );
-	ini_set( 'display_errors', 1 );
-	ini_set( 'display_startup_errors', 1 );
-	error_reporting( E_ERROR | E_WARNING | E_PARSE );
+
+	if ( class_exists( '\AgreableUtility\UsefulHooks' ) && method_exists( '\AgreableUtility\UsefulHooks', 'disableOnSaveFunctionality' ) ) {
+		\AgreableUtility\UsefulHooks::disableOnSaveFunctionality();
+	}
 
 	if ( ! getenv( 'ENVOYER_HEARTBEAT_URL_IMPORTER' ) || getenv( 'ENVOYER_HEARTBEAT_URL_IMPORTER' ) == '' ) {
 		throw new Exception( "ENVOYER_HEARTBEAT_URL_IMPORTER is not set in your .env file" );
