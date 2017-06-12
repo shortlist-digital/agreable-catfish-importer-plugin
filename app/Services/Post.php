@@ -7,6 +7,7 @@ use Sunra\PhpSimple\HtmlDomParser;
 
 class Post {
 
+	public static $currentUrl = '';
 	/**
 	 * $postArrayForWordpress
 	 *
@@ -22,8 +23,8 @@ class Post {
 	 */
 	public static function getPostFromUrl( $postUrl, $onExistAction = 'skip', $cli = false, $log_identifier = 'get_post_from_url' ) {
 
-		$originalJsonUrl = $postUrl . '.json';
-
+		$originalJsonUrl  = $postUrl . '.json';
+		self::$currentUrl = $postUrl;
 		// Escape the url path using this handy helper
 		$postJsonUrl = Sync::escapeAPIUrlPaths( $originalJsonUrl );
 		$postString  = file_get_contents( $postJsonUrl );
@@ -155,19 +156,19 @@ class Post {
 		if ( $existingPost == false || ( $existingPost && $onExistAction == 'delete-insert' ) ) {
 			$postMetaArrayForWordpress['catfish_importer_date_created'] = $currentDate;
 		}
-/*
-		// If automated testing, set the automated_testing meta field
-		if ( isset( $_SERVER['is-automated-testing'] ) ) {
+		/*
+				// If automated testing, set the automated_testing meta field
+				if ( isset( $_SERVER['is-automated-testing'] ) ) {
 
-			$postMetaArrayForWordpress['automated_testing'] = true;
+					$postMetaArrayForWordpress['automated_testing'] = true;
 
-			// Do not mark delete-insert or update posts as automated_testing if they
-			// weren't already marked automated_testing. This prevents tests from
-			// deleting existing posts
-			if ( $onExistAction == 'delete-insert' || $onExistAction == 'update' ) {
-				unset( $postMetaArrayForWordpress['automated_testing'] );
-			}
-		}*/
+					// Do not mark delete-insert or update posts as automated_testing if they
+					// weren't already marked automated_testing. This prevents tests from
+					// deleting existing posts
+					if ( $onExistAction == 'delete-insert' || $onExistAction == 'update' ) {
+						unset( $postMetaArrayForWordpress['automated_testing'] );
+					}
+				}*/
 
 		// Insert or update the post
 		if ( $existingPost && $onExistAction == 'update' ) {
