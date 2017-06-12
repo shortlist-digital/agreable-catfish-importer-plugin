@@ -7,6 +7,7 @@ use Sunra\PhpSimple\HtmlDomParser;
 
 class Post {
 
+	public static $currentUrl = '';
 	/**
 	 * $postArrayForWordpress
 	 *
@@ -22,8 +23,8 @@ class Post {
 	 */
 	public static function getPostFromUrl( $postUrl, $onExistAction = 'skip', $cli = false, $log_identifier = 'get_post_from_url' ) {
 
-		$originalJsonUrl = $postUrl . '.json';
-
+		$originalJsonUrl  = $postUrl . '.json';
+		self::$currentUrl = $postUrl;
 		// Escape the url path using this handy helper
 		$postJsonUrl = Sync::escapeAPIUrlPaths( $originalJsonUrl );
 		$postString  = file_get_contents( $postJsonUrl );
