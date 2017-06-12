@@ -171,7 +171,7 @@ Natively the Wordpress cron hijacks user page loads to run actions. We disable t
 To run the updates scan add the following line to your crontab:
 
 ```
-*/5 *   * * *   ubuntu  cd /var/www/pages-staging.shortlist.com/htdocs/current/web/app/plugins/agreable-catfish-importer-plugin && wp catfish scanupdates > /var/log/cron/catfishscanupdates.log 2>&1
+*/5 *   * * *   ubuntu  cd /var/www/shortlist-cms.shortlist.studio/htdocs/current/web/app/plugins/agreable-catfish-importer-plugin && wp catfish scanupdates > /var/log/cron/catfishscanupdates.log 2>&1
 ```
 
 Make sure that you edit the `/etc/crontab` file directly so that you can add the user element of the command. Using `crontab -e` does not allow you to select with user the command will run by.

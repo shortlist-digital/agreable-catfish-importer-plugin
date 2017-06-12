@@ -10,6 +10,7 @@ class Category {
 			//Do single category
 			$catId = self::createRootCategory( $sectionObject->name, $sectionObject->slug );
 			wp_set_post_categories( $postId, $catId );
+			update_field( 'basic_category', $catId, $postId );
 		} else {
 			// get both categories
 			$parentSlug = self::getParentSlug( $sectionObject->fullUrlPath );
@@ -17,6 +18,7 @@ class Category {
 			$parentId   = self::createRootCategory( $parentName, $parentSlug );
 			$catId      = self::createChildCategory( $sectionObject->name, $sectionObject->slug, $parentId );
 			wp_set_post_categories( $postId, $catId );
+			update_field( 'basic_category', $catId, $postId );
 		}
 	}
 

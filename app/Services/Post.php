@@ -129,49 +129,36 @@ class Post {
 			$postArrayForWordpress['post_author'] = $default_author;
 		}
 
-		// Create meta array for new post (Data that's not in the core post_fields)
-		$postMetaArrayForWordpress = array(
-			'short_headline'                => $postObject->shortHeadline,
-			'sell'                          => $sell,
-			'header_type'                   => 'standard-hero',
-			'header_display_headline'       => true,
-			'header_display_sell'           => true,
-			'catfish_importer_url'          => $postUrl,
-			'catfish_importer_imported'     => true,
-			'catfish_importer_post_date'    => $displayDate,
-			'catfish_importer_date_updated' => $currentDate
-		);
 
 		// Create meta array for new post (Data that's not in the core post_fields)
 		$postACFMetaArrayForWordpress = array(
 			'basic_short_headline'                  => $postObject->shortHeadline,
 			'basic_sell'                            => $sell,
-			'basic_header_type'                     => 'standard-hero',
-			'basic_header_display_headline'         => true,
-			'basic_header_display_sell'             => true,
-			'article_catfish_importer_url'          => $postUrl,
+			'article_header_type'                   => 'standard-hero',
+			'article_header_display_headline'       => true,
+			'article_header_display_sell'           => true,
+			'article_header_display_date'           => true,
+			'article_catfish_imported_url'          => $postUrl,
 			'article_catfish_importer_imported'     => true,
 			'article_catfish_importer_post_date'    => $displayDate,
-			'article_catfish_importer_date_updated' => $currentDate
+			'article_catfish_importer_date_updated' => $currentDate,
+			'social_overrides_title'                => "",
+			'social_overrides_description'          => "",
+			'social_overrides_share_image'          => false,
+			'social_overrides_twitter_text'         => "",
+			'related_show_related_content'          => true,
+			'related_limit'                         => "6",
+			'related_lists'                         => false,
+			'related_posts_manual'                  => false,
+			'html_overrides_allow'                  => false
 		);
 
 		// Log the created time if this is the first time this post was imported
 		if ( $existingPost == false || ( $existingPost && $onExistAction == 'delete-insert' ) ) {
 			$postMetaArrayForWordpress['catfish_importer_date_created'] = $currentDate;
+
 		}
-		/*
-				// If automated testing, set the automated_testing meta field
-				if ( isset( $_SERVER['is-automated-testing'] ) ) {
 
-					$postMetaArrayForWordpress['automated_testing'] = true;
-
-					// Do not mark delete-insert or update posts as automated_testing if they
-					// weren't already marked automated_testing. This prevents tests from
-					// deleting existing posts
-					if ( $onExistAction == 'delete-insert' || $onExistAction == 'update' ) {
-						unset( $postMetaArrayForWordpress['automated_testing'] );
-					}
-				}*/
 
 		// Insert or update the post
 		if ( $existingPost && $onExistAction == 'update' ) {
@@ -179,7 +166,7 @@ class Post {
 			// categories, tags and Widgets
 			$wpPostId = WPErrorToException::loud( wp_update_post( $postArrayForWordpress ) );
 
-		} else {
+		} elseif ( $onExistAction != 'skip' ) {
 			// Save post and return ID of newly created post for updating categories,
 			// tags and Widgets
 			$wpPostId = WPErrorToException::loud( wp_insert_post( $postArrayForWordpress ) );
@@ -190,7 +177,7 @@ class Post {
 
 
 		// Save the post meta data (Any field that's not post_)
-		self::setPostMetadata( $wpPostId, $postMetaArrayForWordpress );
+
 		self::setACFPostMetadata( $wpPostId, $postACFMetaArrayForWordpress );
 
 		// XXX: Actions to take place __after__ the post is saved and require either the Post ID or TimberPost object
@@ -213,7 +200,7 @@ class Post {
 			}
 		}
 		wp_set_post_tags( $wpPostId, $postTags );
-
+		update_field( 'basic_tags', $postTags, $wpPostId );
 		// Catch failure to create TimberPost object
 		$post = new \TimberPost( $wpPostId );
 
@@ -228,9 +215,11 @@ class Post {
 
 		Output::cliStatic( $log_identifier . 'Set hero image.' );
 
+
 		// Store header image
-		$show_header                                        = self::setHeroImages( $post, $postDom, $postObject );
-		$postArrayForWordpress['header_display_hero_image'] = $show_header;
+		$show_header = self::setHeroImages( $post, $postDom, $postObject );
+
+		update_field( 'article_header_display_hero_image', $show_header, $wpPostId );
 
 		// Envoke any actions hooked to the 'catfish_importer_post' tag
 		do_action( 'catfish_importer_post', $post->ID );
@@ -245,30 +234,17 @@ class Post {
 	 */
 	protected static function setPostMetadata( $postId, $fields ) {
 		foreach ( $fields as $fieldName => $value ) {
-			self::setPostMetaProperty( $postId, $fieldName, $value );
+			self::setACFPostMetaProperty( $postId, $fieldName, $value );
 		}
 	}
 
-	/**
-	 * Create or update a post meta field
-	 */
-	protected static function setPostMetaProperty( $postId, $fieldName, $value = '' ) {
-		if ( empty( $value ) OR ! $value ) {
-			// Switch to acf api rather than WP api here...
-			delete_post_meta( $postId, $fieldName );
-		} elseif ( ! get_post_meta( $postId, $fieldName ) ) {
-			add_post_meta( $postId, $fieldName, $value );
-		} else {
-			update_post_meta( $postId, $fieldName, $value );
-		}
-	}
 
 	/**
 	 * ACF Set or update multiple post meta properties at once
 	 */
 	protected static function setACFPostMetadata( $postId, $fields ) {
 		foreach ( $fields as $fieldName => $value ) {
-			self::setPostMetaProperty( $postId, $fieldName, $value );
+			self::setACFPostMetaProperty( $postId, $fieldName, $value );
 		}
 	}
 
@@ -276,15 +252,7 @@ class Post {
 	 * ACF Create or update a post meta field
 	 */
 	protected static function setACFPostMetaProperty( $postId, $fieldName, $value = '' ) {
-		if ( empty( $value ) OR ! $value ) {
-			//TODO: that will definitely fail.
-			// Switch to acf api rather than WP api here...
-			delete_field( $fieldName, $value, $postId );
-		} elseif ( ! get_post_meta( $postId, $fieldName ) ) {
-			update_field( $fieldName, $value, $postId );
-		} else {
-			update_field( $fieldName, $value, $postId );
-		}
+		update_field( $fieldName, $value, $postId );
 	}
 
 	protected static function setAuthor( $authorObject ) {
@@ -336,8 +304,8 @@ class Post {
 		}
 
 		if ( array_key_exists( 0, $heroImageIds ) ) {
-			update_post_meta( $post->id, 'hero_images', $heroImageIds );
-			update_post_meta( $post->id, '_hero_images', 'article_basic_hero_images' );
+			update_field( 'basic_hero_images', $heroImageIds, $post->id );
+			//update_post_meta( $post->id, '_hero_images', 'article_basic_hero_images' );
 			set_post_thumbnail( $post->id, $heroImageIds[0] );
 		} else {
 			$message = "$post->title has no hero images";

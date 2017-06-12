@@ -72,7 +72,7 @@ class Html {
 
 			} elseif ( $node->tag != 'script' ) {
 
-				throw new \Exception( 'undefined widget exception', 500 );
+				throw new \Exception( 'undefined widget exception '.json_encode($node), 500 );
 			}
 
 		}
