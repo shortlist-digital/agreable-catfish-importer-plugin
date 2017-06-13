@@ -2,6 +2,7 @@
 
 namespace AgreableCatfishImporterPlugin\Services\Widgets;
 
+use AgreableCatfishImporterPlugin\Services\Post;
 use Illuminate\Support\Collection;
 use stdClass;
 use Sunra\PhpSimple\HtmlDomParser;
@@ -72,7 +73,7 @@ class Html {
 
 			} elseif ( $node->tag != 'script' ) {
 
-				throw new \Exception( 'undefined widget exception '.json_encode($node), 500 );
+				throw new \Exception( 'undefined widget exception ' . json_encode( $node ) . ' while processing: ' . Post::$currentUrl, 500 );
 			}
 
 		}
