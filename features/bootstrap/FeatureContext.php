@@ -30,7 +30,7 @@ class FeatureContext extends BehatContext {
 
 	/** @AfterScenario */
 	public static function afterScenario() {
-		echo 'memory usage:' . memory_get_usage().PHP_EOL;
+
 		foreach ( [ PostContext::class, SitemapContext::class, SyncContext::class ] as $class ) {
 			call_user_func( $class . '::clearVariables' );
 
