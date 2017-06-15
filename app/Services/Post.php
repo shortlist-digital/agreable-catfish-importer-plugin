@@ -200,8 +200,10 @@ class Post {
 				array_push( $postTags, ucwords( $tag->tag ) );
 			}
 		}
-		wp_set_post_tags( $wpPostId, $postTags );
-		update_field( 'basic_tags', $postTags, $wpPostId );
+
+		$ret = wp_set_post_tags( $wpPostId, $postTags );
+
+		update_field( 'basic_tags', $ret, $wpPostId );
 		// Catch failure to create TimberPost object
 		$post = new \TimberPost( $wpPostId );
 

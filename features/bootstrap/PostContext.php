@@ -203,4 +203,14 @@ class PostContext extends BehatContext {
 		self::$post = null;
 	}
 
+	/**
+	 * @Given /^the post has (\d+) tags$/
+	 */
+	public function thePostHasTags( $count ) {
+		$count = (int) $count;
+		$id    = self::$post->id;
+		Assert::assertEquals( $count, count( wp_get_post_tags( $id, [ 'fields' => 'ids' ] ) ) );
+		Assert::assertEquals( $count, count( get_field( 'tags', $id, false ) ) );
+	}
+
 }
