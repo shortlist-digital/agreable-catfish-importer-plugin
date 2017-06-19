@@ -4,7 +4,7 @@
   "description": "Wordpress plugin for Shortlist Media.",
   "license": "MIT",
   "require": {
-    "getherbert/framework": "~0.9",
+    "shortlist-digital/herbert-framework": "~1.0",
     "facebook/webdriver": "~1.0",
     "behat/behat": "~2.5",
     "phpunit/phpunit": "5.0.*",
