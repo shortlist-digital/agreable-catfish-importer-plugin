@@ -28,7 +28,7 @@ class Helper {
      */
     public static function boot()
     {
-        self::$base = plugin_directory();
+        self::$base = plugin_directory(__DIR__);
         self::$base = self::$base . '/' . basename(plugin_dir_url(__DIR__)) . '/';
 
         self::$config = @require self::$base . '/herbert.config.php';
