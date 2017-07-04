@@ -11,16 +11,8 @@ class SyncController {
 		// parse the URL if it's in a /retry/{id} param
 		$catfish_url = $_GET['url'];
 
-		try {
-			// Re queue this post for import
-			Sync::queueUrl( $catfish_url );
-
-			// Return a redirect to the previous page (the post lists page)
-			header( 'Location: ' . $_SERVER['HTTP_REFERER'] );
-		} catch ( \Exception $e ) {
-			throw new \Exception( "Error queueing post. " . $e->getMessage() );
-		}
-
+		Sync::queueUrl( $catfish_url );
+		header( 'Location: ' . $_SERVER['HTTP_REFERER'] );
 	}
 
 }

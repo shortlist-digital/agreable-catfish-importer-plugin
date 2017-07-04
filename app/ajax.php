@@ -4,15 +4,18 @@
 
 use AgreableCatfishImporterPlugin\Services\Sync;
 use Exception;
-use Symfony\Component\Debug\Debug;
 
-define( 'MAX_FILE_SIZE', 600000001 );
-set_time_limit( 0 );
+function increase_server_resources() {
+	define( 'MAX_FILE_SIZE', 600000001 );
+	set_time_limit( 0 );
+	ini_set( 'memory_limit', '1600M' );
+}
 
 /**
  * Sync category or all posts
  */
 add_action( 'wp_ajax_catfishimporter_start_sync-category', function () {
+	increase_server_resources();
 	$response = Sync::queueCategory(
 		$_POST['catfishimporter_category_sitemap'],
 		$_POST['catfishimporter_onExistAction']
@@ -25,7 +28,11 @@ add_action( 'wp_ajax_catfishimporter_start_sync-category', function () {
  * Sync specified post
  */
 add_action( 'wp_ajax_catfishimporter_start_sync-url', function () {
-	$response = Sync::queueUrl( $_POST['catfishimporter_url'], $_POST['catfishimporter_onExistAction'] );
+	increase_server_resources();
+	if ( is_numeric( $_POST['catfishimporter_url'] ) ) {
+		$_POST['catfishimporter_url'] = get_post_meta( $_POST['catfishimporter_url'], 'catfish_importer_url', true );
+	}
+	$response = Sync::queueUrl( $_POST['catfishimporter_url'], isset( $_POST['catfishimporter_onExistAction'] ) ? $_POST['catfishimporter_onExistAction'] : 'update' );
 	catfishimporter_api_response( $response );
 } );
 
@@ -33,6 +40,8 @@ add_action( 'wp_ajax_catfishimporter_start_sync-url', function () {
  * Return list of categories for admin interface
  */
 add_action( 'wp_ajax_catfishimporter_list_categories', function () {
+	increase_server_resources();
+
 	$response = array_merge( [ 'all' ], Sync::getCategories() );
 	catfishimporter_api_response( $response );
 } );
@@ -41,6 +50,7 @@ add_action( 'wp_ajax_catfishimporter_list_categories', function () {
  * Return total imported posts
  */
 add_action( 'wp_ajax_catfishimporter_get_status', function () {
+	increase_server_resources();
 	$response = Sync::getImportStatus();
 	catfishimporter_api_response( $response );
 } );
@@ -49,7 +59,7 @@ add_action( 'wp_ajax_catfishimporter_get_status', function () {
  * Return total imported posts from specific category
  */
 add_action( 'wp_ajax_catfishimporter_get_category_status', function () {
-
+	increase_server_resources();
 	if ( ! isset( $_GET['sitemapUrl'] ) || ! $_GET['sitemapUrl'] ) {
 		throw new Exception( 'sitemapUrl is missing from query' );
 	}

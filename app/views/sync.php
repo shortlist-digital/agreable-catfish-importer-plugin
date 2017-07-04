@@ -1,8 +1,7 @@
 <h1>Catfish Importer</h1>
-<div class="ajax-url" style="display: none;">{{ ajax_url }}</div>
 <h2>Sync a Category</h2>
 <p>
-  To run full site imports use the Catfish command line tools. To queue all posts for import run <pullquote>wp catfish queue all</pullquote> in the <pullquote>web/app/plugins/agreable-catfish-importer-plugin</pullquote> folder.
+  To run full site imports use the Catfish command line tools. To queue all posts for import run 'wp catfish queue all' in the 'web/app/plugins/agreable-catfish-importer-plugin' folder.
 </p>
 <form>
   <label for="category">Category:</label>

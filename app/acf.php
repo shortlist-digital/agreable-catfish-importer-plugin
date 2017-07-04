@@ -1,18 +1,6 @@
 <?php
 
-if ( function_exists( 'acf_add_local_field_group' ) ):
-
-	$field['group']         = 'article_basic_group';
-	$field['parent']        = 'article_basic_group';
-	$field['key']           = 'article_catfish_importer_imported';
-	$field['name']          = 'catfish_importer_imported';
-	$field['label']         = 'Catfish imported';
-	$field['type']          = 'true_false';
-	$field['default_value'] = 0;
-	$field['layout']        = 'vertical';
-
-	$field['instructions'] = 'Is this post imported from Catfish?';
-	$field['message']      = '';
+add_action( 'acf/init', function () {
 
 	acf_add_local_field_group( array(
 		'key'                   => 'article_catfish_importer_group',
@@ -115,4 +103,56 @@ if ( function_exists( 'acf_add_local_field_group' ) ):
 		'hide_on_screen'        => '',
 	) );
 
-endif;
+
+	register_field_group( array(
+		'key'                   => 'group_catfish_importer_plugin',
+		'title'                 => 'Catfish Importer Credentials',
+		'fields'                => array(
+			array(
+				'key'               => 'apple_news_url',
+				'label'             => 'Catfish Website URL',
+				'name'              => 'catfish_website_url',
+				'type'              => 'url',
+				'instructions'      => 'Please put in either http://www.stylist.co.uk/ or http://www.shortlist.com/',
+				'required'          => 0,
+				'conditional_logic' => 0,
+				'wrapper'           => array(
+					'width' => '',
+					'class' => '',
+					'id'    => '',
+				),
+				'default_value'     => '',
+				'placeholder'       => '',
+				'prepend'           => '',
+				'append'            => '',
+				'maxlength'         => '',
+				'readonly'          => 0,
+				'disabled'          => 0,
+			),
+			array(
+				'key'        => 'catfish_default_author',
+				'label'      => 'Default Article Author',
+				'name'       => 'catfish_default_author',
+				'type'       => 'user',
+				'required'   => 1,
+				'allow_null' => 0,
+			),
+		),
+		'location'              => array(
+			array(
+				array(
+					'param'    => 'options_page',
+					'operator' => '==',
+					'value'    => 'acf-options',
+				),
+			),
+		),
+		'menu_order'            => 10,
+		'position'              => 'normal',
+		'style'                 => 'default',
+		'label_placement'       => 'top',
+		'instruction_placement' => 'label',
+		'hide_on_screen'        => '',
+	) );
+
+} );

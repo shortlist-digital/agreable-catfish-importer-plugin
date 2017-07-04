@@ -28,6 +28,6 @@ class AdminController {
   }
 
   public function sync() {
-    return view('@AgreableCatfishImporterPlugin/admin/sync.twig', ['ajax_url' => admin_url('admin-ajax.php')]);
+    return view('@AgreableCatfishImporterPlugin/admin/sync.twig', []);
   }
 }
