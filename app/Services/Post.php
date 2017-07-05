@@ -21,7 +21,7 @@ class Post {
 	 *
 	 * TODO cli output of the full import process
 	 */
-	public static function getPostFromUrl( $postUrl, $onExistAction = 'skip', $cli = false, $log_identifier = 'get_post_from_url' ) {
+	public static function getPostFromUrl( $postUrl, $onExistAction = 'skip' ) {
 
 		$originalJsonUrl  = $postUrl . '.json';
 		self::$currentUrl = $postUrl;
@@ -29,15 +29,6 @@ class Post {
 		$postJsonUrl = Sync::escapeAPIUrlPaths( $originalJsonUrl );
 		$postString  = file_get_contents( $postJsonUrl );
 		$object      = json_decode( $postString );
-
-		if ( ! $postString ) {
-			Output::cliErrorStatic( 'Post ' . $postJsonUrl . ' does not exist' );
-			exit;
-		}
-
-		// XXX: Create master post array to save into Wordpress
-
-		Output::cliStatic( $log_identifier . 'Beginning the post import' );
 
 
 		// Create an empty wordpress post array to build up over the course of the
@@ -58,7 +49,6 @@ class Post {
 			// Make $existingPost clearer to use in future if statements by setting as false
 			$existingPost = false;
 
-			Output::cliStatic( $log_identifier . 'Got the existing post if it exists.' );
 
 		} else {
 
@@ -89,9 +79,6 @@ class Post {
 
 					break;
 			}
-
-
-			Output::cliStatic( $log_identifier . 'Set the onExistAction method: ' . $onExistAction );
 
 
 		}
@@ -174,9 +161,6 @@ class Post {
 		}
 
 
-		Output::cliStatic( $log_identifier . 'Built the post metadata array.' );
-
-
 		// Save the post meta data (Any field that's not post_)
 
 		self::setACFPostMetadata( $wpPostId, $postACFMetaArrayForWordpress );
@@ -184,13 +168,8 @@ class Post {
 		// XXX: Actions to take place __after__ the post is saved and require either the Post ID or TimberPost object
 
 
-		Output::cliStatic( $log_identifier . 'Attach categories.' );
-
 		// Attach Categories to Post
 		Category::attachCategories( $object->article->section, $postUrl, $wpPostId );
-
-
-		Output::cliStatic( $log_identifier . 'Attach tags.' );
 
 
 		// Add tags to post
@@ -207,16 +186,11 @@ class Post {
 		// Catch failure to create TimberPost object
 		$post = new \TimberPost( $wpPostId );
 
-		Output::cliStatic( $log_identifier . 'Create post widgets.' );
-
 
 		// Create the ACF Widgets from DOM content
 		$widgets = Widget::getWidgetsFromDom( $postDom );
 
 		Widget::setPostWidgets( $post, $widgets, $postObject );
-
-
-		Output::cliStatic( $log_identifier . 'Set hero image.' );
 
 
 		// Store header image
@@ -227,7 +201,6 @@ class Post {
 		// Envoke any actions hooked to the 'catfish_importer_post' tag
 		do_action( 'catfish_importer_post', $post->ID );
 
-		Output::cliStatic( $log_identifier . 'Post Import complete.' );
 
 		return $post;
 	}
