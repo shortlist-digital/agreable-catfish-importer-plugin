@@ -18,7 +18,7 @@ use AgreableCatfishImporterPlugin\Services\Sync;
  *     wp catfish generatekey
  *
  */
-
+if ( !defined( 'WP_CLI' ) ) return;
 
 // Register command with \WP_CLI
 \WP_CLI::add_command( 'catfish generatekey', function () {
@@ -43,23 +43,6 @@ use AgreableCatfishImporterPlugin\Services\Sync;
  */
 
 
-// Register command with \WP_CLI
-\WP_CLI::add_command( 'catfish testexception', function () {
-	// Show my errors
-	ini_set( 'display_errors', 1 );
-	ini_set( 'display_startup_errors', 1 );
-	error_reporting( E_ERROR | E_WARNING | E_PARSE );
-
-	try {
-		// The Exception handler should log with Bugsnag
-		throw new Exception( "Bugsnag Test Exception" );
-	} catch ( Exception $e ) {
-		// Send handled error to BugSnag as well..
-		$bugsnag = Bugsnag\Client::make( getenv( 'BUGSNAG_API_KEY' ) );
-		$bugsnag->notifyException( $e );
-		$bugsnag->notifyError( 'TestError', 'Something bad happened' );
-	}
-} );
 
 /**
  * Add Items to Catfish Queue.
