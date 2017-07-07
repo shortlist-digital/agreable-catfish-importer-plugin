@@ -21,14 +21,20 @@ class Post {
 	 *
 	 * TODO cli output of the full import process
 	 */
+	/**
+	 * @param $postUrl
+	 * @param string $onExistAction
+	 *
+	 * @return \TimberPost
+	 */
 	public static function getPostFromUrl( $postUrl, $onExistAction = 'skip' ) {
+
 
 		$originalJsonUrl  = $postUrl . '.json';
 		self::$currentUrl = $postUrl;
 		// Escape the url path using this handy helper
 		$postJsonUrl = Sync::escapeAPIUrlPaths( $originalJsonUrl );
-		$postString  = file_get_contents( $postJsonUrl );
-		$object      = json_decode( $postString );
+		$object      = Fetch::json( $postJsonUrl );
 
 
 		// Create an empty wordpress post array to build up over the course of the
