@@ -18,7 +18,9 @@ use AgreableCatfishImporterPlugin\Services\Sync;
  *     wp catfish generatekey
  *
  */
-if ( !defined( 'WP_CLI' ) ) return;
+if ( ! defined( 'WP_CLI' ) ) {
+	return;
+}
 
 // Register command with \WP_CLI
 \WP_CLI::add_command( 'catfish generatekey', function () {
@@ -41,7 +43,6 @@ if ( !defined( 'WP_CLI' ) ) return;
  *     wp catfish testexception
  *
  */
-
 
 
 /**
@@ -313,3 +314,20 @@ WP_Cli::add_command( 'catfish test-self', function () {
 	WP_CLI::success( 'Scan complete' );
 
 } );
+/**
+ *
+ */
+
+WP_Cli::add_command( 'catfish2 import-all', function () {
+	/**
+	 * @var $api \AgreableCatfishImporterPlugin\Api
+	 */
+
+	$api = \Croissant\App::get( \AgreableCatfishImporterPlugin\Api::class );
+	$api->getAll();
+
+
+} );
+
+
+

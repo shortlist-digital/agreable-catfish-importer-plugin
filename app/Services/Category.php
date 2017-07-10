@@ -42,8 +42,7 @@ class Category {
 	public static function getCatfishCategoryNameBySlug( $slug, $postUrl ) {
 		$data          = explode( $slug, $postUrl, 2 );
 		$base_url      = $data[0];
-		$parent_json   = file_get_contents( $base_url . $slug . ".json" );
-		$parent_object = json_decode( $parent_json );
+		$parent_object   = Fetch::json( $base_url . $slug . ".json" );
 
 		return $parent_object->section->name;
 	}
