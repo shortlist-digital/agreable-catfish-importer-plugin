@@ -103,12 +103,4 @@ class Api {
 		return $all_posts;
 	}
 
-	public function getDiffPosts() {
-		global $wpdb;
-		$wpdb->query( 'SELECT * FROM wp_posts WHERE comment_count = 2' );
-		$remote_posts = $this->getAllPostsData();
-		$local_posts  = [];
-
-		return [];
-	}
 }
