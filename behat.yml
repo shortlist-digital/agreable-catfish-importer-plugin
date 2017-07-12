@@ -1,4 +1,10 @@
 default:
-  paths:
-    features: features
-    bootstrap: features/bootstrap
+  autoload:
+    '': %paths.base%/features/bootstrap/
+  suites:
+    default:
+      paths:
+        - %paths.base%/features
+      contexts:
+        - PostContext
+        - SitemapContext

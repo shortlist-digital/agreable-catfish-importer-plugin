@@ -4,28 +4,20 @@ namespace AgreableCatfishImporterPlugin;
 
 use AgreableCatfishImporterPlugin\Services\Fetch;
 use AgreableCatfishImporterPlugin\Services\Post;
-use AgreableCatfishImporterPlugin\Services\SiteMap;
 use Croissant\DI\Interfaces\CatfishLogger;
-use Croissant\DI\Interfaces\Queue;
 
 class Api {
-	/**
-	 * @var Queue
-	 */
-	private $_queue;
 	/**
 	 * @var CatfishLogger
 	 */
 	private $_logger;
 
-	public function __construct( Queue $queue, CatfishLogger $logger ) {
-		define( 'MAX_FILE_SIZE', 6000000 );
-		$this->_queue  = $queue;
+	public function __construct( CatfishLogger $logger ) {
 		$this->_logger = $logger;
 	}
 
 	public function getSitemaps() {
-		return SiteMap::getUrlsFromSitemap( getenv( 'CATFISH_IMPORTER_TARGET_URL' ) . 'sitemap-index.xml' );
+		return array_keys( $this->getPostsFromSitemap( getenv( 'CATFISH_IMPORTER_TARGET_URL' ) . 'sitemap-index.xml' ) );
 	}
 
 	public function getPostsFromSitemap( $url ) {
@@ -61,21 +53,11 @@ class Api {
 
 	}
 
-	public function getPost( $postUrl, $onExist = 'update' ) {
+	public function importPost( $postUrl ) {
 
-		return Post::getPostFromUrl( $postUrl, $onExist );
+		return Post::getPostFromUrl( $postUrl, 'update' );
 	}
 
-	/**
-	 * Makes sure that exception will be \Exception and not error
-	 */
-	public function registerSilencer() {
-		set_error_handler(
-			function ( $errno, $errstr, $errfile, $errline ) {
-				throw new \ErrorException( $errstr, $errno, 0, $errfile, $errline );
-			}
-		);
-	}
 
 	public function getAllPosts() {
 		return array_keys( $this->getAllPostsData() );

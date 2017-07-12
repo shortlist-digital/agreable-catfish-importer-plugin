@@ -3,8 +3,6 @@
 namespace AgreableCatfishImporterPlugin\Services\Widgets;
 
 use AgreableCatfishImporterPlugin\Services\Post;
-use Illuminate\Support\Collection;
-use stdClass;
 use Sunra\PhpSimple\HtmlDomParser;
 
 class Html {
@@ -65,7 +63,7 @@ class Html {
 				continue;
 			} elseif ( ! self::checkIfEmbedScriptTag( $node->outertext ) ) {
 
-				$html = new stdClass();
+				$html = new \stdClass();
 
 				$html->type = 'html';
 				$html->html = $node->outertext;
@@ -73,7 +71,7 @@ class Html {
 
 			} elseif ( $node->tag != 'script' ) {
 
-				throw new \Exception( 'undefined widget exception ' . json_encode( $node ) . ' while processing: ' . Post::$currentUrl, 500 );
+				throw new \Exception( 'undefined widget exception ' . json_encode( $node ) . ' while processing: ' , 500 );
 			}
 
 		}
@@ -100,34 +98,15 @@ class Html {
 		}
 		$widgets = array_values( $widgets );
 
-		// Use the Laravel Collection class to group widgets
-		$widgetCollection = new Collection( $widgets );
-
-		// Check if post contains widgets with the html type
-		$htmlCheck = $widgetCollection->reduce( function ( $carry, $widget ) {
-			return ( $widget->type == 'html' );
-		} );
-		if ( $htmlCheck ) {
-			$widgets = array(
-				$widgetCollection->reduce( function ( $carry, $item ) {
-
-					if ( ! $carry ) {
-						$carry       = new stdClass();
-						$carry->html = '';
-					}
-					$carry->type = $item->type;
-					$carry->html .= $item->html;
-
-					return $carry;
-				} )
-			);
-		}
-
 		return count( $widgets ) ? $widgets : false;
 	}
 
 	/**
 	 * Check if the DOM element is a excess script tag from a social embed string
+	 *
+	 * @param $string
+	 *
+	 * @return bool
 	 */
 	public static function checkIfEmbedScriptTag( $string ) {
 		$whitelist = array(

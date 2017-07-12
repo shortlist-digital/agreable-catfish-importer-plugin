@@ -2,7 +2,6 @@
 
 namespace AgreableCatfishImporterPlugin\Services;
 
-use AgreableCatfishImporterPlugin\Services\Context\Output;
 use Sunra\PhpSimple\HtmlDomParser;
 
 class Post {
@@ -27,14 +26,15 @@ class Post {
 	 *
 	 * @return \TimberPost
 	 */
-	public static function getPostFromUrl( $postUrl, $onExistAction = 'skip' ) {
+	public static function getPostFromUrl( $postUrl ) {
 
+		remove_all_filters( 'transition_post_status' );
+		remove_all_filters( 'save_post' );
 
-		$originalJsonUrl  = $postUrl . '.json';
-		self::$currentUrl = $postUrl;
+		$postUrl .= '.json';
 		// Escape the url path using this handy helper
-		$postJsonUrl = Sync::escapeAPIUrlPaths( $originalJsonUrl );
-		$object      = Fetch::json( $postJsonUrl, false );
+
+		$object = Fetch::json( $postUrl, false );
 
 
 		// Create an empty wordpress post array to build up over the course of the
@@ -45,51 +45,10 @@ class Post {
 		$postDom    = HtmlDomParser::str_get_html( $object->content ); // A parsed object of the post content to be split into ACF widgets as a later point
 
 		// Check if article exists and handle onExistAction
-		$existingPost = self::getPostsWithSlug( $postObject->slug );
-
-		// Mark if the post already exists
-		// This is used later on to decide if we should update or insert the post
-		if ( empty( $existingPost ) ) {
-
-			// If there's no existing post go ahead and import it fresh
-			// Make $existingPost clearer to use in future if statements by setting as false
-			$existingPost = false;
+		$postId = self::getPostsWithSlug( $postObject->slug );
 
 
-		} else {
 
-			// If the post exists respect the onExistAction attribute
-			switch ( $onExistAction ) {
-				case 'update':
-
-					// Update the existing post in place
-
-					// Use the post object as the base of the post to update
-					// Transmute object to array for the wp_update_post functon
-					$postArrayForWordpress = (array) $existingPost[0];
-
-					break;
-				case 'delete-insert':
-
-					// Delete existing post and add a new one below
-
-					wp_delete_post( $existingPost[0]->ID, true ); // Second parameter is force delete, skips trash, do not pass go, do not collect £200.
-
-					break;
-				case 'skip':
-				default:
-
-					// Default, skip any post that already exists
-					// return the existing post object as is
-					return new \TimberPost( $existingPost[0]->ID );
-
-					break;
-			}
-
-
-		}
-
-		// Set post published date
 		$displayDate = strtotime( $postObject->displayDate );
 		$displayDate = date( 'o\-m\-d G\:i\:s', $displayDate );
 
@@ -100,15 +59,18 @@ class Post {
 		$sell = empty( $postObject->sell ) ? $postObject->headline : $postObject->sell;
 
 		// Create the base array for the new Wordpress post or merge with existing post if updating
-		$postArrayForWordpress = array_merge( array(
+
+
+		$postArrayForWordpress = array_merge( [
 			'post_name'         => $postObject->slug,
 			'post_title'        => $postObject->headline,
 			'post_date'         => $displayDate,
 			'post_date_gmt'     => $displayDate,
 			'post_modified'     => $displayDate,
 			'post_modified_gmt' => $displayDate,
-			'post_status'       => 'publish' // Publish the post on import
-		), $postArrayForWordpress ); // Clock data from api take presidence over local data from Wordpress
+			'post_status'       => 'publish',
+			'ID'                => $postId
+		], $postArrayForWordpress ); // Clock data from api take presidence over local data from Wordpress
 
 		// Create or select Author ID
 		if ( isset( $object->article->__author ) &&
@@ -148,23 +110,13 @@ class Post {
 		);
 
 		// Log the created time if this is the first time this post was imported
-		if ( $existingPost == false || ( $existingPost && $onExistAction == 'delete-insert' ) ) {
+		if ( $postId === 0 ) {
 			$postMetaArrayForWordpress['catfish_importer_date_created'] = $currentDate;
 
 		}
 
 
-		// Insert or update the post
-		if ( $existingPost && $onExistAction == 'update' ) {
-			// Update the post and save post and return ID of post for updating
-			// categories, tags and Widgets
-			$wpPostId = WPErrorToException::loud( wp_update_post( $postArrayForWordpress ) );
-
-		} elseif ( $onExistAction != 'skip' ) {
-			// Save post and return ID of newly created post for updating categories,
-			// tags and Widgets
-			$wpPostId = WPErrorToException::loud( wp_insert_post( $postArrayForWordpress ) );
-		}
+		$wpPostId = WPErrorToException::loud( wp_insert_post( $postArrayForWordpress ) );
 
 
 		// Save the post meta data (Any field that's not post_)
@@ -204,15 +156,14 @@ class Post {
 
 		update_field( 'article_header_display_hero_image', $show_header, $wpPostId );
 
-		// Envoke any actions hooked to the 'catfish_importer_post' tag
-		do_action( 'catfish_importer_post', $post->ID );
-
-
 		return $post;
 	}
 
 	/**
 	 * Set or update multiple post meta properties at once
+	 *
+	 * @param $postId
+	 * @param $fields
 	 */
 	protected static function setPostMetadata( $postId, $fields ) {
 		foreach ( $fields as $fieldName => $value ) {
@@ -223,6 +174,9 @@ class Post {
 
 	/**
 	 * ACF Set or update multiple post meta properties at once
+	 *
+	 * @param $postId
+	 * @param $fields
 	 */
 	protected static function setACFPostMetadata( $postId, $fields ) {
 		foreach ( $fields as $fieldName => $value ) {
@@ -232,6 +186,10 @@ class Post {
 
 	/**
 	 * ACF Create or update a post meta field
+	 *
+	 * @param $postId
+	 * @param $fieldName
+	 * @param string $value
 	 */
 	protected static function setACFPostMetaProperty( $postId, $fieldName, $value = '' ) {
 		update_field( $fieldName, $value, $postId );
@@ -255,11 +213,11 @@ class Post {
 	}
 
 	protected static function setHeroImages( \TimberPost $post, $postDom, $postObject ) {
-		$show_header  = true;
-		$heroImageDom = $postDom->find( '.slideshow__slide img,.gallery-overview__main-image img' );
+		$show_header   = true;
+		$heroImagesDom = $postDom->find( '.slideshow__slide img,.gallery-overview__main-image img' );
 
 		$heroImageIds = [];
-		foreach ( $heroImageDom as $index => $heroImageDom ) {
+		foreach ( $heroImagesDom as $index => $heroImageDom ) {
 			$heroImage            = new \stdClass();
 			$heroImage->src       = $heroImageDom->src;
 			$heroImage->filename  = substr( $heroImage->src, strrpos( $heroImage->src, '/' ) + 1 );
@@ -305,83 +263,17 @@ class Post {
 
 	/**
 	 * Get and return posts with matching slug
+	 *
+	 * @param $slug
+	 *
+	 * @return array
 	 */
 	public static function getPostsWithSlug( $slug ) {
-		$args  = array(
-			'name'        => $slug,
-			// 'post_name' => $slug,
-			'post_type'   => 'post',
-			'post_status' => array(
-				'publish',
-				'pending',
-				'draft',
-				'auto-draft',
-				'future',
-				'private',
-				'inherit',
-				'trash'
-			)
-		);
-		$posts = get_posts( $args );
+		global $wpdb;
 
-		return $posts;
+
+		return $wpdb->get_var($wpdb->prepare("SELECT ID FROM {$wpdb->posts} WHERE post_name = %s ",$slug));
 	}
 
-	/**
-	 * Delete all post with the automated_testing metadata
-	 */
-	public static function deleteAllAutomatedTestingPosts() {
-		$query = new \WP_Query( [
-			'post_type'      => 'post',
-			'meta_key'       => 'automated_testing',
-			'meta_value'     => true,
-			'post_status'    => array(
-				'publish',
-				'pending',
-				'draft',
-				'auto-draft',
-				'future',
-				'private',
-				'inherit',
-				'trash'
-			),
-			'posts_per_page' => - 1 // Return all posts at once.
-		] );
 
-		if ( $query->have_posts() ) {
-			$posts = $query->get_posts();
-			foreach ( $posts as $post ) {
-				// TODO Delete all images associated with this post.
-				self::deletePostAttachements( $post->ID );
-
-				if ( $post->ID ) {
-
-					Output::cliStatic( 'Deleting post ' . $post->ID );
-
-					wp_delete_post( $post->ID, true );
-				}
-			}
-		}
-	}
-
-	/**
-	 * Delete all post attachement records.
-	 *
-	 * This doesn't actually delete the files themseleves, just Wordpresss
-	 * reference to the file in the database.
-	 */
-	public static function deletePostAttachements( $post_id ) {
-		$media = get_children( array(
-			'post_parent' => $post_id,
-			'post_type'   => 'attachment'
-		) );
-
-		if ( empty( $media ) ) {
-			return;
-		}
-
-		foreach ( $media as $file ) {
-			wp_delete_attachment( $file->ID );
-		}
-	}
 }

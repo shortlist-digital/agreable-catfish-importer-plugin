@@ -9,6 +9,13 @@ use Croissant\DI\Interfaces\CatfishLogger;
 use Sunra\PhpSimple\HtmlDomParser;
 
 /**
+ * This fixes the issues with htmldomparser not parsing large files
+ */
+if ( ! defined( 'MAX_FILE_SIZE' ) ) {
+	define( 'MAX_FILE_SIZE', 600000000 );
+}
+
+/**
  * Class Fetch
  *
  * @package AgreableCatfishImporterPlugin\Services
@@ -57,7 +64,7 @@ class Fetch {
 
 		$curl = curl_init();
 		$url  = $this->getPreparedUrl();
-
+		$host = strpos( $this->url, 'stylist.co.uk' ) === false ? 'www.shortlist.com' : 'www.stylist.co.uk';
 		curl_setopt_array( $curl, array(
 			CURLOPT_URL            => $url,
 			CURLOPT_RETURNTRANSFER => true,
@@ -67,9 +74,10 @@ class Fetch {
 			CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
 			CURLOPT_CUSTOMREQUEST  => "GET",
 			CURLOPT_HTTPHEADER     => array(
-				"Host: www.shortlist.com"
+				"Host: " . $host
 			),
 		) );
+
 
 		$response = curl_exec( $curl );
 		$err      = curl_error( $curl );
@@ -91,13 +99,27 @@ class Fetch {
 	 * @return string
 	 */
 	private function getPreparedUrl() {
+
+		$path = parse_url( $this->url )['path'];
+
+		$escapedPath = implode( '/', array_map( function ( $segment ) {
+			return rawurlencode( $segment );
+		}, explode( '/', $path ) ) );
+
 		return str_replace(
-			[ 'www.shortlist.com', 'http://shortlist.com', 'www.stylist.com', 'http://stylist.com' ],
+			[
+				'www.shortlist.com',
+				'http://shortlist.com',
+				'www.stylist.co.uk',
+				'http://stylist.co.uk',
+				$path
+			],
 			[
 				'origin.shortlist.com',
 				'http://origin.shortlist.com',
-				'origin.stylist.com',
-				'http://origin.stylist.com'
+				'origin.shortlist.com',
+				'http://origin.shortlist.com',
+				$escapedPath
 			],
 			$this->url );
 	}
@@ -177,10 +199,11 @@ class Fetch {
 
 	/**
 	 * @param $url
-	 * @param bool $cache
 	 *
 	 * @return \simplehtmldom_1_5\simple_html_dom
 	 * @throws \Exception
+	 * @internal param bool $cache
+	 *
 	 */
 	public static function xml( $url ) {
 

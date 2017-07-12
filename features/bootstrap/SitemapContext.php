@@ -1,43 +1,50 @@
 <?php
-use AgreableCatfishImporterPlugin\Services\SiteMap;
-use Behat\Behat\Context\BehatContext;
+
+require_once( __DIR__ . '/../../../../../wp/wp-load.php' );
+
+use AgreableCatfishImporterPlugin\Api;
+use Behat\Behat\Context\Context;
 use PHPUnit_Framework_Assert as Assert;
 
-class SitemapContext extends BehatContext {
-	private static $categorys;
-	private static $categoryPosts;
+class SitemapContext implements Context {
+	public $categorys;
+	public $categoryPosts;
+	/**
+	 * @var Api
+	 */
+	public $api;
 
+	public function __construct() {
+		$this->api = \Croissant\App::get( Api::class );
+	}
 
 	/**
 	 * @Given /^the sitemap index "([^"]*)"$/
+	 * @param $sitemapIndex
 	 */
 	public function theSitemapIndex( $sitemapIndex ) {
-		self::$categorys = SiteMap::getUrlsFromSitemap( $sitemapIndex );
+		$this->categorys = $this->api->getSitemaps();
 	}
 
 	/**
 	 * @Then /^I should have a list of categories$/
 	 */
 	public function iShouldHaveAListOfCategories() {
-		Assert::assertGreaterThan( 0, count( self::$categorys ) );
+		Assert::assertGreaterThan( 0, count( $this->categorys ) );
 	}
 
 	/**
 	 * @Given /^the category sitemap "([^"]*)"$/
+	 * @param $categorySitemap
 	 */
 	public function theCategorySitemap( $categorySitemap ) {
-		self::$categoryPosts = SiteMap::getUrlsFromSitemap( $categorySitemap );
+		$this->categoryPosts = $this->api->getPostsFromSitemap( $categorySitemap );
 	}
 
 	/**
 	 * @Then /^I should have a list of posts$/
 	 */
 	public function iShouldHaveAListOfPosts() {
-		Assert::assertGreaterThan( 0, count( self::$categoryPosts ) );
-	}
-
-	public static function clearVariables() {
-		self::$categorys     = null;
-		self::$categoryPosts = null;
+		Assert::assertGreaterThan( 0, count( $this->categoryPosts ) );
 	}
 }

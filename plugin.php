@@ -11,14 +11,11 @@
  */
 
 include __DIR__ . '/app/acf.php';
-include __DIR__ . '/app/cli.php';
 
 
 if ( is_admin() ) {
 
-	include __DIR__ . '/app/hooks.php';
-	include __DIR__ . '/app/ajax.php';
-	include __DIR__ . '/app/panels.php';
+	include __DIR__ . '/app/editor.php';
 
 	add_action( 'admin_enqueue_scripts', function () {
 		wp_enqueue_style( 'catfish-styles', plugin_dir_url( __FILE__ ) . 'assets/css/admin.css' );
