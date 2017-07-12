@@ -34,7 +34,7 @@ class Post {
 		self::$currentUrl = $postUrl;
 		// Escape the url path using this handy helper
 		$postJsonUrl = Sync::escapeAPIUrlPaths( $originalJsonUrl );
-		$object      = Fetch::json( $postJsonUrl );
+		$object      = Fetch::json( $postJsonUrl, false );
 
 
 		// Create an empty wordpress post array to build up over the course of the

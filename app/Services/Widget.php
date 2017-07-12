@@ -114,7 +114,7 @@ class Widget {
 		// Escape the url path using this handy helper
 		$galleryApi = Sync::escapeAPIUrlPaths( $galleryApi );
 
-		$galleryData = Fetch::json( $galleryApi );
+		$galleryData = Fetch::json( $galleryApi, false );
 
 		if ( ! isset( $galleryData->images ) || ! is_array( $galleryData->images ) ) {
 			throw new Exception( 'Was expecting an array of images in gallery data' );
