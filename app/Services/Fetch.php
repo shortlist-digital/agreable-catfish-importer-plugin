@@ -8,26 +8,56 @@ use Croissant\App;
 use Croissant\DI\Interfaces\CatfishLogger;
 use Sunra\PhpSimple\HtmlDomParser;
 
+/**
+ * Class Fetch
+ *
+ * @package AgreableCatfishImporterPlugin\Services
+ */
 class Fetch {
 
 	/**
 	 * @var string
 	 */
 	private $url;
+
+	/**
+	 * @var
+	 */
+	private $cache;
+
 	/**
 	 * @var CatfishLogger
 	 */
 	private $_logger;
 
-	public function __construct( $url ) {
+	/**
+	 * @var array
+	 */
+	private static $memoryCache = [];
+
+
+	/**
+	 * Fetch constructor.
+	 *
+	 * @param $url
+	 * @param $cache
+	 */
+	public function __construct( $url, $cache ) {
+		$this->cache   = $cache;
 		$this->url     = $url;
 		$this->_logger = App::get( CatfishLogger::class );
 	}
 
+	/**
+	 * @return mixed
+	 * @throws \Exception
+	 */
 	private function get() {
+
 
 		$curl = curl_init();
 		$url  = $this->getPreparedUrl();
+
 		curl_setopt_array( $curl, array(
 			CURLOPT_URL            => $url,
 			CURLOPT_RETURNTRANSFER => true,
@@ -50,7 +80,9 @@ class Fetch {
 			$this->error( "cURL Error #:" . $err . ' while processing ' . $url );
 			Throw new \Exception( "cURL Error #:" . $err . ' while processing ' . $url );
 		}
+
 		$this->debug( 'Successfully performed request to ' . $url );
+
 
 		return $response;
 	}
@@ -60,31 +92,100 @@ class Fetch {
 	 */
 	private function getPreparedUrl() {
 		return str_replace(
-			[ 'www.shortlist.com', 'www.stylist.com' ],
-			[ 'origin.shortlist.com', 'origin.stylist.com' ],
+			[ 'www.shortlist.com', 'http://shortlist.com', 'www.stylist.com', 'http://stylist.com' ],
+			[
+				'origin.shortlist.com',
+				'http://origin.shortlist.com',
+				'origin.stylist.com',
+				'http://origin.stylist.com'
+			],
 			$this->url );
 	}
 
 	/**
+	 * This function seems ridiculous but because of caching requests should actually save us a lot of time.
+	 */
+	public function getCache() {
+
+		if ( ! $this->cache ) {
+			return false;
+		}
+
+		if ( isset( self::$memoryCache[ $this->url ] ) ) {
+			return self::$memoryCache[ $this->url ];
+		}
+
+		return $this->getTransient();
+	}
+
+
+	/**
+	 * @return mixed
+	 */
+	public function getTransient() {
+		return get_transient( $this->getCacheKey() );
+	}
+
+	/**
+	 * @param $data
+	 *
+	 * @return bool
+	 */
+	public function setCache( $data ) {
+		$this->debug( 'Saved cache for ' . $this->url );
+
+		return set_transient( $this->getCacheKey(), $data, 60 * 60 * 12 );
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getCacheKey() {
+		return 'catfish_import_url_' . md5( $this->url );
+	}
+
+	/**
 	 * @param $url
-	 * @param bool $asArray
+	 * @param bool $cache
 	 *
 	 * @return \stdClass|[]|null|bool|int
 	 * @throws \Exception
 	 */
-	public static function json( $url, $asArray = false ) {
-		$self       = new self( $url );
+	public static function json( $url, $cache = true ) {
+
+		$self = new self( $url, $cache );
+
+		$cache = $self->getCache();
+
+		if ( $cache !== false ) {
+			$self->debug( 'Fetching from cache ' . $self->url );
+
+			return $cache;
+		}
 		$dataString = $self->get();
-		$data       = json_decode( $dataString, $asArray );
+		$data       = json_decode( $dataString, false );
 		if ( $data === null && json_last_error() != JSON_ERROR_NONE ) {
 			throw new \Exception( 'It seems like ' . $url . ' is not a valid json' );
+		}
+		if ( $cache ) {
+			self::$memoryCache[ $self->url ] = $data;
+			$self->setCache( $data );
 		}
 
 		return $data;
 	}
 
+	/**
+	 * @param $url
+	 * @param bool $cache
+	 *
+	 * @return \simplehtmldom_1_5\simple_html_dom
+	 * @throws \Exception
+	 */
 	public static function xml( $url ) {
-		$self       = new self( $url );
+
+		$self = new self( $url, false );
+
 		$dataString = $self->get();
 		$data       = HtmlDomParser::str_get_html( $dataString );
 
@@ -95,10 +196,16 @@ class Fetch {
 		return $data;
 	}
 
+	/**
+	 * @param $message string
+	 */
 	public function error( $message ) {
 		$this->_logger->error( $message );
 	}
 
+	/**
+	 * @param $message string
+	 */
 	public function debug( $message ) {
 		$this->_logger->debug( $message );
 	}
