@@ -6,6 +6,9 @@ use AgreableCatfishImporterPlugin\Api;
 use Behat\Behat\Context\Context;
 use PHPUnit_Framework_Assert as Assert;
 
+/**
+ * Class SitemapContext
+ */
 class SitemapContext implements Context {
 	public $categories;
 	public $categoryPosts;
@@ -14,6 +17,9 @@ class SitemapContext implements Context {
 	 */
 	public $api;
 
+	/**
+	 * SitemapContext constructor.
+	 */
 	public function __construct() {
 		$this->api = \Croissant\App::get( Api::class );
 	}

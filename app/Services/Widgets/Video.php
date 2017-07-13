@@ -3,8 +3,18 @@ namespace AgreableCatfishImporterPlugin\Services\Widgets;
 
 use \stdClass;
 
+/**
+ * Class Video
+ *
+ * @package AgreableCatfishImporterPlugin\Services\Widgets
+ */
 class Video {
-  public static function getFromWidgetDom($widgetDom) {
+	/**
+	 * @param $widgetDom
+	 *
+	 * @return stdClass
+	 */
+	public static function getFromWidgetDom($widgetDom) {
     $widgetData = new stdClass();
     $widgetData->type = 'embed';
     $videoIframe = $widgetDom->find('iframe');
@@ -19,7 +29,12 @@ class Video {
     return $widgetData;
   }
 
-  protected static function getFacebookEmbedUrl($url) {
+	/**
+	 * @param $url
+	 *
+	 * @return string
+	 */
+	protected static function getFacebookEmbedUrl($url) {
     if (strpos($url, 'https://www.facebook.com') === false) {
       if ($url[0] !== '/') {
         $url = '/' . $url;
@@ -29,7 +44,12 @@ class Video {
     return $url;
   }
 
-  public static function getYouTubeEmbedUrl($url) {
+	/**
+	 * @param $url
+	 *
+	 * @return mixed|string
+	 */
+	public static function getYouTubeEmbedUrl($url) {
     if (!preg_match("~^(?:f|ht)tps?://~i", $url)) {
       $url = str_replace("//","", $url);
       $url = "http://" . $url;

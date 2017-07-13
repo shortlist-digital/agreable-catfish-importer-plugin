@@ -57,7 +57,8 @@ class Fetch {
 	 * @param bool $rewriteToOrigin
 	 */
 	public function __construct( $url, $cache, $rewriteToOrigin = true ) {
-		$this->cache           = $cache;
+		$this->cache = $cache;
+
 		$this->url             = $url;
 		$this->rewriteToOrigin = $rewriteToOrigin;
 		$this->_logger         = App::get( CatfishLogger::class );
@@ -142,6 +143,7 @@ class Fetch {
 	 */
 	public function getCache() {
 
+
 		if ( ! $this->cache ) {
 			return false;
 		}
@@ -186,9 +188,9 @@ class Fetch {
 	 * @return \stdClass|[]|null|bool|int
 	 * @throws WrongDataFormatException
 	 */
-	public static function json( $url, $cache = true ) {
+	public static function json( $url, $saveCache = true ) {
 
-		$self = new self( $url, $cache );
+		$self = new self( $url, $saveCache );
 
 		$cache = $self->getCache();
 
@@ -203,7 +205,9 @@ class Fetch {
 			$self->debug( $data );
 			throw new WrongDataFormatException( 'It seems like ' . $url . ' is not a valid json' );
 		}
-		if ( $cache ) {
+
+		if ( $saveCache ) {
+
 			self::$memoryCache[ $self->url ] = $data;
 			$self->setCache( $data );
 		}

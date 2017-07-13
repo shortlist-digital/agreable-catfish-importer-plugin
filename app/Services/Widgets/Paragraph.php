@@ -4,7 +4,17 @@ namespace AgreableCatfishImporterPlugin\Services\Widgets;
 
 use stdClass;
 
+/**
+ * Class Paragraph
+ *
+ * @package AgreableCatfishImporterPlugin\Services\Widgets
+ */
 class Paragraph {
+	/**
+	 * @param $widgetDom
+	 *
+	 * @return mixed|stdClass
+	 */
 	public static function getFromWidgetDom( $widgetDom ) {
 		$widgetData       = new stdClass();
 		$widgetData->type = 'paragraph';
@@ -19,6 +29,11 @@ class Paragraph {
 		return $widgetDom;
 	}
 
+	/**
+	 * @param $html
+	 *
+	 * @return mixed
+	 */
 	public static function filterBadTags( $html ) {
 		$badTags = 'span, center';
 		// Catch if $html does not have the find() member function

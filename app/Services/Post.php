@@ -4,13 +4,18 @@ namespace AgreableCatfishImporterPlugin\Services;
 
 use Sunra\PhpSimple\HtmlDomParser;
 
+/**
+ * Class Post
+ *
+ * @package AgreableCatfishImporterPlugin\Services
+ */
 class Post {
 
 	public static $currentUrl = '';
 	/**
 	 * $postArrayForWordpress
 	 *
-	 * Store the post meta as a a contstant so that we can access it from an
+	 * Store the post meta as a a constant so that we can access it from an
 	 * anonymous function later on.
 	 */
 	public static $postArrayForWordpress = array();
@@ -22,9 +27,10 @@ class Post {
 	 */
 	/**
 	 * @param $postUrl
-	 * @param string $onExistAction
 	 *
 	 * @return \TimberPost
+	 * @internal param string $onExistAction
+	 *
 	 */
 	public static function getPostFromUrl( $postUrl ) {
 
@@ -70,7 +76,7 @@ class Post {
 			'post_modified_gmt' => $displayDate,
 			'post_status'       => 'publish',
 			'ID'                => $postId
-		], $postArrayForWordpress ); // Clock data from api take presidence over local data from Wordpress
+		], $postArrayForWordpress ); // Clock data from api take precedence over local data from Wordpress
 
 		// Create or select Author ID
 		if ( isset( $object->article->__author ) &&
@@ -195,6 +201,11 @@ class Post {
 		update_field( $fieldName, $value, $postId );
 	}
 
+	/**
+	 * @param $authorObject
+	 *
+	 * @return bool|int|\WP_Error
+	 */
 	protected static function setAuthor( $authorObject ) {
 		$user_id = User::checkUserByEmail( $authorObject->emailAddress );
 		if ( $user_id == false ) {
@@ -204,6 +215,11 @@ class Post {
 		return $user_id;
 	}
 
+	/**
+	 * @param $articleObject
+	 *
+	 * @return string
+	 */
 	protected static function setArticleType( $articleObject ) {
 		if ( isset( $articleObject->analyticsPageTypeDimension ) ) {
 			return strtolower( $articleObject->analyticsPageTypeDimension );
@@ -212,6 +228,14 @@ class Post {
 		return 'article';
 	}
 
+	/**
+	 * @param \TimberPost $post
+	 * @param $postDom
+	 * @param $postObject
+	 *
+	 * @return bool
+	 * @throws \Exception
+	 */
 	protected static function setHeroImages( \TimberPost $post, $postDom, $postObject ) {
 		$show_header   = true;
 		$heroImagesDom = $postDom->find( '.slideshow__slide img,.gallery-overview__main-image img' );
@@ -255,6 +279,11 @@ class Post {
 		return $show_header;
 	}
 
+	/**
+	 * @param \TimberPost $post
+	 *
+	 * @return array|null|object|\WP_Error
+	 */
 	public static function getCategory( \TimberPost $post ) {
 		$postCategories = wp_get_post_categories( $post->id );
 

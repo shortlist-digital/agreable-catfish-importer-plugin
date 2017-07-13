@@ -2,10 +2,19 @@
 
 namespace AgreableCatfishImporterPlugin\Services\Widgets;
 
-use AgreableCatfishImporterPlugin\Services\Post;
 use Sunra\PhpSimple\HtmlDomParser;
 
+/**
+ * Class Html
+ *
+ * @package AgreableCatfishImporterPlugin\Services\Widgets
+ */
 class Html {
+	/**
+	 * @param $html_string
+	 *
+	 * @return bool
+	 */
 	public static function checkIfValidParagraph( $html_string ) {
 		$allowable_tags  = '<a><b><i><br><em><sup><sub><strong><p><h3><ul><ol><li><span><center>';
 		$stripped_string = strip_tags( $html_string, $allowable_tags );
@@ -17,14 +26,19 @@ class Html {
 		return $test;
 	}
 
-	public static function getFromWidgetDom( $widgetDom ) {
+	/**
+	 * @param $widgetDom
+	 *
+	 * @return array|mixed|\stdClass
+	 */
+	public static function getFromWidgetDom(\simplehtmldom_1_5\simple_html_dom_node $widgetDom ) {
 		// Remove the <div class="legacy-custom-html"/> that Clock wrap around the content
 		if ( isset( $widgetDom->find( '.legacy-custom-html' )[0] ) ) {
 			$widgetDom = $widgetDom->find( '.legacy-custom-html' )[0];
 		}
 
 		if ( self::checkIfValidParagraph( $widgetDom->innertext ) ) {
-			// Return paragraph only posts as a single paragraphy widget
+			// Return paragraph only posts as a single paragraph widget
 			return Paragraph::getFromWidgetDom( $widgetDom );
 		} else {
 			// Break up mixed content articles into separate widgets
@@ -33,18 +47,24 @@ class Html {
 		}
 	}
 
-	public static function breakIntoWidgets( $widgetDom ) {
+	/**
+	 * @param $widgetDom
+	 *
+	 * @return array|bool
+	 * @throws \Exception
+	 */
+	public static function breakIntoWidgets(\simplehtmldom_1_5\simple_html_dom_node $widgetDom ) {
 
 		$widgets = [];
 		// Loop through all DOM nodes to create widgets from them
 
 		foreach ( $widgetDom->find( '*' ) as $index => $node ) {
 			/**
-			 * @var $node \simplehtmldom_1_5\simple_html_dom
+			 * @var $node \simplehtmldom_1_5\simple_html_dom_node
 			 */
 			// Check if this DOM node is a valid paragraph widget
 			if ( self::checkIfValidParagraph( $node->outertext ) ) {
-				// Remove blank <p>&nbsp;</p> paragraphy
+				// Remove blank <p>&nbsp;</p> paragraph
 				$clean_paragraph = str_replace( "<p>&nbsp;</p>", "", $node->outertext );
 
 				$paragraphDom = HtmlDomParser::str_get_html( $clean_paragraph );
@@ -52,7 +72,7 @@ class Html {
 			} elseif ( $node->tag == 'h2' ) {
 				array_push( $widgets, Heading::getFromWidgetDom( $node ) );
 				continue;
-			} // Store embeddible content as embed widgets
+			} // Store embed-able content as embed widgets
 			elseif ( ( $embedWidgets = Embed::getWidgetsFromDom( $node ) ) ) {
 
 				// Push all embed widgets into the widget array

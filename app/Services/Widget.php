@@ -7,7 +7,18 @@ use AgreableCatfishImporterPlugin\Services\Widgets\Html;
 use AgreableCatfishImporterPlugin\Services\Widgets\InlineImage;
 use AgreableCatfishImporterPlugin\Services\Widgets\Video;
 
+/**
+ * Class Widget
+ *
+ * @package AgreableCatfishImporterPlugin\Services
+ */
 class Widget {
+	/**
+	 * @param $widgetName
+	 * @param \stdClass $data
+	 *
+	 * @return \stdClass
+	 */
 	public static function makeWidget( $widgetName, \stdClass $data ) {
 		$widget                = clone $data;
 		$widget->acf_fc_layout = $widgetName;
@@ -15,6 +26,10 @@ class Widget {
 		return $widget;
 	}
 
+	/**
+	 * @param $widget
+	 * @param $widgets
+	 */
 	public static function addWidgetToWidgets( $widget, $widgets ) {
 		$widgets[] = $widget;
 	}
@@ -114,6 +129,8 @@ class Widget {
 	 * @param $widgetNames
 	 * @param string $galleryApiEndpoint
 	 * @param string $widgetId
+	 *
+	 * @throws \Exception
 	 */
 	protected static function setGalleryWidget( $post, \stdClass $postObject, $widgetNames, $galleryApiEndpoint = '/api/gallery-data', $widgetId = '' ) {
 		$galleryApi = str_replace( $postObject->__fullUrlPath, $galleryApiEndpoint . $postObject->__fullUrlPath . $widgetId, $postObject->absoluteUrl );
@@ -217,6 +234,11 @@ class Widget {
 		return $id;
 	}
 
+	/**
+	 * @param \TimberPost $post
+	 *
+	 * @return mixed|null|void
+	 */
 	public static function getPostWidgets( \TimberPost $post ) {
 		return get_field( 'widgets', $post->id );
 	}

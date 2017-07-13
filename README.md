@@ -5,18 +5,8 @@ For importing Catfish content in to Croissant
 
 # Setup
 
-The Catfish importer uses Amazon SQS queues, calls Envoyer heartbeat urls, reports handled errors directly to Bugsnag and requires some environment variables to be set before it will run. Make sure you set all of the following before attempting to run the command line actions:
-
+Add variable
 ```
-AWS_SQS_KEY=
-AWS_SQS_SECRET=
-AWS_SQS_CATFISH_IMPORTER_REGION=
-AWS_SQS_CATFISH_IMPORTER_QUEUE=
-
-ENVOYER_HEARTBEAT_URL_IMPORTER=
-ENVOYER_HEARTBEAT_URL_UPDATED_POSTS_SCANNER=
-ENVOYER_HEARTBEAT_URL_SCHEDULED_POSTS_CACHE=
-
 CATFISH_IMPORTER_TARGET_URL=http://www.shortlist.com/
 ```
 

@@ -2,8 +2,18 @@
 
 namespace AgreableCatfishImporterPlugin\Services;
 
+/**
+ * Class User
+ *
+ * @package AgreableCatfishImporterPlugin\Services
+ */
 class User {
 
+	/**
+	 * @param $email
+	 *
+	 * @return bool|int
+	 */
 	public static function checkUserByEmail( $email ) {
 		if ( ( $user = get_user_by( 'email', $email ) ) ) {
 			return $user->ID;
@@ -12,6 +22,11 @@ class User {
 		return false;
 	}
 
+	/**
+	 * @param $object
+	 *
+	 * @return int|\WP_Error
+	 */
 	public static function insertCatfishUser( $object ) {
 		$user_data = array(
 			'user_login'    => $object->slug,

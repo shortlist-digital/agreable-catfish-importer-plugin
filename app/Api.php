@@ -6,12 +6,22 @@ use AgreableCatfishImporterPlugin\Services\Fetch;
 use AgreableCatfishImporterPlugin\Services\Post;
 use Croissant\DI\Interfaces\CatfishLogger;
 
+/**
+ * Class Api
+ *
+ * @package AgreableCatfishImporterPlugin
+ */
 class Api {
 	/**
 	 * @var CatfishLogger
 	 */
 	private $_logger;
 
+	/**
+	 * Api constructor.
+	 *
+	 * @param CatfishLogger $logger
+	 */
 	public function __construct( CatfishLogger $logger ) {
 		$this->_logger = $logger;
 	}
@@ -52,16 +62,27 @@ class Api {
 
 	}
 
+	/**
+	 * @param $postUrl
+	 *
+	 * @return \TimberPost
+	 */
 	public function importPost( $postUrl ) {
 
 		return Post::getPostFromUrl( $postUrl, 'update' );
 	}
 
 
+	/**
+	 * @return array
+	 */
 	public function getAllPosts() {
 		return array_keys( $this->getAllPostsData() );
 	}
 
+	/**
+	 * @return array
+	 */
 	public function getAllPostsData() {
 
 		$this->_logger->info( "Fetching sitemaps" );

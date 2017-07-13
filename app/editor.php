@@ -3,7 +3,7 @@
 use Croissant\App;
 
 /**
- * Adds resync button
+ * Adds re-sync button
  */
 add_action( 'wp_ajax_catfish_reimport', function () {
 	if ( ! isset( $_POST['id'] ) || ! is_numeric( $_POST['id'] ) ) {
@@ -24,7 +24,7 @@ add_action( 'wp_ajax_catfish_reimport', function () {
 } );
 
 add_filter( 'post_row_actions', function ( $actions, $post ) {
-	$actions['re_import'] = "<a title='Re-import from Catfish' class='reicport js-catfish-reimport' href='#' data-id='{$post->ID}'>Reimport</a>";
+	$actions['re_import'] = "<a title='Re-import from Catfish' class='js-catfish-reimport' href='#' data-id='{$post->ID}'>Reimport</a>";
 
 	return $actions;
 }, 10, 2 );

@@ -7,6 +7,9 @@ use AgreableCatfishImporterPlugin\Services\Widget;
 use Behat\Gherkin\Node\PyStringNode;
 use PHPUnit_Framework_Assert as Assert;
 
+/**
+ * Class PostContext
+ */
 class PostContext implements \Behat\Behat\Context\Context {
 	/**
 	 * @var \TimberPost
@@ -209,6 +212,11 @@ class PostContext implements \Behat\Behat\Context\Context {
 		Assert::assertEquals( (string) $caption, $gallery_item['caption'] );
 	}
 
+	/**
+	 * @param $post
+	 *
+	 * @return mixed
+	 */
 	protected function getGalleryWidgetFromPost( $post ) {
 		$widgets = $this->post->get_field( 'widgets' );
 		foreach ( $widgets as $widget ) {
