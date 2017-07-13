@@ -8,6 +8,7 @@ use AgreableCatfishImporterPlugin\Exception\AddressUnavailableException;
 use AgreableCatfishImporterPlugin\Exception\WrongDataFormatException;
 use Croissant\App;
 use Croissant\DI\Interfaces\CatfishLogger;
+use Croissant\DI\Interfaces\Curl;
 use Sunra\PhpSimple\HtmlDomParser;
 
 /**
@@ -70,16 +71,17 @@ class Fetch {
 	 */
 	private function get() {
 
+		$curl = App::get( Curl::class );
 
-		$curl = curl_init();
-		$url  = $this->url;
+		$url = $this->url;
 
 		if ( $this->rewriteToOrigin ) {
 			$url = $this->getPreparedUrl();
 		}
 
 		$host = strpos( $this->url, 'stylist.co.uk' ) === false ? 'www.shortlist.com' : 'www.stylist.co.uk';
-		curl_setopt_array( $curl, array(
+
+		$res = $curl->get( array(
 			CURLOPT_URL            => $url,
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_ENCODING       => "",
@@ -92,21 +94,15 @@ class Fetch {
 			),
 		) );
 
-
-		$response = curl_exec( $curl );
-		$err      = curl_error( $curl );
-
-		curl_close( $curl );
-
-		if ( $err ) {
-			$this->error( "cURL Error #:" . $err . ' while processing ' . $url );
-			Throw new AddressUnavailableException( "cURL Error #:" . $err . ' while processing ' . $url );
+		if ( $res['error'] ) {
+			$this->error( "cURL Error #:" . $res['error']  . ' while processing ' . $url );
+			Throw new AddressUnavailableException( "cURL Error #:" . $res['error']  . ' while processing ' . $url );
 		}
 
 		$this->debug( 'Successfully performed request to ' . $url );
 
 
-		return $response;
+		return $res['response'];
 	}
 
 	/**
