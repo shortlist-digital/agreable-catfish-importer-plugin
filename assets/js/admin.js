@@ -9,7 +9,7 @@
                 'id': $this.data('id')
             };
             $.post(ajaxurl, data).done(function () {
-                alert('Post was update successfully');
+                alert('Post was updated successfully');
             }).fail(function () {
                 alert('Post failed to update. Contact nearest developer');
             });
