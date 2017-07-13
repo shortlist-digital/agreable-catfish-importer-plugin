@@ -16,36 +16,35 @@ class Api {
 		$this->_logger = $logger;
 	}
 
+	/**
+	 * @return array array of urls
+	 */
 	public function getSitemaps() {
-		return array_keys( $this->getPostsFromSitemap( getenv( 'CATFISH_IMPORTER_TARGET_URL' ) . 'sitemap-index.xml' ) );
+		$sitemap = Fetch::xml( getenv( 'CATFISH_IMPORTER_TARGET_URL' ) . 'sitemap-index.xml' );
+
+		return array_map( function ( $loc ) {
+			return $loc->innertext;
+		}, $sitemap->find( 'loc' ) );
+
 	}
 
+	/**
+	 * @param $url
+	 *
+	 * @return array associative array $url=>$timestamp
+	 */
 	public function getPostsFromSitemap( $url ) {
 		$timezone = date_default_timezone_get();
 		date_default_timezone_set( 'Europe/Dublin' );
 
 
 		$sitemap = Fetch::xml( $url );
-		$urls    = [];
 
-		foreach ( $sitemap->find( 'url' ) as $url ) {
-
-
-			/**
-			 * this is stupid array. It's used to keep errors away when not passing by reference
-			 */
-			$swap               = explode( '<lastmod>', $url->innertext );
-			$lastmod            = array_pop( $swap );
-			$swap               = explode( '</lastmod>', $lastmod );
-			$lastmod            = array_shift( $swap );
-			$lastmod            = strtotime( $lastmod );
-			$swap               = explode( '<loc>', $url->innertext );
-			$innertext          = array_pop( $swap );
-			$swap               = explode( '</loc>', $innertext );
-			$innertext          = array_shift( $swap );
-			$urls[ $innertext ] = $lastmod;
-
-		}
+		$urls = array_combine( array_map( function ( $loc ) {
+			return $loc->innertext;
+		}, $sitemap->find( 'loc' ) ), array_map( function ( $mod ) {
+			return strtotime( $mod->innertext );
+		}, $sitemap->find( 'lastmod' ) ) );
 
 		date_default_timezone_set( $timezone );
 

@@ -23,3 +23,6 @@ if ( is_admin() ) {
 		wp_enqueue_script( 'catfish-js' );
 	} );
 }
+register_activation_hook( __FILE__, function () {
+	add_role( 'purgatory', 'Purgatory', [] );
+} );

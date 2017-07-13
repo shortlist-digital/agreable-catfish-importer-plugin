@@ -23,7 +23,7 @@ class PostContext implements \Behat\Behat\Context\Context {
 	 * @param $url
 	 */
 	public function thePost( $url ) {
-		$this->post = Post::getPostFromUrl( $url, 'update' );
+		$this->post = Post::getPostFromUrl( $url );
 	}
 
 	/**
@@ -156,8 +156,8 @@ class PostContext implements \Behat\Behat\Context\Context {
 	 * @param $expectedHeroImageNumber
 	 */
 	public function theNumberOfHeroImagesIs( $expectedHeroImageNumber ) {
-		Assert::assertNotNull( $this->post->get_field( 'hero_images' ) );
-		Assert::assertEquals( $expectedHeroImageNumber, count( $this->post->get_field( 'hero_images' ) ) );
+		$heroImages = $this->post->get_field( 'hero_images' );
+		Assert::assertEquals( $expectedHeroImageNumber, count( $heroImages ) );
 	}
 
 	/**

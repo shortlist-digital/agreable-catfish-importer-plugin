@@ -8,6 +8,7 @@ class User {
 		if ( ( $user = get_user_by( 'email', $email ) ) ) {
 			return $user->ID;
 		}
+
 		return false;
 	}
 
@@ -18,7 +19,7 @@ class User {
 			'user_email'    => $object->emailAddress,
 			'display_name'  => $object->name,
 			'description'   => $object->biography,
-			'role'          => 'editor',
+			'role'          => 'purgatory',
 			'user_pass'     => null
 		);
 		$user_id   = wp_insert_user( $user_data );

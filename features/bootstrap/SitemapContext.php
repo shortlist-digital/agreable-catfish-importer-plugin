@@ -7,7 +7,7 @@ use Behat\Behat\Context\Context;
 use PHPUnit_Framework_Assert as Assert;
 
 class SitemapContext implements Context {
-	public $categorys;
+	public $categories;
 	public $categoryPosts;
 	/**
 	 * @var Api
@@ -23,14 +23,16 @@ class SitemapContext implements Context {
 	 * @param $sitemapIndex
 	 */
 	public function theSitemapIndex( $sitemapIndex ) {
-		$this->categorys = $this->api->getSitemaps();
+		$categories = $this->api->getSitemaps();
+
+		$this->categories = $categories;
 	}
 
 	/**
 	 * @Then /^I should have a list of categories$/
 	 */
 	public function iShouldHaveAListOfCategories() {
-		Assert::assertGreaterThan( 0, count( $this->categorys ) );
+		Assert::assertGreaterThan( 0, count( $this->categories ) );
 	}
 
 	/**
@@ -42,9 +44,19 @@ class SitemapContext implements Context {
 	}
 
 	/**
-	 * @Then /^I should have a list of posts$/
+	 * @Then /^I should have a list of posts with their timestamps$/
 	 */
-	public function iShouldHaveAListOfPosts() {
+	public function iShouldHaveAListOfPostsWithTheirDates() {
+
 		Assert::assertGreaterThan( 0, count( $this->categoryPosts ) );
+		/**
+		 * Checks if all the keys are strings and all the timestamps are numeric
+		 */
+		Assert::assertEquals( count( array_filter( array_keys( $this->categoryPosts ), function ( $i ) {
+			return is_string( $i );
+		} ) ), count( array_filter( array_values( $this->categoryPosts ), function ( $i ) {
+			return is_numeric( $i );
+		} ) ) );
+
 	}
 }

@@ -6,15 +6,18 @@ use Croissant\App;
  * Adds resync button
  */
 add_action( 'wp_ajax_catfish_reimport', function () {
-
-	if ( is_numeric( $_POST['url'] ) ) {
-		$_POST['url'] = get_post_meta( $_POST['url'], 'catfish_importer_url', true );
+	if ( ! isset( $_POST['id'] ) || ! is_numeric( $_POST['id'] ) ) {
+		throw new \InvalidArgumentException( 'Request requires id and it need to be numeric' );
 	}
+	$id = (int) $_POST['id'];
+
+	$url = get_post_meta( $id, 'catfish_importer_url', true );
+
 	/**
 	 * @var $api Api
 	 */
-	$api  = App::get( Api::class );
-	$post = $api->importPost( $_POST['catfishimporter_url'] );
+	$api = App::get( Api::class );
+	$api->importPost( $url );
 	header( 'Content-type: Application/json' );
 	echo json_encode( [] );
 	exit;
@@ -30,11 +33,7 @@ add_filter( 'post_row_actions', function ( $actions, $post ) {
 add_action( 'admin_init', function () {
 	$user = wp_get_current_user();
 	if ( in_array( 'purgatory', (array) $user->roles ) ) {
-		wp_redirect( home_url() );
-		exit;
+		exit( 'You are not allowed to see this page' );
 	}
 }, 100 );
 
-register_activation_hook( __FILE__, function () {
-	add_role( 'purgatory', 'Purgatory', [] );
-} );

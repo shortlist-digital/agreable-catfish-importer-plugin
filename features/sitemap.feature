@@ -7,4 +7,4 @@ Feature: Sitemap
 
   Scenario: Fetch posts from a category sitemap
     Given the category sitemap "http://www.stylist.co.uk/sitemap/books.xml"
-    Then I should have a list of posts
+    Then I should have a list of posts with their timestamps

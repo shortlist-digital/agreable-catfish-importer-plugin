@@ -4,6 +4,8 @@
 namespace AgreableCatfishImporterPlugin\Services;
 
 
+use AgreableCatfishImporterPlugin\Exception\AddressUnavailableException;
+use AgreableCatfishImporterPlugin\Exception\WrongDataFormatException;
 use Croissant\App;
 use Croissant\DI\Interfaces\CatfishLogger;
 use Sunra\PhpSimple\HtmlDomParser;
@@ -37,33 +39,44 @@ class Fetch {
 	 */
 	private $_logger;
 
+
+	/**
+	 * @var bool Should url be rewritten to avoid cloudflare?
+	 */
+	private $rewriteToOrigin;
 	/**
 	 * @var array
 	 */
 	private static $memoryCache = [];
 
-
 	/**
 	 * Fetch constructor.
 	 *
-	 * @param $url
-	 * @param $cache
+	 * @param string $url
+	 * @param bool $cache
+	 * @param bool $rewriteToOrigin
 	 */
-	public function __construct( $url, $cache ) {
-		$this->cache   = $cache;
-		$this->url     = $url;
-		$this->_logger = App::get( CatfishLogger::class );
+	public function __construct( $url, $cache, $rewriteToOrigin = true ) {
+		$this->cache           = $cache;
+		$this->url             = $url;
+		$this->rewriteToOrigin = $rewriteToOrigin;
+		$this->_logger         = App::get( CatfishLogger::class );
 	}
 
 	/**
 	 * @return mixed
-	 * @throws \Exception
+	 * @throws AddressUnavailableException
 	 */
 	private function get() {
 
 
 		$curl = curl_init();
-		$url  = $this->getPreparedUrl();
+		$url  = $this->url;
+
+		if ( $this->rewriteToOrigin ) {
+			$url = $this->getPreparedUrl();
+		}
+
 		$host = strpos( $this->url, 'stylist.co.uk' ) === false ? 'www.shortlist.com' : 'www.stylist.co.uk';
 		curl_setopt_array( $curl, array(
 			CURLOPT_URL            => $url,
@@ -86,7 +99,7 @@ class Fetch {
 
 		if ( $err ) {
 			$this->error( "cURL Error #:" . $err . ' while processing ' . $url );
-			Throw new \Exception( "cURL Error #:" . $err . ' while processing ' . $url );
+			Throw new AddressUnavailableException( "cURL Error #:" . $err . ' while processing ' . $url );
 		}
 
 		$this->debug( 'Successfully performed request to ' . $url );
@@ -171,7 +184,7 @@ class Fetch {
 	 * @param bool $cache
 	 *
 	 * @return \stdClass|[]|null|bool|int
-	 * @throws \Exception
+	 * @throws WrongDataFormatException
 	 */
 	public static function json( $url, $cache = true ) {
 
@@ -187,7 +200,8 @@ class Fetch {
 		$dataString = $self->get();
 		$data       = json_decode( $dataString, false );
 		if ( $data === null && json_last_error() != JSON_ERROR_NONE ) {
-			throw new \Exception( 'It seems like ' . $url . ' is not a valid json' );
+			$self->debug( $data );
+			throw new WrongDataFormatException( 'It seems like ' . $url . ' is not a valid json' );
 		}
 		if ( $cache ) {
 			self::$memoryCache[ $self->url ] = $data;
@@ -201,19 +215,19 @@ class Fetch {
 	 * @param $url
 	 *
 	 * @return \simplehtmldom_1_5\simple_html_dom
-	 * @throws \Exception
+	 * @throws WrongDataFormatException
 	 * @internal param bool $cache
 	 *
 	 */
 	public static function xml( $url ) {
 
-		$self = new self( $url, false );
+		$self = new self( $url, false, false );
 
 		$dataString = $self->get();
 		$data       = HtmlDomParser::str_get_html( $dataString );
 
 		if ( $data === false ) {
-			throw new \Exception( 'It seems like ' . $url . ' is not a valid xml. CHeck if MAX_FILE_SIZE is not too small' );
+			throw new WrongDataFormatException( 'It seems like ' . $url . ' is not a valid xml. CHeck if MAX_FILE_SIZE is not too small' );
 		}
 
 		return $data;
