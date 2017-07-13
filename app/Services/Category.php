@@ -2,8 +2,18 @@
 
 namespace AgreableCatfishImporterPlugin\Services;
 
+/**
+ * Class Category
+ *
+ * @package AgreableCatfishImporterPlugin\Services
+ */
 class Category {
 
+	/**
+	 * @param $sectionObject
+	 * @param $postUrl
+	 * @param $postId
+	 */
 	public static function attachCategories( $sectionObject, $postUrl, $postId ) {
 
 		if ( self::postIsInRootCategory( $sectionObject->fullUrlPath ) ) {
@@ -22,6 +32,12 @@ class Category {
 		}
 	}
 
+	/**
+	 * @param $name
+	 * @param $slug
+	 *
+	 * @return int
+	 */
 	public static function createRootCategory( $name, $slug ) {
 		$term = get_term_by( 'slug', $slug, 'category' );
 		if ( $term ) {
@@ -39,14 +55,25 @@ class Category {
 		}
 	}
 
+	/**
+	 * @param $slug
+	 * @param $postUrl
+	 *
+	 * @return mixed
+	 */
 	public static function getCatfishCategoryNameBySlug( $slug, $postUrl ) {
 		$data          = explode( $slug, $postUrl, 2 );
 		$base_url      = $data[0];
-		$parent_object   = Fetch::json( $base_url . $slug . ".json" );
+		$parent_object = Fetch::json( $base_url . $slug . ".json", true );
 
 		return $parent_object->section->name;
 	}
 
+	/**
+	 * @param $fullUrlPath
+	 *
+	 * @return mixed
+	 */
 	public static function getParentSlug( $fullUrlPath ) {
 		$fullUrlPath    = ltrim( $fullUrlPath, "/" );
 		$category_array = explode( "/", $fullUrlPath );
@@ -54,6 +81,11 @@ class Category {
 		return $category_array[0];
 	}
 
+	/**
+	 * @param $fullUrlPath
+	 *
+	 * @return bool
+	 */
 	public static function postIsInRootCategory( $fullUrlPath ) {
 		$fullUrlPath    = ltrim( $fullUrlPath, "/" );
 		$category_array = explode( "/", $fullUrlPath );
@@ -61,6 +93,13 @@ class Category {
 		return ( count( $category_array ) < 2 );
 	}
 
+	/**
+	 * @param $name
+	 * @param $slug
+	 * @param $parent_id
+	 *
+	 * @return mixed
+	 */
 	public static function createChildCategory( $name, $slug, $parent_id ) {
 		$term = get_term_by( 'slug', $slug, 'category' );
 		if ( $term ) {

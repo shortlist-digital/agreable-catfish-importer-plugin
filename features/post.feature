@@ -67,13 +67,9 @@ Feature: Post
 
       """
 
-  Scenario: Article has correct number of widgets
+  Scenario: Article has correct number of tags and widgets
     Given the post "http://www.shortlist.com/style/fashion/best-trainers-sneakers-hottest-february-2017"
     Then I should have an object of the post
     And the post has the headline "The 10 Hottest Trainers for February 2017"
     And the post has 10 "image" widgets
-
-  Scenario: Article has correct number of tags
-    Given the post "http://www.shortlist.com/style/fashion/best-trainers-sneakers-hottest-february-2017"
-    Then I should have an object of the post
     And the post has 8 tags

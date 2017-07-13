@@ -1,43 +1,68 @@
 <?php
-use AgreableCatfishImporterPlugin\Services\SiteMap;
-use Behat\Behat\Context\BehatContext;
+
+require_once( __DIR__ . '/../../../../../wp/wp-load.php' );
+
+use AgreableCatfishImporterPlugin\Api;
+use Behat\Behat\Context\Context;
 use PHPUnit_Framework_Assert as Assert;
 
-class SitemapContext extends BehatContext {
-	private static $categorys;
-	private static $categoryPosts;
+/**
+ * Class SitemapContext
+ */
+class SitemapContext implements Context {
+	public $categories;
+	public $categoryPosts;
+	/**
+	 * @var Api
+	 */
+	public $api;
 
+	/**
+	 * SitemapContext constructor.
+	 */
+	public function __construct() {
+		$this->api = \Croissant\App::get( Api::class );
+	}
 
 	/**
 	 * @Given /^the sitemap index "([^"]*)"$/
+	 * @param $sitemapIndex
 	 */
 	public function theSitemapIndex( $sitemapIndex ) {
-		self::$categorys = SiteMap::getUrlsFromSitemap( $sitemapIndex );
+		$categories = $this->api->getSitemaps();
+
+		$this->categories = $categories;
 	}
 
 	/**
 	 * @Then /^I should have a list of categories$/
 	 */
 	public function iShouldHaveAListOfCategories() {
-		Assert::assertGreaterThan( 0, count( self::$categorys ) );
+		Assert::assertGreaterThan( 0, count( $this->categories ) );
 	}
 
 	/**
 	 * @Given /^the category sitemap "([^"]*)"$/
+	 * @param $categorySitemap
 	 */
 	public function theCategorySitemap( $categorySitemap ) {
-		self::$categoryPosts = SiteMap::getUrlsFromSitemap( $categorySitemap );
+		$this->categoryPosts = $this->api->getPostsFromSitemap( $categorySitemap );
 	}
 
 	/**
-	 * @Then /^I should have a list of posts$/
+	 * @Then /^I should have a list of posts with their timestamps$/
 	 */
-	public function iShouldHaveAListOfPosts() {
-		Assert::assertGreaterThan( 0, count( self::$categoryPosts ) );
-	}
+	public function iShouldHaveAListOfPostsWithTheirDates() {
 
-	public static function clearVariables() {
-		self::$categorys     = null;
-		self::$categoryPosts = null;
+		Assert::assertGreaterThan( 0, count( $this->categoryPosts ) );
+		/**
+		 * Checks if all the keys are strings and all the timestamps are numeric
+		 */
+		Assert::assertEquals( count( array_filter( array_keys( $this->categoryPosts ), function ( $i ) {
+			return is_string( $i );
+		} ) ), count( array_filter( array_values( $this->categoryPosts ), function ( $i ) {
+			return is_numeric( $i );
+		} ) ) );
+
 	}
 }

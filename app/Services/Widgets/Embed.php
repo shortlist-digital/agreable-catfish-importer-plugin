@@ -5,7 +5,17 @@ namespace AgreableCatfishImporterPlugin\Services\Widgets;
 use simplehtmldom_1_5\simple_html_dom;
 use stdClass;
 
+/**
+ * Class Embed
+ *
+ * @package AgreableCatfishImporterPlugin\Services\Widgets
+ */
 class Embed {
+	/**
+	 * @param $widgetDom
+	 *
+	 * @return array|bool|stdClass
+	 */
 	public static function getWidgetsFromDom( $widgetDom ) {
 
 		// var_dump($widgetDom->outertext);
@@ -19,6 +29,11 @@ class Embed {
 		}
 	}
 
+	/**
+	 * @param $widgetDom
+	 *
+	 * @return bool|stdClass
+	 */
 	public static function handleFrame( $widgetDom ) {
 		$frame = $widgetDom->find( 'iframe' );
 		if ( isset( $frame[0] ) ) {

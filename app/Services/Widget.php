@@ -6,27 +6,44 @@ use AgreableCatfishImporterPlugin\Services\Widgets\HorizontalRule;
 use AgreableCatfishImporterPlugin\Services\Widgets\Html;
 use AgreableCatfishImporterPlugin\Services\Widgets\InlineImage;
 use AgreableCatfishImporterPlugin\Services\Widgets\Video;
-use Exception;
-use Mesh;
-use stdClass;
-use TimberPost;
 
+/**
+ * Class Widget
+ *
+ * @package AgreableCatfishImporterPlugin\Services
+ */
 class Widget {
-	public static function makeWidget( $widgetName, stdClass $data ) {
+	/**
+	 * @param $widgetName
+	 * @param \stdClass $data
+	 *
+	 * @return \stdClass
+	 */
+	public static function makeWidget( $widgetName, \stdClass $data ) {
 		$widget                = clone $data;
 		$widget->acf_fc_layout = $widgetName;
 
 		return $widget;
 	}
 
+	/**
+	 * @param $widget
+	 * @param $widgets
+	 */
 	public static function addWidgetToWidgets( $widget, $widgets ) {
 		$widgets[] = $widget;
 	}
 
 	/**
 	 * Attach widgets to the $post via WP metadata
+	 *
+	 * @param \TimberPost $post
+	 * @param array $widgets
+	 * @param \stdClass $catfishPostObject
+	 *
+	 * @throws \Exception
 	 */
-	public static function setPostWidgets( TimberPost $post, array $widgets, stdClass $catfishPostObject ) {
+	public static function setPostWidgets( \TimberPost $post, array $widgets, \stdClass $catfishPostObject ) {
 
 		$widgetNames = [];
 		foreach ( $widgets as $key => $widget ) {
@@ -54,7 +71,7 @@ class Widget {
 					$widgetNames[] = $widget->acf_fc_layout;
 					break;
 				case 'image':
-					$image = new Mesh\Image( $widget->image->src );
+					$image = new \Mesh\Image( $widget->image->src );
 
 					self::setPostMetaProperty( $post, $metaLabel . '_image', 'widget_image_image', $image->id );
 					self::setPostMetaProperty( $post, $metaLabel . '_border', 'widget_image_border', 0 );
@@ -88,7 +105,7 @@ class Widget {
 				case 'promo':
 					// Throw exception if promo widget found
 					// To help decide if we need Promo widgets in the new pages CMS, throw an exception if a promo widget is found
-					throw new Exception( "Importer found a promo widget. Someone call Elliot.", 30 );
+					throw new \Exception( "Importer found a promo widget. Someone call Elliot.", 30 );
 					break;
 			}
 
@@ -107,17 +124,24 @@ class Widget {
 	/**
 	 * Gallery post type
 	 *
+	 * @param $post
+	 * @param \stdClass $postObject
+	 * @param $widgetNames
+	 * @param string $galleryApiEndpoint
+	 * @param string $widgetId
+	 *
+	 * @throws \Exception
 	 */
-	protected static function setGalleryWidget( $post, stdClass $postObject, $widgetNames, $galleryApiEndpoint = '/api/gallery-data', $widgetId = '' ) {
+	protected static function setGalleryWidget( $post, \stdClass $postObject, $widgetNames, $galleryApiEndpoint = '/api/gallery-data', $widgetId = '' ) {
 		$galleryApi = str_replace( $postObject->__fullUrlPath, $galleryApiEndpoint . $postObject->__fullUrlPath . $widgetId, $postObject->absoluteUrl );
 
 		// Escape the url path using this handy helper
-		$galleryApi = Sync::escapeAPIUrlPaths( $galleryApi );
+
 
 		$galleryData = Fetch::json( $galleryApi, false );
 
 		if ( ! isset( $galleryData->images ) || ! is_array( $galleryData->images ) ) {
-			throw new Exception( 'Was expecting an array of images in gallery data' );
+			throw new \Exception( 'Was expecting an array of images in gallery data' );
 		}
 
 		$imageIds = [];
@@ -149,6 +173,13 @@ class Widget {
 	 *
 	 * Adapted from Mark Wilkinson's function:
 	 * https://markwilkinson.me/2015/07/using-the-media-handle-sideload-function/
+	 *
+	 * @param $url
+	 * @param $post_id
+	 * @param $desc
+	 * @param $post_data
+	 *
+	 * @return int|mixed|object
 	 */
 	public static function simple_image_sideload( $url, $post_id, $desc, $post_data ) {
 
@@ -203,15 +234,26 @@ class Widget {
 		return $id;
 	}
 
-	public static function getPostWidgets( TimberPost $post ) {
-		return $post->get_field( 'widgets' );
+	/**
+	 * @param \TimberPost $post
+	 *
+	 * @return mixed|null|void
+	 */
+	public static function getPostWidgets( \TimberPost $post ) {
+		return get_field( 'widgets', $post->id );
 	}
 
 	/**
 	 * Get widgets from a post. If provided a widget name, only these are returned
 	 * If an index is provided only return the widget at that index
+	 *
+	 * @param \TimberPost $post
+	 * @param null $name
+	 * @param null $index
+	 *
+	 * @return array|mixed|null|void
 	 */
-	public static function getPostWidgetsFiltered( TimberPost $post, $name = null, $index = null ) {
+	public static function getPostWidgetsFiltered( \TimberPost $post, $name = null, $index = null ) {
 		$widgets = self::getPostWidgets( $post );
 		if ( $name ) {
 			$filteredWidgets = [];
@@ -237,6 +279,11 @@ class Widget {
 	/**
 	 * Given a URL to an post, identify the widgets within HTML
 	 * and then build up an array of widget objects
+	 *
+	 * @param $postDom
+	 *
+	 * @return array
+	 * @throws \Exception
 	 */
 	public static function getWidgetsFromDom( $postDom ) {
 
@@ -286,7 +333,7 @@ class Widget {
 			} else if ( isset( $widgetWrapper->find( '.js-in-page-gallery' )[0] ) ) {
 
 				// TODO This could be moved to a separate class for consistancy
-				$widgetData       = new stdClass();
+				$widgetData       = new \stdClass();
 				$widgetData->type = 'gallery';
 				$widgetData->html = $widgetWrapper->find( '.js-in-page-gallery' )[0];
 
@@ -307,8 +354,13 @@ class Widget {
 
 	/**
 	 * A small helper for setting post metadata
+	 *
+	 * @param \TimberPost $post
+	 * @param $acfKey
+	 * @param $widgetProperty
+	 * @param $value
 	 */
-	protected static function setPostMetaProperty( TimberPost $post, $acfKey, $widgetProperty, $value ) {
+	protected static function setPostMetaProperty( \TimberPost $post, $acfKey, $widgetProperty, $value ) {
 		update_post_meta( $post->id, $acfKey, $value );
 		update_post_meta( $post->id, '_' . $acfKey, $widgetProperty );
 	}

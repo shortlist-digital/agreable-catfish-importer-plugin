@@ -4,56 +4,57 @@ namespace AgreableCatfishImporterPlugin;
 
 use AgreableCatfishImporterPlugin\Services\Fetch;
 use AgreableCatfishImporterPlugin\Services\Post;
-use AgreableCatfishImporterPlugin\Services\SiteMap;
 use Croissant\DI\Interfaces\CatfishLogger;
-use Croissant\DI\Interfaces\Queue;
 
+/**
+ * Class Api
+ *
+ * @package AgreableCatfishImporterPlugin
+ */
 class Api {
-	/**
-	 * @var Queue
-	 */
-	private $_queue;
 	/**
 	 * @var CatfishLogger
 	 */
 	private $_logger;
 
-	public function __construct( Queue $queue, CatfishLogger $logger ) {
-		define( 'MAX_FILE_SIZE', 6000000 );
-		$this->_queue  = $queue;
+	/**
+	 * Api constructor.
+	 *
+	 * @param CatfishLogger $logger
+	 */
+	public function __construct( CatfishLogger $logger ) {
 		$this->_logger = $logger;
 	}
 
+	/**
+	 * @return array array of urls
+	 */
 	public function getSitemaps() {
-		return SiteMap::getUrlsFromSitemap( getenv( 'CATFISH_IMPORTER_TARGET_URL' ) . 'sitemap-index.xml' );
+		$sitemap = Fetch::xml( getenv( 'CATFISH_IMPORTER_TARGET_URL' ) . 'sitemap-index.xml' );
+
+		return array_map( function ( $loc ) {
+			return $loc->innertext;
+		}, $sitemap->find( 'loc' ) );
+
 	}
 
+	/**
+	 * @param $url
+	 *
+	 * @return array associative array $url=>$timestamp
+	 */
 	public function getPostsFromSitemap( $url ) {
 		$timezone = date_default_timezone_get();
 		date_default_timezone_set( 'Europe/Dublin' );
 
 
 		$sitemap = Fetch::xml( $url );
-		$urls    = [];
 
-		foreach ( $sitemap->find( 'url' ) as $url ) {
-
-
-			/**
-			 * this is stupid array. It's used to keep errors away when not passing by reference
-			 */
-			$swap               = explode( '<lastmod>', $url->innertext );
-			$lastmod            = array_pop( $swap );
-			$swap               = explode( '</lastmod>', $lastmod );
-			$lastmod            = array_shift( $swap );
-			$lastmod            = strtotime( $lastmod );
-			$swap               = explode( '<loc>', $url->innertext );
-			$innertext          = array_pop( $swap );
-			$swap               = explode( '</loc>', $innertext );
-			$innertext          = array_shift( $swap );
-			$urls[ $innertext ] = $lastmod;
-
-		}
+		$urls = array_combine( array_map( function ( $loc ) {
+			return $loc->innertext;
+		}, $sitemap->find( 'loc' ) ), array_map( function ( $mod ) {
+			return strtotime( $mod->innertext );
+		}, $sitemap->find( 'lastmod' ) ) );
 
 		date_default_timezone_set( $timezone );
 
@@ -61,26 +62,27 @@ class Api {
 
 	}
 
-	public function getPost( $postUrl, $onExist = 'update' ) {
+	/**
+	 * @param $postUrl
+	 *
+	 * @return \TimberPost
+	 */
+	public function importPost( $postUrl ) {
 
-		return Post::getPostFromUrl( $postUrl, $onExist );
+		return Post::getPostFromUrl( $postUrl, 'update' );
 	}
+
 
 	/**
-	 * Makes sure that exception will be \Exception and not error
+	 * @return array
 	 */
-	public function registerSilencer() {
-		set_error_handler(
-			function ( $errno, $errstr, $errfile, $errline ) {
-				throw new \ErrorException( $errstr, $errno, 0, $errfile, $errline );
-			}
-		);
-	}
-
 	public function getAllPosts() {
 		return array_keys( $this->getAllPostsData() );
 	}
 
+	/**
+	 * @return array
+	 */
 	public function getAllPostsData() {
 
 		$this->_logger->info( "Fetching sitemaps" );

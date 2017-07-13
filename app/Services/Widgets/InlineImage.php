@@ -4,7 +4,17 @@ namespace AgreableCatfishImporterPlugin\Services\Widgets;
 
 use stdClass;
 
+/**
+ * Class InlineImage
+ *
+ * @package AgreableCatfishImporterPlugin\Services\Widgets
+ */
 class InlineImage {
+	/**
+	 * @param $widgetDom
+	 *
+	 * @return stdClass
+	 */
 	public static function getFromWidgetDom( $widgetDom ) {
 
 		$widgetData                   = new stdClass();
