@@ -148,20 +148,22 @@ class Widget {
 		foreach ( $galleryData->images as $image ) {
 
 			$title = $image->title;
+
 			if ( $title == "." ) {
+
 				$title = $post->title;
 			}
 			$imageUrl = array_pop( $image->__mainImageUrls );
 
 			// Sideload the image
 			$post_data = array(
-				// 'post_title' => $title,
+				'post_title'   => $title,
 				'post_content' => $image->description,
 				'post_excerpt' => $image->description
 			);
 
 			$post_attachement_id = self::simple_image_sideload( $imageUrl . '.jpg', $post->ID, $title, $post_data );
-
+			wp_update_post( array_merge( $post_data, [ 'ID' => $post_attachement_id ] ) );
 			$imageIds[] = $post_attachement_id;
 		}
 
@@ -224,12 +226,13 @@ class Widget {
 
 			return $id;
 		}
+
 		/**
 		 * get the url from the newly upload file
 		 * $value now contians the file url in WordPress
 		 * $id is the attachment id
 		 */
-		$value = wp_get_attachment_url( $id );
+
 
 		return $id;
 	}
