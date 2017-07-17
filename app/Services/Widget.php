@@ -136,8 +136,6 @@ class Widget {
 		$galleryApi = str_replace( $postObject->__fullUrlPath, $galleryApiEndpoint . $postObject->__fullUrlPath . $widgetId, $postObject->absoluteUrl );
 
 		// Escape the url path using this handy helper
-
-
 		$galleryData = Fetch::json( $galleryApi, false );
 
 		if ( ! isset( $galleryData->images ) || ! is_array( $galleryData->images ) ) {
@@ -162,9 +160,9 @@ class Widget {
 				'post_excerpt' => $image->description
 			);
 
-			$post_attachement_id = self::simple_image_sideload( $imageUrl . '.jpg', $post->ID, $title, $post_data );
-			wp_update_post( array_merge( $post_data, [ 'ID' => $post_attachement_id ] ) );
-			$imageIds[] = $post_attachement_id;
+			$post_attachment_id = WPErrorToException::loud( self::simple_image_sideload( $imageUrl . '.jpg', $post->ID, $title, $post_data ) );
+			wp_update_post( array_merge( $post_data, [ 'ID' => $post_attachment_id ] ) );
+			$imageIds[] = $post_attachment_id;
 		}
 
 		self::setPostMetaProperty( $post, 'widgets_' . count( $widgetNames ) . '_gallery_items', 'widget_gallery_galleryitems', serialize( $imageIds ) );
@@ -190,6 +188,7 @@ class Widget {
 		 * saved temporarly for now
 		 */
 		$tmp = download_url( $url );
+		var_dump( $tmp, $url );
 		/**
 		 * biild an array of file information about the url
 		 * getting the files name using basename()

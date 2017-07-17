@@ -13,7 +13,7 @@ class WPErrorToException {
 	/**
 	 * @param $er
 	 *
-	 * @return \WP_Error
+	 * @return mixed
 	 * @throws \Exception
 	 */
 	public static function loud( $er ) {
@@ -21,7 +21,12 @@ class WPErrorToException {
 			/**
 			 * @var $er \WP_Error
 			 */
-			throw new \Exception( implode( PHP_EOL, $er->get_error_messages() ), $er->get_error_code() );
+			$code = $er->get_error_code();
+			if ( ! $code ) {
+				$code = 0;
+			}
+
+			throw new \Exception( implode( PHP_EOL, $er->get_error_messages() ) );
 		} else {
 			return $er;
 		}
