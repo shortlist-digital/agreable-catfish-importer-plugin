@@ -31,7 +31,7 @@ class Html {
 	 *
 	 * @return array|mixed|\stdClass
 	 */
-	public static function getFromWidgetDom(\simplehtmldom_1_5\simple_html_dom_node $widgetDom ) {
+	public static function getFromWidgetDom( \simplehtmldom_1_5\simple_html_dom_node $widgetDom ) {
 		// Remove the <div class="legacy-custom-html"/> that Clock wrap around the content
 		if ( isset( $widgetDom->find( '.legacy-custom-html' )[0] ) ) {
 			$widgetDom = $widgetDom->find( '.legacy-custom-html' )[0];
@@ -45,7 +45,7 @@ class Html {
 			// die(var_dump('array_filter(self::breakIntoWidgets($widgetDom))', array_filter(self::breakIntoWidgets($widgetDom))));
 
 
-			return array_filter(  self::breakIntoWidgets( $widgetDom ) );
+			return array_filter( self::breakIntoWidgets( $widgetDom ) );
 		}
 	}
 
@@ -55,7 +55,7 @@ class Html {
 	 * @return array|bool
 	 * @throws \Exception
 	 */
-	public static function breakIntoWidgets(\simplehtmldom_1_5\simple_html_dom_node $widgetDom ) {
+	public static function breakIntoWidgets( \simplehtmldom_1_5\simple_html_dom_node $widgetDom ) {
 
 		$widgets = [];
 		// Loop through all DOM nodes to create widgets from them
@@ -92,8 +92,12 @@ class Html {
 				array_push( $widgets, $html );
 
 			} elseif ( $node->tag != 'script' ) {
-
-				throw new \Exception( 'undefined widget exception ' . json_encode( $node ) . ' while processing: ' , 500 );
+				if ( empty( array_filter( $node->children, function ( $node ) {
+					return $node->tag !== 'script';
+				} ) ) ) {
+					continue;
+				}
+				throw new \Exception( 'undefined widget exception ' . json_encode( $node ) . ' while processing: ', 500 );
 			}
 
 		}
@@ -122,7 +126,7 @@ class Html {
 
 		$widgets = array_values( $widgets );
 
-		return  $widgets ;
+		return $widgets;
 	}
 
 	/**
