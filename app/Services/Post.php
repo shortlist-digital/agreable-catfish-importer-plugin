@@ -100,7 +100,7 @@ class Post {
 			'article_header_display_headline'       => true,
 			'article_header_display_sell'           => true,
 			'article_header_display_date'           => true,
-			'article_catfish_imported_url'          => $postUrl,
+			'article_catfish_imported_url'          => preg_replace( '/.json$/', '', $postUrl ),
 			'article_catfish_importer_imported'     => true,
 			'article_catfish_importer_post_date'    => $displayDate,
 			'article_catfish_importer_date_updated' => $currentDate,

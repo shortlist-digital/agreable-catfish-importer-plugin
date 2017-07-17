@@ -43,7 +43,9 @@ class Html {
 		} else {
 			// Break up mixed content articles into separate widgets
 			// die(var_dump('array_filter(self::breakIntoWidgets($widgetDom))', array_filter(self::breakIntoWidgets($widgetDom))));
-			return array_filter( self::breakIntoWidgets( $widgetDom ) );
+
+
+			return array_filter(  self::breakIntoWidgets( $widgetDom ) );
 		}
 	}
 
@@ -95,6 +97,7 @@ class Html {
 			}
 
 		}
+
 		//TODO: Check why is that happening. Probably wasn't there before
 		$widgets = array_filter( $widgets, function ( $w ) {
 			return is_object( $w );
@@ -116,9 +119,10 @@ class Html {
 			}
 
 		}
+
 		$widgets = array_values( $widgets );
 
-		return count( $widgets ) ? $widgets : false;
+		return  $widgets ;
 	}
 
 	/**
