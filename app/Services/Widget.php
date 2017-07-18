@@ -188,7 +188,7 @@ class Widget {
 		 * saved temporarly for now
 		 */
 		$tmp = download_url( $url );
-		var_dump( $tmp, $url );
+
 		/**
 		 * biild an array of file information about the url
 		 * getting the files name using basename()
