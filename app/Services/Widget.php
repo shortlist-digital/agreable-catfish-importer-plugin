@@ -1,309 +1,369 @@
 <?php
+
 namespace AgreableCatfishImporterPlugin\Services;
 
-use TimberPost;
-use stdClass;
-use Exception;
-use Mesh;
+use AgreableCatfishImporterPlugin\Services\Widgets\HorizontalRule;
+use AgreableCatfishImporterPlugin\Services\Widgets\Html;
 use AgreableCatfishImporterPlugin\Services\Widgets\InlineImage;
 use AgreableCatfishImporterPlugin\Services\Widgets\Video;
-use AgreableCatfishImporterPlugin\Services\Widgets\Html;
-use AgreableCatfishImporterPlugin\Services\Widgets\HorizontalRule;
 
+/**
+ * Class Widget
+ *
+ * @package AgreableCatfishImporterPlugin\Services
+ */
 class Widget {
-  public static function makeWidget($widgetName, stdClass $data) {
-    $widget = clone $data;
-    $widget->acf_fc_layout = $widgetName;
-    return $widget;
-  }
+	/**
+	 * @param $widgetName
+	 * @param \stdClass $data
+	 *
+	 * @return \stdClass
+	 */
+	public static function makeWidget( $widgetName, \stdClass $data ) {
+		$widget                = clone $data;
+		$widget->acf_fc_layout = $widgetName;
 
-  public static function addWidgetToWidgets($widget, $widgets) {
-    $widgets[] = $widget;
-  }
+		return $widget;
+	}
 
-  /**
-   * Attach widgets to the $post via WP metadata
-   */
-  public static function setPostWidgets(TimberPost $post, array $widgets, stdClass $catfishPostObject) {
+	/**
+	 * @param $widget
+	 * @param $widgets
+	 */
+	public static function addWidgetToWidgets( $widget, $widgets ) {
+		$widgets[] = $widget;
+	}
 
-    $widgetNames = [];
-    foreach ($widgets as $key => $widget) {
+	/**
+	 * Attach widgets to the $post via WP metadata
+	 *
+	 * @param \TimberPost $post
+	 * @param array $widgets
+	 * @param \stdClass $catfishPostObject
+	 *
+	 * @throws \Exception
+	 */
+	public static function setPostWidgets( \TimberPost $post, array $widgets, \stdClass $catfishPostObject ) {
 
-      $metaLabel = 'widgets_' . $key;
+		$widgetNames = [];
+		foreach ( $widgets as $key => $widget ) {
 
-      switch ($widget->acf_fc_layout) {
-        case 'embed':
-          self::setPostMetaProperty($post, $metaLabel . '_embed', 'widget_embed', $widget->embed);
-          self::setPostMetaProperty($post, $metaLabel . '_width', 'widget_embed_width', 'medium');
-          $widgetNames[] = $widget->acf_fc_layout;
-          break;
-        case 'heading':
-          self::setPostMetaProperty($post, $metaLabel . '_text', 'widget_heading_text', $widget->text);
-          self::setPostMetaProperty($post, $metaLabel . '_aligment', 'widget_heading_alignment', $widget->alignment);
-          self::setPostMetaProperty($post, $metaLabel . '_font', 'widget_heading_font', $widget->font);
-          $widgetNames[] = $widget->acf_fc_layout;
-          break;
-        case 'html':
-          self::setPostMetaProperty($post, $metaLabel . '_html', 'widget_html', $widget->html);
-          $widgetNames[] = $widget->acf_fc_layout;
-          break;
-        case 'paragraph':
-          self::setPostMetaProperty($post, $metaLabel . '_paragraph', 'widget_paragraph_html', $widget->paragraph);
-          $widgetNames[] = $widget->acf_fc_layout;
-          break;
-        case 'image':
-          $image = new Mesh\Image($widget->image->src);
+			$metaLabel = 'widgets_' . $key;
 
-          self::setPostMetaProperty($post, $metaLabel . '_image', 'widget_image_image', $image->id);
-          self::setPostMetaProperty($post, $metaLabel . '_border', 'widget_image_border', 0);
-          self::setPostMetaProperty($post, $metaLabel . '_width', 'widget_image_width', $widget->image->width);
-          self::setPostMetaProperty($post, $metaLabel . '_position', 'widget_image_position', $widget->image->position);
-          self::setPostMetaProperty($post, $metaLabel . '_crop', 'widget_image_crop', 'original');
+			switch ( $widget->acf_fc_layout ) {
+				case 'embed':
+					self::setPostMetaProperty( $post, $metaLabel . '_embed', 'widget_embed', $widget->embed );
+					self::setPostMetaProperty( $post, $metaLabel . '_width', 'widget_embed_width', 'medium' );
+					$widgetNames[] = $widget->acf_fc_layout;
+					break;
+				case 'heading':
+					self::setPostMetaProperty( $post, $metaLabel . '_text', 'widget_heading_text', $widget->text );
+					self::setPostMetaProperty( $post, $metaLabel . '_aligment', 'widget_heading_alignment', $widget->alignment );
+					self::setPostMetaProperty( $post, $metaLabel . '_font', 'widget_heading_font', $widget->font );
+					$widgetNames[] = $widget->acf_fc_layout;
+					break;
+				case 'html':
+					self::setPostMetaProperty( $post, $metaLabel . '_html', 'widget_html', $widget->html );
+					$widgetNames[] = $widget->acf_fc_layout;
+					break;
+				case 'paragraph':
+					self::setPostMetaProperty( $post, $metaLabel . '_paragraph', 'widget_paragraph_html', $widget->paragraph );
+					$widgetNames[] = $widget->acf_fc_layout;
+					break;
+				case 'image':
+					$image = new \Mesh\Image( $widget->image->src );
 
-          if (isset($widget->image->caption)) {
-            self::setPostMetaProperty($post, $metaLabel . '_caption', 'widget_image_caption', $widget->image->caption);
-          }
-          $widgetNames[] = $widget->acf_fc_layout;
+					self::setPostMetaProperty( $post, $metaLabel . '_image', 'widget_image_image', $image->id );
+					self::setPostMetaProperty( $post, $metaLabel . '_border', 'widget_image_border', 0 );
+					self::setPostMetaProperty( $post, $metaLabel . '_width', 'widget_image_width', $widget->image->width );
+					self::setPostMetaProperty( $post, $metaLabel . '_position', 'widget_image_position', $widget->image->position );
+					self::setPostMetaProperty( $post, $metaLabel . '_crop', 'widget_image_crop', 'original' );
+					self::setPostMetaProperty( $post, $metaLabel . '_link', 'widget_image_link', $widget->url );
 
-          break;
-        case 'video':
-          self::setPostMetaProperty($post, $metaLabel . '_url', 'widget_video_url', $widget->video->url);
-          self::setPostMetaProperty($post, $metaLabel . '_width', 'widget_video_width', $widget->video->width);
-          self::setPostMetaProperty($post, $metaLabel . '_position', 'widget_video_position', $widget->video->position);
-          $widgetNames[] = $widget->acf_fc_layout;
-          break;
-        case 'horizontal-rule':
-          $widgetNames[] = $widget->acf_fc_layout;
-          break;
-        case 'gallery':
+					if ( isset( $widget->image->caption ) ) {
+						self::setPostMetaProperty( $post, $metaLabel . '_caption', 'widget_image_caption', $widget->image->caption );
+					}
+					$widgetNames[] = $widget->acf_fc_layout;
 
-          // Create gallery widget...
-          self::setGalleryWidget($post, $catfishPostObject, $widgetNames, '/api/in-page-gallery-data', '?widgetId=' . $widget->html->attr['data-id']);
-          $widgetNames[] = $widget->acf_fc_layout;
+					break;
+				case 'video':
+					self::setPostMetaProperty( $post, $metaLabel . '_url', 'widget_video_url', $widget->video->url );
+					self::setPostMetaProperty( $post, $metaLabel . '_width', 'widget_video_width', $widget->video->width );
+					self::setPostMetaProperty( $post, $metaLabel . '_position', 'widget_video_position', $widget->video->position );
+					$widgetNames[] = $widget->acf_fc_layout;
+					break;
+				case 'horizontal-rule':
+					$widgetNames[] = $widget->acf_fc_layout;
+					break;
+				case 'gallery':
 
-          break;
-        case 'promo':
-          // Throw exception if promo widget found
-          // To help decide if we need Promo widgets in the new pages CMS, throw an exception if a promo widget is found
-          throw new Exception("Importer found a promo widget. Someone call Elliot.", 30);
-          break;
-      }
+					// Create gallery widget...
+					self::setGalleryWidget( $post, $catfishPostObject, $widgetNames, '/api/in-page-gallery-data', '?widgetId=' . $widget->html->attr['data-id'] );
+					$widgetNames[] = $widget->acf_fc_layout;
 
-    }
+					break;
+				case 'promo':
+					// Throw exception if promo widget found
+					// To help decide if we need Promo widgets in the new pages CMS, throw an exception if a promo widget is found
+					throw new \Exception( "Importer found a promo widget. Someone call Elliot.", 30 );
+					break;
+			}
 
-    if ($catfishPostObject->type === 'gallery') {
-      self::setGalleryWidget($post, $catfishPostObject, $widgetNames);
-      $widgetNames[] = 'gallery';
-    }
+		}
 
-    // This is an array of widget names for ACF
-    update_post_meta($post->id, 'widgets', serialize($widgetNames));
-    update_post_meta($post->id, '_widgets', 'post_widgets');
-  }
+		if ( $catfishPostObject->type === 'gallery' ) {
+			self::setGalleryWidget( $post, $catfishPostObject, $widgetNames );
+			$widgetNames[] = 'gallery';
+		}
 
-  /**
-   * Gallery post type
-   *
-   */
-  protected static function setGalleryWidget($post, stdClass $postObject, $widgetNames, $galleryApiEndpoint = '/api/gallery-data', $widgetId = '') {
-    $galleryApi = str_replace($postObject->__fullUrlPath, $galleryApiEndpoint . $postObject->__fullUrlPath . $widgetId, $postObject->absoluteUrl);
+		// This is an array of widget names for ACF
+		update_post_meta( $post->id, 'widgets', serialize( $widgetNames ) );
+		update_post_meta( $post->id, '_widgets', 'post_widgets' );
+	}
 
-    // Escape the url path using this handy helper
-    $galleryApi = Sync::escapeAPIUrlPaths($galleryApi);
+	/**
+	 * Gallery post type
+	 *
+	 * @param $post
+	 * @param \stdClass $postObject
+	 * @param $widgetNames
+	 * @param string $galleryApiEndpoint
+	 * @param string $widgetId
+	 *
+	 * @throws \Exception
+	 */
+	protected static function setGalleryWidget( $post, \stdClass $postObject, $widgetNames, $galleryApiEndpoint = '/api/gallery-data', $widgetId = '' ) {
+		$galleryApi = str_replace( $postObject->__fullUrlPath, $galleryApiEndpoint . $postObject->__fullUrlPath . $widgetId, $postObject->absoluteUrl );
 
-    if (!$galleryApiResponse = file_get_contents($galleryApi)) {
-      throw new Exception('Unable to fetch gallery data from: ' . $galleryApi);
-    }
+		// Escape the url path using this handy helper
+		$galleryData = Fetch::json( $galleryApi, false );
 
-    if (!$galleryData = json_decode($galleryApiResponse)) {
-      throw new Exception('Unable to deserialise gallery API response');
-    }
+		if ( ! isset( $galleryData->images ) || ! is_array( $galleryData->images ) ) {
+			throw new \Exception( 'Was expecting an array of images in gallery data' );
+		}
 
-    if (!isset($galleryData->images) || !is_array($galleryData->images)) {
-      throw new Exception('Was expecting an array of images in gallery data');
-    }
+		$imageIds = [];
+		foreach ( $galleryData->images as $image ) {
 
-    $imageIds = [];
-    foreach($galleryData->images as $image) {
+			$title = $image->title;
 
-      $title = $image->title;
-      if ($title == ".") {
-        $title = $post->title;
-      }
-      $imageUrl = array_pop($image->__mainImageUrls);
+			if ( $title == "." ) {
 
-      // Sideload the image
-      $post_data = array(
-        // 'post_title' => $title,
-        'post_content' => $image->description,
-        'post_excerpt' => $image->description
-      );
+				$title = $post->title;
+			}
+			$imageUrl = array_pop( $image->__mainImageUrls );
 
-      $post_attachement_id = self::simple_image_sideload($imageUrl.'.jpg', $post->ID, $title, $post_data);
+			// Sideload the image
+			$post_data = array(
+				'post_title'   => $title,
+				'post_content' => $image->description,
+				'post_excerpt' => $image->description
+			);
 
-      $imageIds[] = $post_attachement_id;
-    }
+			$post_attachment_id = WPErrorToException::loud( self::simple_image_sideload( $imageUrl . '.jpg', $post->ID, $title, $post_data ) );
+			wp_update_post( array_merge( $post_data, [ 'ID' => $post_attachment_id ] ) );
+			$imageIds[] = $post_attachment_id;
+		}
 
-    self::setPostMetaProperty($post, 'widgets_' . count($widgetNames) . '_gallery_items', 'widget_gallery_galleryitems', serialize($imageIds));
-  }
+		self::setPostMetaProperty( $post, 'widgets_' . count( $widgetNames ) . '_gallery_items', 'widget_gallery_galleryitems', serialize( $imageIds ) );
+	}
 
-  /**
-   * Function to sideload image from Clock to Wordpress
-   *
-   * Adapted from Mark Wilkinson's function:
-   * https://markwilkinson.me/2015/07/using-the-media-handle-sideload-function/
-   */
-  public function simple_image_sideload($url, $post_id, $desc, $post_data) {
+	/**
+	 * Function to sideload image from Clock to Wordpress
+	 *
+	 * Adapted from Mark Wilkinson's function:
+	 * https://markwilkinson.me/2015/07/using-the-media-handle-sideload-function/
+	 *
+	 * @param $url
+	 * @param $post_id
+	 * @param $desc
+	 * @param $post_data
+	 *
+	 * @return int|mixed|object
+	 */
+	public static function simple_image_sideload( $url, $post_id, $desc, $post_data ) {
 
-    /**
-     * download the url into wordpress
-     * saved temporarly for now
-     */
-    $tmp = download_url( $url );
-    /**
-     * biild an array of file information about the url
-     * getting the files name using basename()
-     */
-    $file_array = array(
-        'name' => basename( $url ),
-        'tmp_name' => $tmp
-    );
-    /**
-     * Check for download errors
-     * if there are error unlink the temp file name
-     */
-    if ( is_wp_error( $tmp ) ) {
-        @unlink( $file_array[ 'tmp_name' ] );
-        return $tmp;
-    }
-    /**
-     * now we can use the sideload function
-     * we pass it the file array of the file to handle
-     * and the post id of the post to attach it too
-     * it returns the attachment id if the file
-     */
-    $id = media_handle_sideload( $file_array, $post_id, $desc, $post_data );
-    /**
-     * check for handle sideload errors
-     * if errors again unlink the file
-     */
-    if ( is_wp_error( $id ) ) {
-        @unlink( $file_array['tmp_name'] );
-        return $id;
-    }
-    /**
-     * get the url from the newly upload file
-     * $value now contians the file url in WordPress
-     * $id is the attachment id
-     */
-    $value = wp_get_attachment_url( $id );
+		/**
+		 * download the url into wordpress
+		 * saved temporarly for now
+		 */
+		$tmp = download_url( $url );
 
-    return $id;
-  }
+		/**
+		 * biild an array of file information about the url
+		 * getting the files name using basename()
+		 */
+		$file_array = array(
+			'name'     => basename( $url ),
+			'tmp_name' => $tmp
+		);
+		/**
+		 * Check for download errors
+		 * if there are error unlink the temp file name
+		 */
+		if ( is_wp_error( $tmp ) ) {
+			@unlink( $file_array['tmp_name'] );
 
-  public static function getPostWidgets(TimberPost $post) {
-    return $post->get_field('widgets');
-  }
+			return $tmp;
+		}
+		/**
+		 * now we can use the sideload function
+		 * we pass it the file array of the file to handle
+		 * and the post id of the post to attach it too
+		 * it returns the attachment id if the file
+		 */
+		if ( ! function_exists( 'media_handle_sideload' ) ) {
+			require_once( ABSPATH . 'wp-admin/includes/media.php' );
+		}
+		$id = media_handle_sideload( $file_array, $post_id, $desc, $post_data );
+		/**
+		 * check for handle sideload errors
+		 * if errors again unlink the file
+		 */
+		if ( is_wp_error( $id ) ) {
+			@unlink( $file_array['tmp_name'] );
 
-  /**
-   * Get widgets from a post. If provided a widget name, only these are returned
-   * If an index is provided only return the widget at that index
-   */
-  public static function getPostWidgetsFiltered(TimberPost $post, $name = null, $index = null) {
-    $widgets = self::getPostWidgets($post);
-    if ($name) {
-      $filteredWidgets = [];
-      foreach($widgets as $key => $widget) {
-        if ($widget['acf_fc_layout'] === $name) {
-          $filteredWidgets[] = $widget;
-        }
-      }
-      $widgets = $filteredWidgets;
-    }
+			return $id;
+		}
 
-    if ($index !== null) {
-      if (isset($widgets[$index])) {
-        return $widgets[$index];
-      }
+		/**
+		 * get the url from the newly upload file
+		 * $value now contians the file url in WordPress
+		 * $id is the attachment id
+		 */
 
-      return null;
-    }
-    return $widgets;
-  }
 
-  /**
-   * Given a URL to an post, identify the widgets within HTML
-   * and then build up an array of widget objects
-   */
-  public static function getWidgetsFromDom($postDom) {
+		return $id;
+	}
 
-    if (!$postDom) {
-      throw new \Exception('Could not retrieve widgets from ' . $postUrl);
-    }
+	/**
+	 * @param \TimberPost $post
+	 *
+	 * @return mixed|null|void
+	 */
+	public static function getPostWidgets( \TimberPost $post ) {
+		return get_field( 'widgets', $post->id );
+	}
 
-    $widgets = array();
+	/**
+	 * Get widgets from a post. If provided a widget name, only these are returned
+	 * If an index is provided only return the widget at that index
+	 *
+	 * @param \TimberPost $post
+	 * @param null $name
+	 * @param null $index
+	 *
+	 * @return array|mixed|null|void
+	 */
+	public static function getPostWidgetsFiltered( \TimberPost $post, $name = null, $index = null ) {
+		$widgets = self::getPostWidgets( $post );
+		if ( $name ) {
+			$filteredWidgets = [];
+			foreach ( $widgets as $key => $widget ) {
+				if ( $widget['acf_fc_layout'] === $name ) {
+					$filteredWidgets[] = $widget;
+				}
+			}
+			$widgets = $filteredWidgets;
+		}
 
-    foreach($postDom->find('.article__content .widget__wrapper') as $widgetWrapper) {
+		if ( $index !== null ) {
+			if ( isset( $widgets[ $index ] ) ) {
+				return $widgets[ $index ];
+			}
 
-      // Handle most core widgets that have the .widget class
-      if (isset($widgetWrapper->find('.widget')[0])) {
-        $widget = $widgetWrapper->find('.widget')[0];
+			return null;
+		}
 
-        // Get class name
-        $matches = [];
-        preg_match('/widget--([a-z-0-9]*)/', $widget->class, $matches);
-        if (count($matches) !== 2) {
-          throw new \Exception('Expected to retrieve widget name from class name');
-        }
+		return $widgets;
+	}
 
-        $widgetData = null;
-        $widgetName = $matches[1];
+	/**
+	 * Given a URL to an post, identify the widgets within HTML
+	 * and then build up an array of widget objects
+	 *
+	 * @param $postDom
+	 *
+	 * @return array
+	 * @throws \Exception
+	 */
+	public static function getWidgetsFromDom( $postDom ) {
 
-        switch ($widgetName) {
-          case 'html':
-            $widgetData = Html::getFromWidgetDom($widget);
-            break;
-          case 'inline-image':
-            $widgetData = InlineImage::getFromWidgetDom($widget);
-            break;
-          case 'video':
-            $widgetData = Video::getFromWidgetDom($widget);
-            break;
-        }
+		if ( ! $postDom ) {
+			throw new \Exception( 'Could not retrieve widgets from ' . $postDom );
+		}
 
-      // Catch <hr>
-      } else if (isset($widgetWrapper->find('hr')[0])) {
-        $widget = $widgetWrapper->find('hr')[0];
-        $widgetData = HorizontalRule::getFromWidgetDom($widget);
+		$widgets = array();
 
-      // Catch .js-in-page-gallery
-      } else if (isset($widgetWrapper->find('.js-in-page-gallery')[0])) {
+		foreach ( $postDom->find( '.article__content .widget__wrapper' ) as $widgetWrapper ) {
 
-        // TODO This could be moved to a separate class for consistancy
-        $widgetData = new stdClass();
-        $widgetData->type = 'gallery';
-        $widgetData->html = $widgetWrapper->find('.js-in-page-gallery')[0];
+			// Handle most core widgets that have the .widget class
+			if ( isset( $widgetWrapper->find( '.widget' )[0] ) ) {
+				$widget = $widgetWrapper->find( '.widget' )[0];
 
-      }
+				// Get class name
+				$matches = [];
+				preg_match( '/widget--([a-z-0-9]*)/', $widget->class, $matches );
+				if ( count( $matches ) !== 2 ) {
+					throw new \Exception( 'Expected to retrieve widget name from class name' );
+				}
 
-      if (is_array($widgetData)) {
-        foreach($widgetData as $widget) {
-          $widgets[] = self::makeWidget($widget->type, $widget);
-        }
-      } elseif ($widgetData) {
-        $widgets[] = self::makeWidget($widgetData->type, $widgetData);
-      }
+				$widgetData = null;
+				$widgetName = $matches[1];
 
-    }
+				switch ( $widgetName ) {
+					case 'html':
+						$widgetData = Html::getFromWidgetDom( $widget );
+						break;
+					case 'inline-image':
+						$widgetData = InlineImage::getFromWidgetDom( $widget );
+						break;
+					case 'image-promo':
+						$widgetData = InlineImage::getFromWidgetDom( $widget );
+						break;
+					case 'video':
+						$widgetData = Video::getFromWidgetDom( $widget );
+						break;
+				}
 
-    return $widgets;
-  }
+				// Catch <hr>
+			} else if ( isset( $widgetWrapper->find( 'hr' )[0] ) ) {
+				$widget     = $widgetWrapper->find( 'hr' )[0];
+				$widgetData = HorizontalRule::getFromWidgetDom( $widget );
 
-  /**
-   * A small helper for setting post metadata
-   */
-  protected static function setPostMetaProperty(TimberPost $post, $acfKey, $widgetProperty, $value) {
-    update_post_meta($post->id, $acfKey, $value);
-    update_post_meta($post->id, '_' . $acfKey, $widgetProperty);
-  }
+				// Catch .js-in-page-gallery
+			} else if ( isset( $widgetWrapper->find( '.js-in-page-gallery' )[0] ) ) {
+
+				// TODO This could be moved to a separate class for consistancy
+				$widgetData       = new \stdClass();
+				$widgetData->type = 'gallery';
+				$widgetData->html = $widgetWrapper->find( '.js-in-page-gallery' )[0];
+
+			}
+
+			if ( is_array( $widgetData ) ) {
+				foreach ( $widgetData as $widget ) {
+					$widgets[] = self::makeWidget( $widget->type, $widget );
+				}
+			} elseif ( $widgetData ) {
+				$widgets[] = self::makeWidget( $widgetData->type, $widgetData );
+			}
+
+		}
+
+		return $widgets;
+	}
+
+	/**
+	 * A small helper for setting post metadata
+	 *
+	 * @param \TimberPost $post
+	 * @param $acfKey
+	 * @param $widgetProperty
+	 * @param $value
+	 */
+	protected static function setPostMetaProperty( \TimberPost $post, $acfKey, $widgetProperty, $value ) {
+		update_post_meta( $post->id, $acfKey, $value );
+		update_post_meta( $post->id, '_' . $acfKey, $widgetProperty );
+	}
 }

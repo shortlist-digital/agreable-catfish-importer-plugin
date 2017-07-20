@@ -10,21 +10,19 @@
  * License:           MIT
  */
 
-if(file_exists(__DIR__ . '/vendor/getherbert/')){
-  require_once __DIR__ . '/vendor/autoload.php';
-} else {
-  require_once __DIR__ . '/../../../../vendor/autoload.php';
-}
+include __DIR__ . '/app/acf.php';
 
-if(file_exists(__DIR__ . '/../../../../vendor/getherbert/framework/bootstrap/autoload.php')){
-  require_once __DIR__ . '/../../../../vendor/getherbert/framework/bootstrap/autoload.php';
-} else {
-  require_once __DIR__ . '/vendor/getherbert/framework/bootstrap/autoload.php';
-}
 
-// Load Mesh (non-autoloadable)
-if(file_exists(__DIR__ . '/vendor/jarednova/mesh/')){
-  require_once __DIR__ . '/vendor/jarednova/mesh/mesh.php';
-} else {
-  require_once __DIR__ . '/../../../../vendor/jarednova/mesh/mesh.php';
+if ( is_admin() ) {
+
+	include __DIR__ . '/app/editor.php';
+
+	add_action( 'admin_enqueue_scripts', function () {
+		wp_enqueue_style( 'catfish-styles', plugin_dir_url( __FILE__ ) . 'assets/css/admin.css' );
+		wp_register_script( 'catfish-js', plugin_dir_url( __FILE__ ) . 'assets/js/admin.js', false, '1.0.0' );
+		wp_enqueue_script( 'catfish-js' );
+	} );
 }
+register_activation_hook( __FILE__, function () {
+	add_role( 'purgatory', 'Purgatory', [] );
+} );

@@ -3,8 +3,18 @@ namespace AgreableCatfishImporterPlugin\Services\Widgets;
 
 use \stdClass;
 
+/**
+ * Class HorizontalRule
+ *
+ * @package AgreableCatfishImporterPlugin\Services\Widgets
+ */
 class HorizontalRule {
-  public static function getFromWidgetDom($widgetDom) {
+	/**
+	 * @param $widgetDom
+	 *
+	 * @return stdClass
+	 */
+	public static function getFromWidgetDom($widgetDom) {
     $widgetData = new stdClass();
     $widgetData->type = 'horizontal-rule';
     return $widgetData;
