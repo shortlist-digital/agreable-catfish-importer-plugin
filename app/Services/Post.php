@@ -34,6 +34,8 @@ class Post {
 	 */
 	public static function getPostFromUrl( $postUrl ) {
 
+		remove_filter('save_post','yoimg_imgseo_save_post');
+
 		$postUrl .= '.json';
 		// Escape the url path using this handy helper
 
@@ -158,7 +160,7 @@ class Post {
 		$show_header = self::setHeroImages( $post, $postDom, $postObject );
 
 		update_field( 'article_header_display_hero_image', $show_header, $wpPostId );
-
+		add_action('save_post','yoimg_imgseo_save_post');
 		return $post;
 	}
 
