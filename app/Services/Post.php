@@ -34,9 +34,6 @@ class Post {
 	 */
 	public static function getPostFromUrl( $postUrl ) {
 
-		remove_all_filters( 'transition_post_status' );
-		remove_all_filters( 'save_post' );
-
 		$postUrl .= '.json';
 		// Escape the url path using this handy helper
 
