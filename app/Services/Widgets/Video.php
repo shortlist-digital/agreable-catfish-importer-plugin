@@ -29,6 +29,29 @@ class Video {
     return $widgetData;
   }
 
+  public static function getVideoFromHeader($provider, $videoId) {
+    $widgetData        = new stdClass();
+    $widgetData->type  = 'embed';
+
+    switch ( $provider ) {
+      case 'youtube':
+        $widgetData->embed = "https://www.youtube.com/watch?v=".$videoId;
+        break;
+      // case 'jwplayer':
+        // $widgetData->embed = "https://www.jwplayer.com/".$videoId;
+        // break;
+      case 'vimeo':
+        $widgetData->embed = "https://vimeo.com/".$videoId;
+        break;
+      // case 'facebook':
+        // $widgetData->embed = "https://www.facebook.com/watch/".$videoId;
+        // break;
+    }
+
+    $widgetData->acf_fc_layout = 'embed';
+    return $widgetData;
+  }
+
 	/**
 	 * @param $url
 	 *
