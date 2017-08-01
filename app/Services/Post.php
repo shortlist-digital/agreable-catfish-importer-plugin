@@ -161,9 +161,6 @@ class Post {
 			array_unshift($widgets, $headerEmbed);
 		}
 
-		var_dump($widgets);
-		die;
-
 		Widget::setPostWidgets( $post, $widgets, $postObject );
 
 
