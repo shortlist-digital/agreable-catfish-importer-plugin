@@ -93,7 +93,7 @@ class Post {
 		}
 
 		// If article has a video header, use no-media header and transform to embed widget
-		$hero = (isset($postObject->videoId)) ? "no-media" : "standard-hero";
+		$hero = (isset($postObject->videoId)) ? "hero-without-media" : "hero";
 
 		// Create meta array for new post (Data that's not in the core post_fields)
 		$postACFMetaArrayForWordpress = array(
@@ -156,7 +156,7 @@ class Post {
 		$widgets = Widget::getWidgetsFromDom( $postDom );
 
 		// if there is a video header, convert to embed widget
-		if ($hero == "no-media") {
+		if ($hero == "hero-without-media") {
 			$headerEmbed = Video::getVideoFromHeader($postObject->provider, $postObject->videoId);
 			array_unshift($widgets, $headerEmbed);
 		}
