@@ -43,9 +43,9 @@ class Video {
       case 'vimeo':
         $widgetData->embed = "https://vimeo.com/".$videoId;
         break;
-      // case 'facebook':
-        // $widgetData->embed = "https://www.facebook.com/watch/".$videoId;
-        // break;
+      case 'facebook':
+        $widgetData->embed = $videoId;
+        break;
     }
 
     $widgetData->acf_fc_layout = 'embed';
