@@ -159,6 +159,11 @@ class Post {
 		if ($hero == "hero-without-media") {
 			$headerEmbed = Video::getVideoFromHeader($postObject->provider, $postObject->videoId);
 			array_unshift($widgets, $headerEmbed);
+			/**
+			* @var $_logger \Croissant\DI\Dependency\CatfishLogger
+			*/
+			$_logger = \Croissant\App::get( \Croissant\DI\Interfaces\CatfishLogger::class );
+			$_logger->info("provider: " . $postObject->provider . ", video id: " . $postObject->videoId . ", url: " . $postUrl);
 		}
 
 		Widget::setPostWidgets( $post, $widgets, $postObject );
