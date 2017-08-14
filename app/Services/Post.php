@@ -162,7 +162,7 @@ class Post {
 			* @var $_logger \Croissant\DI\Dependency\CatfishLogger
 			*/
 			$_logger = \Croissant\App::get( \Croissant\DI\Interfaces\CatfishLogger::class );
-			$_logger->info("provider: " . $postObject->provider . ", video id: " . $postObject->videoId . ", url: " . $postUrl);
+			$_logger->notice("provider: " . $postObject->provider . ", video id: " . $postObject->videoId . ", url: " . $postUrl);
 		}
 
 		Widget::setPostWidgets( $post, $widgets, $postObject );
