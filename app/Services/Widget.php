@@ -77,7 +77,13 @@ class Widget {
 				case 'image':
 
 					App::get( CatfishLogger::class )->debug( 'Importing image widget', [ $widget,$widget->image->src ] );
-					$image = new Image( $widget->image->src );
+
+					try {
+						$image = new Image( $widget->image->src );
+					} catch ( \Exception $e ) {
+						App::get( CatfishLogger::class )->error( 'Error while importing image: '.$widget->image->src , [ $widget ] );
+						break;
+					}
 
 					self::setPostMetaProperty( $post, $metaLabel . '_image', 'widget_image_image', $image->id );
 					self::setPostMetaProperty( $post, $metaLabel . '_border', 'widget_image_border', 0 );
