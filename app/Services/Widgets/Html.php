@@ -103,9 +103,9 @@ class Html {
 		}
 
 		//TODO: Check why is that happening. Probably wasn't there before
-		$widgets = array_filter( $widgets, function ( $w ) {
+		$widgets = array_values(array_filter( $widgets, function ( $w ) {
 			return is_object( $w );
-		} );
+		} ));
 
 		// Merge adjacent widgets of the same type together
 		foreach ( $widgets as $index => $widget ) {
