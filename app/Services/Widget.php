@@ -6,6 +6,8 @@ use AgreableCatfishImporterPlugin\Services\Widgets\HorizontalRule;
 use AgreableCatfishImporterPlugin\Services\Widgets\Html;
 use AgreableCatfishImporterPlugin\Services\Widgets\InlineImage;
 use AgreableCatfishImporterPlugin\Services\Widgets\Video;
+use Croissant\App;
+use Croissant\DI\Interfaces\CatfishLogger;
 use Mesh\Image;
 use simplehtmldom_1_5\simple_html_dom_node;
 
@@ -73,6 +75,10 @@ class Widget {
 					$widgetNames[] = $widget->acf_fc_layout;
 					break;
 				case 'image':
+					if ( ! $widget->image->src ) {
+						App::get( CatfishLogger::class )->error( 'There was error while importing image. Seems like url is empty', [ $widget ] );
+						break;
+					}
 					$image = new Image( $widget->image->src );
 
 					self::setPostMetaProperty( $post, $metaLabel . '_image', 'widget_image_image', $image->id );
@@ -162,7 +168,13 @@ class Widget {
 				'post_excerpt' => $image->description
 			);
 
-			$post_attachment_id = WPErrorToException::loud( self::simple_image_sideload( $imageUrl . '.jpg', $post->ID, $title, $post_data ) );
+			$post_attachment_id = self::simple_image_sideload( $imageUrl . '.jpg', $post->ID, $title, $post_data );
+			if ( is_wp_error( $post_attachment_id ) ) {
+
+				App::get( CatfishLogger::class )->error( 'There was error while importing gallery image', [ $post_attachment_id ] );
+				continue;
+			}
+
 			wp_update_post( array_merge( $post_data, [ 'ID' => $post_attachment_id ] ) );
 			$imageIds[] = $post_attachment_id;
 		}
