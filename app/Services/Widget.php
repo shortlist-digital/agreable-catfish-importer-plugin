@@ -94,7 +94,7 @@ class Widget {
 					self::setPostMetaProperty( $post, $metaLabel . '_position', 'widget_video_position', $widget->video->position );
 					$widgetNames[] = $widget->acf_fc_layout;
 					break;
-				case 'horizontal-rule':
+				case 'divider':
 					$widgetNames[] = $widget->acf_fc_layout;
 					break;
 				case 'gallery':
