@@ -75,10 +75,8 @@ class Widget {
 					$widgetNames[] = $widget->acf_fc_layout;
 					break;
 				case 'image':
-					if ( ! $widget->image->src ) {
-						App::get( CatfishLogger::class )->error( 'There was error while importing image. Seems like url is empty', [ $widget ] );
-						break;
-					}
+
+					App::get( CatfishLogger::class )->debug( 'Importing image widget', [ $widget,$widget->image->src ] );
 					$image = new Image( $widget->image->src );
 
 					self::setPostMetaProperty( $post, $metaLabel . '_image', 'widget_image_image', $image->id );
