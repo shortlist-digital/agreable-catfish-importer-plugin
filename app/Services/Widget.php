@@ -6,6 +6,8 @@ use AgreableCatfishImporterPlugin\Services\Widgets\HorizontalRule;
 use AgreableCatfishImporterPlugin\Services\Widgets\Html;
 use AgreableCatfishImporterPlugin\Services\Widgets\InlineImage;
 use AgreableCatfishImporterPlugin\Services\Widgets\Video;
+use Mesh\Image;
+use simplehtmldom_1_5\simple_html_dom_node;
 
 /**
  * Class Widget
@@ -71,7 +73,7 @@ class Widget {
 					$widgetNames[] = $widget->acf_fc_layout;
 					break;
 				case 'image':
-					$image = new \Mesh\Image( $widget->image->src );
+					$image = new Image( $widget->image->src );
 
 					self::setPostMetaProperty( $post, $metaLabel . '_image', 'widget_image_image', $image->id );
 					self::setPostMetaProperty( $post, $metaLabel . '_border', 'widget_image_border', 0 );
@@ -92,7 +94,7 @@ class Widget {
 					self::setPostMetaProperty( $post, $metaLabel . '_position', 'widget_video_position', $widget->video->position );
 					$widgetNames[] = $widget->acf_fc_layout;
 					break;
-				case 'divider':
+				case 'horizontal-rule':
 					$widgetNames[] = $widget->acf_fc_layout;
 					break;
 				case 'gallery':
@@ -153,7 +155,7 @@ class Widget {
 			}
 			$imageUrl = array_pop( $image->__mainImageUrls );
 
-			// Sideload the image
+			// Side load the image
 			$post_data = array(
 				'post_title'   => $title,
 				'post_content' => $image->description,
@@ -169,7 +171,7 @@ class Widget {
 	}
 
 	/**
-	 * Function to sideload image from Clock to Wordpress
+	 * Function to side load image from Clock to Wordpress
 	 *
 	 * Adapted from Mark Wilkinson's function:
 	 * https://markwilkinson.me/2015/07/using-the-media-handle-sideload-function/
@@ -185,12 +187,12 @@ class Widget {
 
 		/**
 		 * download the url into wordpress
-		 * saved temporarly for now
+		 * saved temporarily for now
 		 */
 		$tmp = download_url( $url );
 
 		/**
-		 * biild an array of file information about the url
+		 * build an array of file information about the url
 		 * getting the files name using basename()
 		 */
 		$file_array = array(
@@ -202,7 +204,7 @@ class Widget {
 		 * if there are error unlink the temp file name
 		 */
 		if ( is_wp_error( $tmp ) ) {
-			@unlink( $file_array['tmp_name'] );
+			unlink( $file_array['tmp_name'] );
 
 			return $tmp;
 		}
@@ -221,14 +223,14 @@ class Widget {
 		 * if errors again unlink the file
 		 */
 		if ( is_wp_error( $id ) ) {
-			@unlink( $file_array['tmp_name'] );
+			unlink( $file_array['tmp_name'] );
 
 			return $id;
 		}
 
 		/**
 		 * get the url from the newly upload file
-		 * $value now contians the file url in WordPress
+		 * $value now contains the file url in WordPress
 		 * $id is the attachment id
 		 */
 
@@ -239,7 +241,7 @@ class Widget {
 	/**
 	 * @param \TimberPost $post
 	 *
-	 * @return mixed|null|void
+	 * @return mixed|null
 	 */
 	public static function getPostWidgets( \TimberPost $post ) {
 		return get_field( 'widgets', $post->id );
@@ -253,7 +255,7 @@ class Widget {
 	 * @param null $name
 	 * @param null $index
 	 *
-	 * @return array|mixed|null|void
+	 * @return array|mixed|null
 	 */
 	public static function getPostWidgetsFiltered( \TimberPost $post, $name = null, $index = null ) {
 		$widgets = self::getPostWidgets( $post );
@@ -282,7 +284,7 @@ class Widget {
 	 * Given a URL to an post, identify the widgets within HTML
 	 * and then build up an array of widget objects
 	 *
-	 * @param $postDom
+	 * @param $postDom simple_html_dom_node
 	 *
 	 * @return array
 	 * @throws \Exception
@@ -296,7 +298,7 @@ class Widget {
 		$widgets = array();
 
 		foreach ( $postDom->find( '.article__content .widget__wrapper' ) as $widgetWrapper ) {
-
+			$widgetData = [];
 			// Handle most core widgets that have the .widget class
 			if ( isset( $widgetWrapper->find( '.widget' )[0] ) ) {
 				$widget = $widgetWrapper->find( '.widget' )[0];
@@ -334,7 +336,6 @@ class Widget {
 				// Catch .js-in-page-gallery
 			} else if ( isset( $widgetWrapper->find( '.js-in-page-gallery' )[0] ) ) {
 
-				// TODO This could be moved to a separate class for consistancy
 				$widgetData       = new \stdClass();
 				$widgetData->type = 'gallery';
 				$widgetData->html = $widgetWrapper->find( '.js-in-page-gallery' )[0];
