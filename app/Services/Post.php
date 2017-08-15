@@ -3,6 +3,7 @@
 namespace AgreableCatfishImporterPlugin\Services;
 
 use Sunra\PhpSimple\HtmlDomParser;
+use AgreableCatfishImporterPlugin\Services\Widgets\Video;
 
 /**
  * Class Post
@@ -90,14 +91,14 @@ class Post {
 			$postArrayForWordpress['post_author'] = $default_author;
 		}
 
+		// If article has a video header, use no-media header and transform to embed widget
+		$hero = (isset($postObject->videoId)) ? "hero-without-media" : "hero";
 
 		// Create meta array for new post (Data that's not in the core post_fields)
 		$postACFMetaArrayForWordpress = array(
 			'basic_short_headline'                  => $postObject->shortHeadline,
 			'basic_sell'                            => $sell,
-			'article_header_type'                   => 'standard-hero',
-			'article_header_display_headline'       => true,
-			'article_header_display_sell'           => true,
+			'article_header_type'                   => $hero,
 			'article_header_display_date'           => true,
 			'article_catfish_imported_url'          => preg_replace( '/.json$/', '', $postUrl ),
 			'article_catfish_importer_imported'     => true,
@@ -152,6 +153,17 @@ class Post {
 
 		// Create the ACF Widgets from DOM content
 		$widgets = Widget::getWidgetsFromDom( $postDom );
+
+		// if there is a video header, convert to embed widget
+		if ($hero == "hero-without-media") {
+			$headerEmbed = Video::getVideoFromHeader($postObject->provider, $postObject->videoId);
+			array_unshift($widgets, $headerEmbed);
+			/**
+			* @var $_logger \Croissant\DI\Dependency\CatfishLogger
+			*/
+			$_logger = \Croissant\App::get( \Croissant\DI\Interfaces\CatfishLogger::class );
+			$_logger->notice("provider: " . $postObject->provider . ", video id: " . $postObject->videoId . ", url: " . $postUrl);
+		}
 
 		Widget::setPostWidgets( $post, $widgets, $postObject );
 
