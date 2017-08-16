@@ -76,16 +76,11 @@ class Post {
 			'post_status'       => 'publish',
 			'ID'                => $postId
 		], $postArrayForWordpress ); // Clock data from api take precedence over local data from Wordpress
-
-		// Create or select Author ID
-		if ( isset( $object->article->__author )) {
-
-			$postArrayForWordpress['post_author'] = self::setAuthor( $object->article->__author );
-		} else {
-			$get_author_details                   = get_field( 'catfish_default_author', 'option' );
-			$default_author                       = $get_author_details['ID'];
-			$postArrayForWordpress['post_author'] = $default_author;
+		if ( ! isset( $object->article->__author ) ) {
+			$object->article->__author = null;
 		}
+		$postArrayForWordpress['post_author'] = User::findUserFromClockObject( $object->article->__author );
+
 
 		// If article has a video header, use no-media header and transform to embed widget
 		$hero = ( isset( $postObject->videoId ) ) ? "hero-without-media" : "hero";

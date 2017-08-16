@@ -7,7 +7,12 @@ namespace AgreableCatfishImporterPlugin\Services;
  *
  * @package AgreableCatfishImporterPlugin\Services
  */
-class User {
+/**
+ * Class User
+ *
+ * @package AgreableCatfishImporterPlugin\Services
+ */
+abstract class User {
 
 	/**
 	 * @param $email
@@ -19,7 +24,20 @@ class User {
 			return $user->ID;
 		}
 
-		return false;
+		return null;
+	}
+
+	/**
+	 * @param $login
+	 *
+	 * @return int|null
+	 */
+	public static function checkUserByLogin( $login ) {
+		if ( ( $user = get_user_by( 'login', $login ) ) ) {
+			return $user->ID;
+		}
+
+		return null;
 	}
 
 	/**
@@ -42,4 +60,44 @@ class User {
 		return $user_id;
 	}
 
+	/**
+	 * @return int|null
+	 */
+	public static function getDefaultUser() {
+
+		$user = get_user_by( 'login', 'shortlistteam' );
+
+		if ( $user ) {
+			return $user->ID;
+		}
+
+		return null;
+	}
+
+	/**
+	 * @param \stdClass $author
+	 */
+	public static function findUserFromClockObject( $author ) {
+
+		$userId = null;
+
+		if ( isset( $author->emailAddress ) && $author->emailAddress ) {
+			$userId = self::checkUserByEmail( $author->emailAddress );
+		}
+
+		if ( ! $userId && isset( $author->slug ) && $author->slug ) {
+			$userId = self::checkUserByLogin( $author->slug );
+		}
+
+		if ( ! $userId && isset( $author->slug, $author->name ) && $author->name && $author->slug ) {
+			$userId = self::insertCatfishUser( $author );
+		}
+
+		if ( ! $userId ) {
+			$userId = self::getDefaultUser();
+		}
+
+		return $userId;
+
+	}
 }
