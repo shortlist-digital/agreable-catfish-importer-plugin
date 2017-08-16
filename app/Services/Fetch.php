@@ -110,11 +110,12 @@ class Fetch {
 	 */
 	private function getPreparedUrl() {
 
-		$path = parse_url( $this->url )['path'];
+		//$path = parse_url( $this->url )['path'];
 
-		$escapedPath = implode( '/', array_map( function ( $segment ) {
+	/*	$escapedPath = implode( '/', array_map( function ( $segment ) {
 			return rawurlencode( $segment );
-		}, explode( '/', $path ) ) );
+		}, explode( '/', $path ) ) );*/
+
 
 		return str_replace(
 			[
@@ -122,14 +123,14 @@ class Fetch {
 				'http://shortlist.com',
 				'www.stylist.co.uk',
 				'http://stylist.co.uk',
-				$path
+
 			],
 			[
 				'origin.shortlist.com',
 				'http://origin.shortlist.com',
 				'origin.shortlist.com',
 				'http://origin.shortlist.com',
-				$escapedPath
+
 			],
 			$this->url );
 	}
