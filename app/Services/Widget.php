@@ -43,9 +43,20 @@ class Widget {
 	 *
 	 * @throws \Exception
 	 */
-	public static function setPostWidgets( \TimberPost $post, array $widgets, \stdClass $catfishPostObject ) {
+	public static function setPostWidgets( \TimberPost $post, array $widgetsData, \stdClass $catfishPostObject ) {
 
 		$widgetNames = [];
+		$widgets     = [];
+		foreach ( $widgetsData as $index => $widgetData ) {
+			if ( self::isHtmlGalleryWidget( $widgetData ) ) {
+				foreach ( self::unpackHtmlGalleryWidget( $widgetData ) as $str => $unpackedWidget ) {
+					$widgets[] = $unpackedWidget;
+				}
+				continue;
+			}
+			$widgets[] = $widgetData;
+		}
+
 		foreach ( $widgets as $key => $widget ) {
 
 			$metaLabel = 'widgets_' . $key;
@@ -144,11 +155,11 @@ class Widget {
 
 		$htmlCount = 0;
 		foreach ( $galleryData->images as $galleryWidget ) {
-			if ($galleryWidget->type == "html") {
-				$htmlCount++;
+			if ( $galleryWidget->type == "html" ) {
+				$htmlCount ++;
 			}
 		}
-		if ($htmlCount != 0) {
+		if ( $htmlCount != 0 ) {
 			self::galleryToWidgets( $galleryData->images, $post, $widgetNames );
 		} else {
 			$imageIds = [];
@@ -178,25 +189,25 @@ class Widget {
 		}
 	}
 
-	protected static function galleryToWidgets($galleryWidgets, \TimberPost $post, $widgetNames) {
+	protected static function galleryToWidgets( $galleryWidgets, \TimberPost $post, $widgetNames ) {
 
-		$key = count($widgetNames);
+		$key = count( $widgetNames );
 
-		foreach($galleryWidgets as $galleryWidget) {
+		foreach ( $galleryWidgets as $galleryWidget ) {
 			self::setPostMetaProperty( $post, 'widgets_' . $key . '_text', 'widget_heading_text', $galleryWidget->title );
 			self::setPostMetaProperty( $post, 'widgets_' . $key . '_font', 'widget_heading_font', "default" );
 			self::setPostMetaProperty( $post, 'widgets_' . $key . '_aligment', 'widget_heading_alignment', "left" );
 			$widgetNames[] = "heading";
-			$key++;
+			$key ++;
 
 			// $galleryWidget->type (check that it's not an image)
 			self::setPostMetaProperty( $post, 'widgets_' . $key . '_html', 'widget_html', $galleryWidget->html );
 			$widgetNames[] = "html";
-			$key++;
+			$key ++;
 
 			self::setPostMetaProperty( $post, 'widgets_' . $key . '_paragraph', 'widget_paragraph_html', $galleryWidget->description );
 			$widgetNames[] = "paragraph";
-			$key++;
+			$key ++;
 		}
 
 		// This is an array of widget names for ACF
