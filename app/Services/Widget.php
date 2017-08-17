@@ -142,30 +142,66 @@ class Widget {
 			throw new \Exception( 'Was expecting an array of images in gallery data' );
 		}
 
-		$imageIds = [];
-		foreach ( $galleryData->images as $image ) {
-
-			$title = $image->title;
-
-			if ( $title == "." ) {
-
-				$title = $post->title;
+		$htmlCount = 0;
+		foreach ( $galleryData->images as $galleryWidget ) {
+			if ($galleryWidget->type == "html") {
+				$htmlCount++;
 			}
-			$imageUrl = array_pop( $image->__mainImageUrls );
+		}
+		if ($htmlCount != 0) {
+			self::galleryToWidgets( $galleryData->images, $post, $widgetNames );
+		} else {
+			$imageIds = [];
+			foreach ( $galleryData->images as $image ) {
 
-			// Sideload the image
-			$post_data = array(
-				'post_title'   => $title,
-				'post_content' => $image->description,
-				'post_excerpt' => $image->description
-			);
+				$title = $image->title;
 
-			$post_attachment_id = WPErrorToException::loud( self::simple_image_sideload( $imageUrl . '.jpg', $post->ID, $title, $post_data ) );
-			wp_update_post( array_merge( $post_data, [ 'ID' => $post_attachment_id ] ) );
-			$imageIds[] = $post_attachment_id;
+				if ( $title == "." ) {
+
+					$title = $post->title;
+				}
+				$imageUrl = array_pop( $image->__mainImageUrls );
+
+				// Sideload the image
+				$post_data = array(
+					'post_title'   => $title,
+					'post_content' => $image->description,
+					'post_excerpt' => $image->description
+				);
+
+				$post_attachment_id = WPErrorToException::loud( self::simple_image_sideload( $imageUrl . '.jpg', $post->ID, $title, $post_data ) );
+				wp_update_post( array_merge( $post_data, [ 'ID' => $post_attachment_id ] ) );
+				$imageIds[] = $post_attachment_id;
+			}
+
+			self::setPostMetaProperty( $post, 'widgets_' . count( $widgetNames ) . '_gallery_items', 'widget_gallery_galleryitems', serialize( $imageIds ) );
+		}
+	}
+
+	protected static function galleryToWidgets($galleryWidgets, \TimberPost $post, $widgetNames) {
+
+		$key = count($widgetNames);
+
+		foreach($galleryWidgets as $galleryWidget) {
+			self::setPostMetaProperty( $post, 'widgets_' . $key . '_text', 'widget_heading_text', $galleryWidget->title );
+			self::setPostMetaProperty( $post, 'widgets_' . $key . '_font', 'widget_heading_font', "default" );
+			self::setPostMetaProperty( $post, 'widgets_' . $key . '_aligment', 'widget_heading_alignment', "left" );
+			$widgetNames[] = "heading";
+			$key++;
+
+			// $galleryWidget->type (check that it's not an image)
+			self::setPostMetaProperty( $post, 'widgets_' . $key . '_html', 'widget_html', $galleryWidget->html );
+			$widgetNames[] = "html";
+			$key++;
+
+			self::setPostMetaProperty( $post, 'widgets_' . $key . '_paragraph', 'widget_paragraph_html', $galleryWidget->description );
+			$widgetNames[] = "paragraph";
+			$key++;
 		}
 
-		self::setPostMetaProperty( $post, 'widgets_' . count( $widgetNames ) . '_gallery_items', 'widget_gallery_galleryitems', serialize( $imageIds ) );
+		// This is an array of widget names for ACF
+		update_post_meta( $post->id, 'widgets', serialize( $widgetNames ) );
+		update_post_meta( $post->id, '_widgets', 'post_widgets' );
 	}
 
 	/**
