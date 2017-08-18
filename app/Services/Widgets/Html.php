@@ -10,6 +10,15 @@ use Sunra\PhpSimple\HtmlDomParser;
  * @package AgreableCatfishImporterPlugin\Services\Widgets
  */
 class Html {
+	const TAG_ALLOW_NESTED = [
+		'main',
+		'div',
+		'article',
+		'p',
+
+	];
+	const MAX_PARSE_DEPTH = 3;
+
 	/**
 	 * @param $html_string
 	 *
@@ -55,12 +64,21 @@ class Html {
 	 * @return array|bool
 	 * @throws \Exception
 	 */
-	public static function breakIntoWidgets( \simplehtmldom_1_5\simple_html_dom_node $widgetDom ) {
+	public static function breakIntoWidgets( \simplehtmldom_1_5\simple_html_dom_node $widgetDom, $depth = 0 ) {
+
+		if ( $depth > self::MAX_PARSE_DEPTH ) {
+			return [];
+		}
 
 		$widgets = [];
 		// Loop through all DOM nodes to create widgets from them
-
 		foreach ( $widgetDom->find( '*' ) as $index => $node ) {
+
+			if ( $node->getAttribute( 'id' ) === 'fb-root' || ( $node->tag === 'script' && self::checkIfEmbedScriptTag( $node->src ) ) ) {
+				echo 'bails on ' . $node->tag . PHP_EOL;
+
+				continue;
+			}
 			/**
 			 * @var $node \simplehtmldom_1_5\simple_html_dom_node
 			 */
@@ -71,41 +89,43 @@ class Html {
 
 				$paragraphDom = HtmlDomParser::str_get_html( $clean_paragraph );
 				array_push( $widgets, Paragraph::getFromWidgetDom( $paragraphDom ) );
-			} elseif ( $node->tag == 'h2' ) {
-				array_push( $widgets, Heading::getFromWidgetDom( $node ) );
-				continue;
-			} // Store embed-able content as embed widgets
-			elseif ( ( $embedWidgets = Embed::getWidgetsFromDom( $node ) ) ) {
 
-				// Push all embed widgets into the widget array
-				foreach ( $embedWidgets as $widget ) {
-					array_push( $widgets, $widget );
+			} elseif ( $node->tag == 'h2' ) {
+
+				array_push( $widgets, Heading::getFromWidgetDom( $node ) );
+
+			} elseif ( ( $embedWidgets = Embed::getWidgetsFromDom( $node ) ) ) {
+
+				array_merge( $widgets, $embedWidgets );
+
+			} elseif ( $node->tag === 'img' ) {
+
+				array_push( $widgets, InlineImage::createImageFromTag( $node ) );
+
+			} else {
+				/**
+				 * As in some of the cases people put embeds wrapped in for example div we need to parse it recursively
+				 */
+
+				if ( in_array( $node->tag, self::TAG_ALLOW_NESTED ) ) {
+					$childWidgets = self::breakIntoWidgets( $node, $depth + 1 );
+					if ( count( array_filter( $childWidgets, function ( $i ) {
+						return $i->type !== 'html';
+					} ) ) ) {
+
+						array_merge( $widgets, $childWidgets );
+						continue;
+					}
 				}
 
-				continue;
-			} elseif ( ! self::checkIfEmbedScriptTag( $node->outertext ) ) {
-
-				$html = new \stdClass();
-
+				$html       = new \stdClass();
 				$html->type = 'html';
 				$html->html = $node->outertext;
 				array_push( $widgets, $html );
 
-			} elseif ( $node->tag != 'script' ) {
-				if ( empty( array_filter( $node->children, function ( $node ) {
-					return $node->tag !== 'script';
-				} ) ) ) {
-					continue;
-				}
-				throw new \Exception( 'undefined widget exception ' . json_encode( $node ) . ' while processing: ', 500 );
 			}
 
 		}
-
-		//TODO: Check why is that happening. Probably wasn't there before
-		$widgets = array_filter( $widgets, function ( $w ) {
-			return is_object( $w );
-		} );
 
 		// Merge adjacent widgets of the same type together
 		foreach ( $widgets as $index => $widget ) {
@@ -124,10 +144,9 @@ class Html {
 
 		}
 
-		$widgets = array_values( $widgets );
-
-		return $widgets;
+		return array_values( $widgets );
 	}
+
 
 	/**
 	 * Check if the DOM element is a excess script tag from a social embed string
@@ -137,16 +156,6 @@ class Html {
 	 * @return bool
 	 */
 	public static function checkIfEmbedScriptTag( $string ) {
-		$whitelist = array(
-			'platform.twitter.com',
-			'platform.instagram.com'
-		);
-		foreach ( $whitelist as $check ) {
-			if ( preg_match( "/$check/", $string ) ) {
-				return true;
-			}
-		}
-
-		return false;
+		return preg_match( "/(platform\.twitter\.com|platform\.instagram\.com|connect\.facebook\.com)/", $string );
 	}
 }

@@ -9,6 +9,6 @@ namespace AgreableCatfishImporterPlugin\Exception;
  *
  * @package AgreableCatfishImporterPlugin\Exception
  */
-class WrongDataFormatException extends \Exception {
+class WrongDataFormatException extends CatfishException {
 
 }

@@ -3,6 +3,8 @@
 
 namespace AgreableCatfishImporterPlugin\Services;
 
+use AgreableCatfishImporterPlugin\Exception\CatfishException;
+
 
 /**
  * Class WPErrorToException
@@ -26,7 +28,7 @@ class WPErrorToException {
 				$code = 0;
 			}
 
-			throw new \Exception( implode( PHP_EOL, $er->get_error_messages() ) );
+			throw new CatfishException( implode( PHP_EOL, $er->get_error_messages() ) );
 		} else {
 			return $er;
 		}

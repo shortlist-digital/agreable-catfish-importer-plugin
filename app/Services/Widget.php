@@ -6,6 +6,7 @@ use AgreableCatfishImporterPlugin\Services\Widgets\HorizontalRule;
 use AgreableCatfishImporterPlugin\Services\Widgets\Html;
 use AgreableCatfishImporterPlugin\Services\Widgets\InlineImage;
 use AgreableCatfishImporterPlugin\Services\Widgets\Video;
+use Sunra\PhpSimple\HtmlDomParser;
 
 /**
  * Class Widget
@@ -13,6 +14,12 @@ use AgreableCatfishImporterPlugin\Services\Widgets\Video;
  * @package AgreableCatfishImporterPlugin\Services
  */
 class Widget {
+	/**
+	 *
+	 */
+	const WIDGET_GALLERY_ENDPOINT = '/api/in-page-gallery-data';
+	const GALLERY_POST_ENDPOINT = '/api/gallery-data';
+
 	/**
 	 * @param $widgetName
 	 * @param \stdClass $data
@@ -38,7 +45,7 @@ class Widget {
 	 * Attach widgets to the $post via WP metadata
 	 *
 	 * @param \TimberPost $post
-	 * @param array $widgets
+	 * @param array $widgetsData
 	 * @param \stdClass $catfishPostObject
 	 *
 	 * @throws \Exception
@@ -48,13 +55,14 @@ class Widget {
 		$widgetNames = [];
 		$widgets     = [];
 		foreach ( $widgetsData as $index => $widgetData ) {
-			if ( self::isHtmlGalleryWidget( $widgetData ) ) {
-				foreach ( self::unpackHtmlGalleryWidget( $widgetData ) as $str => $unpackedWidget ) {
-					$widgets[] = $unpackedWidget;
-				}
+			if ( $widgetData->type !== 'gallery' ) {
+				$widgets[] = $widgetData;
 				continue;
 			}
-			$widgets[] = $widgetData;
+			$widgets = array_merge( $widgets, self::unpackGallery( $widgetData, $catfishPostObject->absoluteUrl, $widgetData->html->attr['data-id'] ) );
+		}
+		if ( $catfishPostObject->type === 'gallery' ) {
+			$widgets = array_merge( $widgets, self::unpackGallery( $widgetData, $catfishPostObject->absoluteUrl, false ) );
 		}
 
 		foreach ( $widgets as $key => $widget ) {
@@ -109,7 +117,7 @@ class Widget {
 				case 'gallery':
 
 					// Create gallery widget...
-					self::setGalleryWidget( $post, $catfishPostObject, $widgetNames, '/api/in-page-gallery-data', '?widgetId=' . $widget->html->attr['data-id'] );
+					self::setGalleryWidget( $post, $widgetNames, $widget->data );
 					$widgetNames[] = $widget->acf_fc_layout;
 
 					break;
@@ -122,71 +130,139 @@ class Widget {
 
 		}
 
-		if ( $catfishPostObject->type === 'gallery' ) {
-			self::setGalleryWidget( $post, $catfishPostObject, $widgetNames );
-			$widgetNames[] = 'gallery';
-		}
-
 		// This is an array of widget names for ACF
 		update_post_meta( $post->id, 'widgets', serialize( $widgetNames ) );
 		update_post_meta( $post->id, '_widgets', 'post_widgets' );
 	}
 
-	/**
-	 * Gallery post type
-	 *
-	 * @param $post
-	 * @param \stdClass $postObject
-	 * @param $widgetNames
-	 * @param string $galleryApiEndpoint
-	 * @param string $widgetId
-	 *
-	 * @throws \Exception
-	 */
-	protected static function setGalleryWidget( $post, \stdClass $postObject, $widgetNames, $galleryApiEndpoint = '/api/gallery-data', $widgetId = '' ) {
-		$galleryApi = str_replace( $postObject->__fullUrlPath, $galleryApiEndpoint . $postObject->__fullUrlPath . $widgetId, $postObject->absoluteUrl );
 
-		// Escape the url path using this handy helper
-		$galleryData = Fetch::json( $galleryApi, false );
+	public static function unpackGallery( $widgetData, $catfishUrl, $widgetId ) {
 
+		$galleryData = self::getGalleryData( $catfishUrl, $widgetId );
 		if ( ! isset( $galleryData->images ) || ! is_array( $galleryData->images ) ) {
 			throw new \Exception( 'Was expecting an array of images in gallery data' );
 		}
+		/*
+				$hasHtml = count( array_filter( $galleryData->images, function ( $image ) {
+					return $image->type === 'html';
+				} ) );
 
-		$htmlCount = 0;
-		foreach ( $galleryData->images as $galleryWidget ) {
-			if ( $galleryWidget->type == "html" ) {
-				$htmlCount ++;
-			}
-		}
-		if ( $htmlCount != 0 ) {
-			self::galleryToWidgets( $galleryData->images, $post, $widgetNames );
-		} else {
-			$imageIds = [];
-			foreach ( $galleryData->images as $image ) {
 
-				$title = $image->title;
+				if ( ! $hasHtml ) {
 
-				if ( $title == "." ) {
+					$widgetData->data = $galleryData;
 
-					$title = $post->title;
+					return [ $widgetData ];
+				}*/
+
+		/**
+		 * Unpack widget
+		 */
+		$ret = [];
+
+		foreach ( $galleryData->images as $index => $item ) {
+
+			if ( $item->type === 'image' ) {
+
+				$widget                  = new \stdClass();
+				$widget->id              = $item->id;
+				$widget->image           = new \stdClass();
+				$widget->image->width    = 'medium';
+				$widget->image->position = 'center';
+				$widget->url             = '';
+				$widget->image->caption  = ( $item->description ? $item->description : false );
+				$widget->type            = 'image';
+				$widget->image->src      = array_pop( $item->__mainImageUrls );
+				$ret[]                   = $widget;
+
+			} elseif ( $item->type === 'html' ) {
+
+				$widgets = [];
+
+				if ( trim( $item->title ) ) {
+					$widgetData                = new \stdClass();
+					$widgetData->type          = 'heading';
+					$widgetData->text          = strip_tags( trim( $item->title ) );
+					$widgetData->alignment     = 'left';
+					$widgetData->font          = 'primary';
+					$widgetData->acf_fc_layout = 'heading';
+					$widgets[]                 = $widgetData;
 				}
-				$imageUrl = array_pop( $image->__mainImageUrls );
 
-				// Sideload the image
-				$post_data = array(
-					'post_title'   => $title,
-					'post_content' => $image->description,
-					'post_excerpt' => $image->description
-				);
+				$html = HtmlDomParser::str_get_html( ( $item->description ? $item->description : '' ) . ( $item->html ? $item->html : '' ) );
 
-				$post_attachment_id = WPErrorToException::loud( self::simple_image_sideload( $imageUrl . '.jpg', $post->ID, $title, $post_data ) );
-				wp_update_post( array_merge( $post_data, [ 'ID' => $post_attachment_id ] ) );
-				$imageIds[] = $post_attachment_id;
+				$textWidgets = Html::breakIntoWidgets( $html->root );
+
+				if ( is_array( $textWidgets ) ) {
+					$widgets = array_merge( $widgets, $textWidgets );
+				}
+
+
+				if ( ! empty( $widgets ) ) {
+					$ret = array_merge( $ret, $widgets );
+				}
+
 			}
 
-			self::setPostMetaProperty( $post, 'widgets_' . count( $widgetNames ) . '_gallery_items', 'widget_gallery_galleryitems', serialize( $imageIds ) );
+
 		}
+
+		return array_map( function ( $i ) {
+			return self::makeWidget( $i->type, $i );
+		}, $ret );
+	}
+
+	public static function getGalleryData( $catfishUrl, $widgetId ) {
+
+		$endpoint = ! $widgetId ? self::GALLERY_POST_ENDPOINT : self::WIDGET_GALLERY_ENDPOINT;
+
+		$catfishPath = '/' . trim( parse_url( $catfishUrl )['path'], '/' );
+
+		$widgetQueryString = $widgetId ? '?widgetId=' . $widgetId : '';
+
+		$galleryApi = str_replace( $catfishPath, $endpoint . $catfishPath . $widgetQueryString, $catfishUrl );
+		echo( $galleryApi );
+
+		return Fetch::json( $galleryApi, false );
+
+	}
+
+	public static function imageToGallery( $data ) {
+
+	}
+
+	/**
+	 * @param $post
+	 * @param $widgetNames
+	 * @param $galleryData
+	 */
+	protected static function setGalleryWidget( $post, $widgetNames, $galleryData ) {
+
+		$imageIds = [];
+		foreach ( $galleryData->images as $image ) {
+
+			$title = $image->title;
+
+			if ( $title == "." ) {
+
+				$title = $post->title;
+			}
+			$imageUrl = array_pop( $image->__mainImageUrls );
+
+			// Sideload the image
+			$post_data = array(
+				'post_title'   => $title,
+				'post_content' => $image->description,
+				'post_excerpt' => $image->description
+			);
+
+			$post_attachment_id = WPErrorToException::loud( self::simple_image_sideload( $imageUrl . '.jpg', $post->ID, $title, $post_data ) );
+			wp_update_post( array_merge( $post_data, [ 'ID' => $post_attachment_id ] ) );
+			$imageIds[] = $post_attachment_id;
+		}
+
+		self::setPostMetaProperty( $post, 'widgets_' . count( $widgetNames ) . '_gallery_items', 'widget_gallery_galleryitems', serialize( $imageIds ) );
+
 	}
 
 	protected static function galleryToWidgets( $galleryWidgets, \TimberPost $post, $widgetNames ) {

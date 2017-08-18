@@ -2,6 +2,7 @@
 
 namespace AgreableCatfishImporterPlugin\Services\Widgets;
 
+use simplehtmldom_1_5\simple_html_dom_node;
 use stdClass;
 
 /**
@@ -55,9 +56,9 @@ class InlineImage {
 				$widgetData->image->position = 'right';
 			}
 		} else {
-			$a =  $widgetDom->find( 'a' );
-			if(count($a)>0){
-				$widgetData->url             = $a[0]->attr['href'];
+			$a = $widgetDom->find( 'a' );
+			if ( count( $a ) > 0 ) {
+				$widgetData->url = $a[0]->attr['href'];
 			}
 
 			$widgetData->image->width    = 'medium';
@@ -65,5 +66,34 @@ class InlineImage {
 		}
 
 		return $widgetData;
+	}
+
+	public static function createImageFromTag( simple_html_dom_node $tag ) {
+
+		$widget = new \stdClass();
+
+		$widget->image           = new \stdClass();
+		$widget->image->width    = 'medium';
+		$widget->image->position = 'center';
+		$widget->url             = '';
+		$widget->image->caption  = false;
+		$widget->type            = 'image';
+		$src                     = $tag->getAttribute( 'src' );
+		if ( ! $src ) {
+			$images = $tag->getAttribute( 'srcset' );
+			if ( $images ) {
+				$images = explode( ',', $images );
+				$src    = array_pop( $images );
+			}
+		}
+		if ( $src ) {
+
+			$widget->image->src = $src;
+
+			return $widget;
+
+		} else {
+			return false;
+		}
 	}
 }
