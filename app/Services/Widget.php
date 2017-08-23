@@ -76,7 +76,7 @@ class Widget {
 	public static function setPostWidgets( \TimberPost $post, array $widgetsData, \stdClass $catfishPostObject ) {
 
 
-		$widgetNames = [];
+
 		$widgets     = [];
 
 		foreach ( $widgetsData as $index => $widgetData ) {
@@ -182,7 +182,7 @@ class Widget {
 							'post_content' => $image->description,
 							'post_excerpt' => $image->description
 						);
-
+						echo $imageUrl.PHP_EOL;
 						$post_attachment_id = WPErrorToException::loud( self::simple_image_sideload( $imageUrl . '.jpg', $post->ID, $title, $post_data ) );
 						wp_update_post( array_merge( $post_data, [ 'ID' => $post_attachment_id ] ) );
 						$imageIds[] = $post_attachment_id;
