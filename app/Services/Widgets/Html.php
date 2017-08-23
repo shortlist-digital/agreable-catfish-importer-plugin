@@ -123,7 +123,6 @@ class Html {
 				array_push( $widgets, $html );
 
 			}
-
 		}
 
 		return array_values( array_filter( $widgets ) );
