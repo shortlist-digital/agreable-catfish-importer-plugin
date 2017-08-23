@@ -39,3 +39,6 @@ run `wp eval-file src/cli-runner/catfish-posts-update-times.php`. This will give
 
 For security reasons when new user is created from old system they are all assigned one and only one role called 'purgatory' to make it possible for those people to log in, you will have to adjust their privileges
 
+### Nohup command
+
+nohup php croissant plugin:catfish:import --update >>var/logs/catfish_cmd_output.log 2>> var/logs/catfish_cmd_error.log &

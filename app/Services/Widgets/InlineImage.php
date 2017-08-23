@@ -86,9 +86,11 @@ class InlineImage {
 				$src    = array_pop( $images );
 			}
 		}
+		echo $src . PHP_EOL;
 		if ( $src ) {
 
 			$widget->image->src = $src;
+			$widget->url        = $src;
 
 			return $widget;
 

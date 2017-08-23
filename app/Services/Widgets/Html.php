@@ -50,9 +50,6 @@ class Html {
 			// Return paragraph only posts as a single paragraph widget
 			return Paragraph::getFromWidgetDom( $widgetDom );
 		} else {
-			// Break up mixed content articles into separate widgets
-			// die(var_dump('array_filter(self::breakIntoWidgets($widgetDom))', array_filter(self::breakIntoWidgets($widgetDom))));
-
 
 			return array_filter( self::breakIntoWidgets( $widgetDom ) );
 		}
@@ -72,7 +69,7 @@ class Html {
 
 		$widgets = [];
 		// Loop through all DOM nodes to create widgets from them
-		foreach ( $widgetDom->find( '*' ) as $index => $node ) {
+		foreach ( $widgetDom->children() as $index => $node ) {
 
 			if ( $node->getAttribute( 'id' ) === 'fb-root' || ( $node->tag === 'script' && self::checkIfEmbedScriptTag( $node->src ) ) ) {
 				echo 'bails on ' . $node->tag . PHP_EOL;
@@ -86,34 +83,36 @@ class Html {
 			if ( self::checkIfValidParagraph( $node->outertext ) ) {
 				// Remove blank <p>&nbsp;</p> paragraph
 				$clean_paragraph = str_replace( "<p>&nbsp;</p>", "", $node->outertext );
-
-				$paragraphDom = HtmlDomParser::str_get_html( $clean_paragraph );
+				$paragraphDom    = HtmlDomParser::str_get_html( $clean_paragraph );
 				array_push( $widgets, Paragraph::getFromWidgetDom( $paragraphDom ) );
 
-			} elseif ( $node->tag == 'h2' ) {
+			} elseif ( $node->tag === 'h2' ) {
 
 				array_push( $widgets, Heading::getFromWidgetDom( $node ) );
 
 			} elseif ( ( $embedWidgets = Embed::getWidgetsFromDom( $node ) ) ) {
-
-				array_merge( $widgets, $embedWidgets );
+				foreach ( $embedWidgets as $child_widget ) {
+					array_push( $widgets, $child_widget );
+				}
 
 			} elseif ( $node->tag === 'img' ) {
 
 				array_push( $widgets, InlineImage::createImageFromTag( $node ) );
 
 			} else {
+
 				/**
 				 * As in some of the cases people put embeds wrapped in for example div we need to parse it recursively
 				 */
-
 				if ( in_array( $node->tag, self::TAG_ALLOW_NESTED ) ) {
 					$childWidgets = self::breakIntoWidgets( $node, $depth + 1 );
 					if ( count( array_filter( $childWidgets, function ( $i ) {
 						return $i->type !== 'html';
 					} ) ) ) {
-
-						array_merge( $widgets, $childWidgets );
+						foreach ( $childWidgets as $index => $child_widget ) {
+							array_push( $widgets, $child_widget );
+						}
+						//	$widgets = call_user_func_array( 'array_push', $childWidgets );
 						continue;
 					}
 				}
@@ -127,24 +126,8 @@ class Html {
 
 		}
 
-		// Merge adjacent widgets of the same type together
-		foreach ( $widgets as $index => $widget ) {
-			if ( $index == 0 ) {
-				continue;
-			}
-			$prev = $widgets[ $index - 1 ];
-			if ( ( $prev->type == 'html' ) && ( $widget->type == 'html' ) ) {
-				$widget->html = $prev->html . $widget->html;
-				unset( $widgets[ $index - 1 ] );
-			}
-			if ( ( $prev->type == 'paragraph' ) && ( $widget->type == 'paragraph' ) ) {
-				$widget->paragraph = $prev->paragraph . $widget->paragraph;
-				unset( $widgets[ $index - 1 ] );
-			}
+		return array_values( array_filter( $widgets ) );
 
-		}
-
-		return array_values( $widgets );
 	}
 
 
