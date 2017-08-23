@@ -24,7 +24,8 @@ class WPErrorToException {
 			/**
 			 * @var $er \WP_Error
 			 */
-			throw new CatfishException( $er->get_error_message() );
+			var_dump($er->get_error_messages());
+			throw new \Exception( $er->get_error_message() );
 
 		} else {
 			return $er;

@@ -95,7 +95,7 @@ class Widget {
 		/**
 		 * Delete all current widgets
 		 */
-		global $wpdb;
+
 		update_field( $post->post_type . '_widgets', null, $post->id );
 		$widgetsInput = [];
 		foreach ( $widgets as $key => $widget ) {
@@ -131,7 +131,7 @@ class Widget {
 				case 'image':
 
 					try {
-						$image = new Image( $widget->image->src );
+						$image = new Image( str_replace( '.darkroom.', '.origin.darkroom.', $widget->image->src ) );
 					} catch ( \Exception $e ) {
 						$image     = new \stdClass();
 						$image->id = null;
@@ -174,7 +174,7 @@ class Widget {
 
 							$title = $post->title;
 						}
-						$imageUrl = array_pop( $image->__mainImageUrls );
+						$imageUrl = str_replace( '.darkroom.', '.origin.darkroom.', array_pop( $image->__mainImageUrls ) );
 
 						// Sideload the image
 						$post_data = array(
