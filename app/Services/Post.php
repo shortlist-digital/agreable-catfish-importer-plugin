@@ -101,6 +101,8 @@ class Post {
 			'social_overrides_description'          => self::pickFromArray( $object, 'meta.social.description', "" ),
 			'social_overrides_share_image'          => false,
 			'social_overrides_twitter_text'         => self::pickFromArray( $object, 'meta.social.twitterText', "" ),
+			'seo_title'                             => self::pickFromArray( $object, 'meta.title', "" ),
+			'seo_description'                       => self::pickFromArray( $object, 'meta.seo.description', "" ),
 			'related_show_related_content'          => true,
 			'related_limit'                         => "6",
 			'related_lists'                         => false,
