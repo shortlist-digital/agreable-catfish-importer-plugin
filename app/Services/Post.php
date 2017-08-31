@@ -76,6 +76,8 @@ class Post {
 			'post_status'       => 'publish',
 			'ID'                => $postId
 		], $postArrayForWordpress ); // Clock data from api take precedence over local data from Wordpress
+
+
 		if ( ! isset( $object->article->__author ) ) {
 			$object->article->__author = null;
 		}
@@ -95,16 +97,19 @@ class Post {
 			'article_catfish_importer_imported'     => true,
 			'article_catfish_importer_post_date'    => $displayDate,
 			'article_catfish_importer_date_updated' => $currentDate,
-			'social_overrides_title'                => "",
-			'social_overrides_description'          => "",
+			'social_overrides_title'                => self::pickFromArray( $object, 'meta.social.title', "" ),
+			'social_overrides_description'          => self::pickFromArray( $object, 'meta.social.description', "" ),
 			'social_overrides_share_image'          => false,
-			'social_overrides_twitter_text'         => "",
+			'social_overrides_twitter_text'         => self::pickFromArray( $object, 'meta.social.twitterText', "" ),
+			'seo_title'                             => self::pickFromArray( $object, 'meta.title', "" ),
+			'seo_description'                       => self::pickFromArray( $object, 'meta.seo.description', "" ),
 			'related_show_related_content'          => true,
 			'related_limit'                         => "6",
 			'related_lists'                         => false,
 			'related_posts_manual'                  => false,
 			'html_overrides_allow'                  => false
 		);
+
 
 		// Log the created time if this is the first time this post was imported
 		if ( $postId === 0 ) {
@@ -166,6 +171,84 @@ class Post {
 		add_action( 'save_post', 'yoimg_imgseo_save_post' );
 
 		return $post;
+	}
+
+	/**
+	 *
+	 *
+	 * @param $array
+	 * @param $path
+	 * @param null $default
+	 *
+	 * @return array|null
+	 */
+	public static function pickFromArray( $array, $path, $default = null ) {
+		$delimiter = '.';
+
+		if ( is_array( $path ) ) {
+			// The path has already been separated into keys
+			$keys = $path;
+		} else {
+			if ( array_key_exists( $path, $array ) ) {
+				// No need to do extra processing
+				return $array[ $path ];
+			}
+			// Remove starting delimiters and spaces
+			$path = ltrim( $path, "{$delimiter} " );
+			// Remove ending delimiters, spaces, and wildcards
+			$path = rtrim( $path, "{$delimiter} *" );
+			// Split the keys by delimiter
+			$keys = explode( $delimiter, $path );
+		}
+
+		do {
+			$key = array_shift( $keys );
+
+			if ( ctype_digit( $key ) ) {
+				// Make the key an integer
+				$key = (int) $key;
+			}
+
+			if ( $array instanceof \stdClass ) {
+				$array = json_decode( json_encode( $array ), true );
+			}
+
+			if ( isset( $array[ $key ] ) ) {
+				if ( $keys ) {
+					if ( is_array( $array[ $key ] ) ) {
+						// Dig down into the next part of the path
+						$array = $array[ $key ];
+					} else {
+						// Unable to dig deeper
+						break;
+					}
+				} else {
+					// Found the path requested
+					return $array[ $key ];
+				}
+			} elseif ( $key === '*' ) {
+				// Handle wildcards
+				$values = array();
+				foreach ( $array as $arr ) {
+					if ( $value = self::pickFromArray( $arr, implode( '.', $keys ) ) ) {
+						$values[] = $value;
+					}
+				}
+				if ( $values ) {
+					// Found the values requested
+					return $values;
+				} else {
+					// Unable to dig deeper
+					break;
+				}
+			} else {
+				// Unable to dig deeper
+				break;
+			}
+		} while ( $keys );
+
+		// Unable to find the value requested
+		return $default;
 	}
 
 	/**
