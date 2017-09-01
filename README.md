@@ -41,4 +41,4 @@ For security reasons when new user is created from old system they are all assig
 
 ### Nohup command
 
-nohup php croissant plugin:catfish:import --update >>var/logs/catfish_cmd_output.log 2>> var/logs/catfish_cmd_error.log &
+nohup php croissant plugin:catfish:import >>/tmp/catfish_cmd_output.log 2>> /tmp/catfish_cmd_error.log &

@@ -18,12 +18,14 @@ class InlineImage {
 	 */
 	public static function getFromWidgetDom( $widgetDom ) {
 
-		$widgetData                   = new stdClass();
-		$widgetData->type             = 'image';
-		$widgetData->image            = new stdClass();
-		$widgetData->url              = '';
-		$image                        = $widgetDom->find( 'img' );
-		$widgetData->image->src       = $image[0]->src;
+		$widgetData             = new stdClass();
+		$widgetData->type       = 'image';
+		$widgetData->image      = new stdClass();
+		$widgetData->url        = '';
+		$image                  = $widgetDom->find( 'img' );
+		$widgetData->image->src = $image[0]->src;
+		$widgetData->image->alt = isset( $image[0]->alt ) ? $image[0]->alt : '';
+
 		$widgetData->image->filename  = substr( $widgetData->image->src, strrpos( $widgetData->image->src, '/' ) + 1 );
 		$widgetData->image->name      = substr( $widgetData->image->filename, 0, strrpos( $widgetData->image->filename, '.' ) );
 		$widgetData->image->extension = substr( $widgetData->image->filename, strrpos( $widgetData->image->filename, '.' ) + 1 );

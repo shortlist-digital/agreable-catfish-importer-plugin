@@ -76,8 +76,7 @@ class Widget {
 	public static function setPostWidgets( \TimberPost $post, array $widgetsData, \stdClass $catfishPostObject ) {
 
 
-
-		$widgets     = [];
+		$widgets = [];
 
 		foreach ( $widgetsData as $index => $widgetData ) {
 			if ( $widgetData->type !== 'gallery' ) {
@@ -137,7 +136,9 @@ class Widget {
 						$image->id = null;
 						App::get( CatfishLogger::class )->error( 'Error while importing image: ' . $widget->image->src, [ $widget ] );
 					}
-
+					if ( isset( $image->id ) && isset( $widget->image->alt ) ) {
+						update_post_meta( $image->id, '_wp_attachment_image_alt', $widget->image->alt );
+					}
 					$widgetsInput[] = array(
 						'image'         => $image->id,
 						'border'        => 0,
@@ -182,7 +183,7 @@ class Widget {
 							'post_content' => $image->description,
 							'post_excerpt' => $image->description
 						);
-						echo $imageUrl.PHP_EOL;
+						echo $imageUrl . PHP_EOL;
 						$post_attachment_id = WPErrorToException::loud( self::simple_image_sideload( $imageUrl . '.jpg', $post->ID, $title, $post_data ) );
 						wp_update_post( array_merge( $post_data, [ 'ID' => $post_attachment_id ] ) );
 						$imageIds[] = $post_attachment_id;
@@ -289,6 +290,7 @@ class Widget {
 				$widget->url             = '';
 				$widget->image->caption  = ( $item->description ? $item->description : false );
 				$widget->type            = 'image';
+				$widget->image->alt      = isset( $item->__caption ) ? $item->__caption : '';
 				$widget->image->src      = array_pop( $item->__mainImageUrls );
 				$ret[]                   = $widget;
 
