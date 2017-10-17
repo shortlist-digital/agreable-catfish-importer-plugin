@@ -16,17 +16,10 @@ class Embed {
 	 *
 	 * @return array|bool|stdClass
 	 */
+
 	public static function getWidgetsFromDom( $widgetDom ) {
 
-		// var_dump($widgetDom->outertext);
-
-		if ( preg_match( '/iframe/', $widgetDom->outertext ) ) {
-			return self::handleFrame( $widgetDom );
-		} elseif ( preg_match( '/blockquote/', $widgetDom->outertext ) ) {
-			return self::handleBlock( $widgetDom );
-		} else {
-			return false;
-		}
+		return array_merge( self::handleBlock( $widgetDom ), self::handleFrame( $widgetDom ) );
 	}
 
 	/**
@@ -35,9 +28,10 @@ class Embed {
 	 * @return bool|stdClass
 	 */
 	public static function handleFrame( $widgetDom ) {
-		$frame = $widgetDom->find( 'iframe' );
-		if ( isset( $frame[0] ) ) {
-			$url   = $frame[0]->src;
+		$widgets = [];
+		$frames  = $widgetDom->find( 'iframe' );
+		foreach ( $frames as $index => $frame ) {
+			$url   = $frame->src;
 			$parts = parse_url( $url );
 			if ( isset( $parts['query'] ) ) {
 				parse_str( $parts['query'], $query );
@@ -52,11 +46,12 @@ class Embed {
 				$widgetData->type  = 'embed';
 				$widgetData->embed = $url;
 
-				return $widgetData;
+				array_push( $widgets, $widgetData );
 			}
 		}
 
-		return false;
+		return array_filter( $widgets );
+
 	}
 
 	/**
@@ -96,6 +91,6 @@ class Embed {
 
 		$widgets = array_values( $widgets );
 
-		return count( $widgets ) ? array_filter( $widgets ) : false;
+		return array_filter( $widgets );
 	}
 }

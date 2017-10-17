@@ -6,9 +6,8 @@
   "require": {
     "sunra/php-simple-html-dom-parser" : "~1.5",
     "sabre/xml": "^1.4",
-    "sabre/uri": "^1.9",
-    "jarednova/mesh": "0.4",
-    "aws/aws-sdk-php": "2.8.31"
+    "sabre/uri": "2.1.0",
+    "jarednova/mesh": "0.4"
   },
   "config": {
     "preferred-install": "dist"

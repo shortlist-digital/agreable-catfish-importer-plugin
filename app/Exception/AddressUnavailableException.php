@@ -9,6 +9,6 @@ namespace AgreableCatfishImporterPlugin\Exception;
  *
  * @package AgreableCatfishImporterPlugin\Exception
  */
-class AddressUnavailableException extends \Exception {
+class AddressUnavailableException extends CatfishException {
 
 }

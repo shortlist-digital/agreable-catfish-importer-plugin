@@ -3,6 +3,8 @@
 
 namespace AgreableCatfishImporterPlugin\Services;
 
+use AgreableCatfishImporterPlugin\Exception\CatfishException;
+
 
 /**
  * Class WPErrorToException
@@ -18,15 +20,13 @@ class WPErrorToException {
 	 */
 	public static function loud( $er ) {
 		if ( is_wp_error( $er ) ) {
+
 			/**
 			 * @var $er \WP_Error
 			 */
-			$code = $er->get_error_code();
-			if ( ! $code ) {
-				$code = 0;
-			}
+			var_dump($er->get_error_messages());
+			throw new \Exception( $er->get_error_message() );
 
-			throw new \Exception( implode( PHP_EOL, $er->get_error_messages() ) );
 		} else {
 			return $er;
 		}

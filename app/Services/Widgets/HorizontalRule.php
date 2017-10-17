@@ -16,7 +16,7 @@ class HorizontalRule {
 	 */
 	public static function getFromWidgetDom($widgetDom) {
     $widgetData = new stdClass();
-    $widgetData->type = 'horizontal-rule';
+    $widgetData->type = 'divider';
     return $widgetData;
   }
 }
