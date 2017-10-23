@@ -24,6 +24,7 @@ import runner have additional options
 -c amount of posts imported per one process
 --update run only posts updated from last time
 -l limit amount of posts
+`--date-limit="d/m/Y"` it will ignore all posts older than the date limit
 -vvv to change default symfony command verbosity
 
 ### Manual posts update

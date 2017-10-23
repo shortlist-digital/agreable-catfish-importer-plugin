@@ -1,6 +1,5 @@
 <?php
 
-
 namespace AgreableCatfishImporterPlugin\Services;
 
 
@@ -9,14 +8,6 @@ use AgreableCatfishImporterPlugin\Exception\WrongDataFormatException;
 use Croissant\App;
 use Croissant\DI\Interfaces\CatfishLogger;
 use Croissant\DI\Interfaces\Curl;
-use Sunra\PhpSimple\HtmlDomParser;
-
-/**
- * This fixes the issues with htmldomparser not parsing large files
- */
-if ( ! defined( 'MAX_FILE_SIZE' ) ) {
-	define( 'MAX_FILE_SIZE', 600000000 );
-}
 
 /**
  * Class Fetch
@@ -204,7 +195,6 @@ class Fetch {
 		}
 
 		if ( $saveCache ) {
-
 			self::$memoryCache[ $self->url ] = $data;
 			$self->setCache( $data );
 		}
@@ -221,13 +211,13 @@ class Fetch {
 	 *
 	 */
 	public static function xml( $url ) {
-
 		$self = new self( $url, false, false );
 
 		$dataString = $self->get();
-		$data       = HtmlDomParser::str_get_html( $dataString );
 
-		if ( $data === false ) {
+		try {
+			$data = simplexml_load_string( $dataString );
+		} catch (\Exception $e) {
 			throw new WrongDataFormatException( 'It seems like ' . $url . ' is not a valid xml. CHeck if MAX_FILE_SIZE is not too small' );
 		}
 

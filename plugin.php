@@ -12,7 +12,6 @@
 
 include __DIR__ . '/app/acf.php';
 
-
 if ( is_admin() ) {
 
 	include __DIR__ . '/app/editor.php';
