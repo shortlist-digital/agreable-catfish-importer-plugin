@@ -5,8 +5,6 @@
   "license": "MIT",
   "require": {
     "sunra/php-simple-html-dom-parser" : "~1.5",
-    "sabre/xml": "^1.4",
-    "sabre/uri": "2.1.0",
     "jarednova/mesh": "0.4"
   },
   "config": {
